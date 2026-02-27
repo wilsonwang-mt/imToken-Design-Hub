@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Step 03 — 导入 i18n → 创建 Figma Variable Collection</title>
+<style>
+:root{--bg:#0f1117;--s:#1a1d27;--s2:#232733;--bd:#2e3345;--tx:#e4e6ef;--dm:#8b90a5;--ac:#a29bfe;--pk:#fd79a8;--gn:#00b894;--yl:#fdcb6e;--bl:#74b9ff}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--tx);line-height:1.75}
+.top-bar{padding:14px 28px;background:var(--s);border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:12px}
+.top-bar a{color:var(--ac);text-decoration:none;font-size:.9em}
+.top-bar a:hover{text-decoration:underline}
+.top-bar .sep{color:var(--bd)}
+.top-bar .current{color:var(--tx);font-weight:600;font-size:.9em}
+.hero-sm{padding:48px 28px 36px;border-bottom:1px solid var(--bd);background:linear-gradient(160deg,var(--s),#a29bfe10)}
+.hero-sm .step-badge{display:inline-block;padding:4px 14px;border-radius:20px;font-size:.78em;font-weight:600;background:#a29bfe22;color:var(--ac);margin-bottom:10px}
+.hero-sm h1{font-size:1.8em;font-weight:700;margin-bottom:6px}
+.hero-sm p{color:var(--dm);max-width:640px}
+.container{max-width:820px;margin:0 auto;padding:40px 28px 60px}
+.role-bar{display:flex;gap:8px;margin-bottom:32px}
+.role-chip{padding:5px 14px;border-radius:20px;font-size:.82em;font-weight:500}
+.r-des{background:#fd79a822;color:var(--pk)}
+h2{font-size:1.25em;margin:36px 0 16px;padding-bottom:8px;border-bottom:1px solid var(--bd)}
+.phase{background:var(--s);border:1px solid var(--bd);border-radius:14px;padding:28px;margin-bottom:24px}
+.phase-badge{display:inline-block;font-size:.72em;padding:3px 12px;border-radius:10px;font-weight:600;margin-bottom:12px}
+.pb-a{background:#a29bfe22;color:var(--ac)}
+.pb-b{background:#00b89422;color:var(--gn)}
+.pb-c{background:#74b9ff22;color:var(--bl)}
+.phase h3{font-size:1.1em;margin-bottom:12px}
+.step-line{display:flex;gap:14px;margin-bottom:16px;align-items:flex-start}
+.step-line .sn{width:26px;height:26px;border-radius:50%;background:var(--ac);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.78em;font-weight:700;flex-shrink:0;margin-top:2px}
+.step-line .sc{flex:1}
+.step-line h4{font-size:.95em;margin-bottom:3px}
+.step-line p{color:var(--dm);font-size:.88em}
+.mock{background:var(--s2);border:1px solid var(--bd);border-radius:10px;overflow:hidden;margin:16px 0}
+.mock-header{padding:10px 16px;background:var(--s);border-bottom:1px solid var(--bd);font-size:.8em;color:var(--dm);display:flex;align-items:center;gap:8px}
+.mock-body{padding:20px}
+.mock-body pre{font-size:.8em;color:var(--tx);white-space:pre-wrap;font-family:'SF Mono',Monaco,Consolas,monospace;line-height:1.5}
+.k{color:#e06c75}.v{color:#98c379}.p{color:#c678dd}
+.tip{background:#fdcb6e15;border-left:3px solid var(--yl);border-radius:0 8px 8px 0;padding:14px 18px;margin:16px 0;font-size:.9em}
+.tip strong{color:var(--yl)}
+.figma-ui{background:#2c2c2c;border:1px solid #444;border-radius:10px;overflow:hidden;margin:16px 0}
+.figma-ui .fu-header{padding:8px 14px;background:#1e1e1e;border-bottom:1px solid #444;font-size:.78em;color:#999;display:flex;justify-content:space-between;align-items:center}
+.figma-ui .fu-tabs{display:flex;gap:0}
+.figma-ui .fu-tab{padding:6px 14px;font-size:.78em;color:#999;border-bottom:2px solid transparent;cursor:default}
+.figma-ui .fu-tab.active{color:#fff;border-bottom-color:#a259ff}
+.figma-ui .fu-body{padding:12px}
+.var-row{display:grid;grid-template-columns:180px 1fr 1fr 1fr;gap:8px;padding:6px 8px;border-radius:4px;font-size:.78em;align-items:center}
+.var-row:hover{background:#ffffff08}
+.var-row.header{color:#999;font-weight:600;border-bottom:1px solid #444;padding-bottom:10px;margin-bottom:4px}
+.var-row .vn{color:#ddd}
+.var-row .vv{color:#98c379;background:#ffffff06;padding:3px 8px;border-radius:4px;font-family:monospace}
+.mode-switch{display:flex;gap:6px;margin:12px 0}
+.mode-btn{padding:4px 12px;border-radius:6px;font-size:.78em;background:#333;color:#999;cursor:default;border:1px solid #444}
+.mode-btn.active{background:#a259ff22;color:#a259ff;border-color:#a259ff}
+.output-box{background:var(--s);border:1px solid var(--gn);border-radius:12px;padding:20px;margin-top:24px}
+.output-box h4{color:var(--gn);margin-bottom:8px}
+.output-box p{color:var(--dm);font-size:.9em}
+.arrow-down{text-align:center;color:var(--bd);font-size:1.5em;margin:12px 0}
+.footer-nav{display:flex;justify-content:space-between;margin-top:48px;padding-top:24px;border-top:1px solid var(--bd)}
+.footer-nav a{color:var(--ac);text-decoration:none;font-size:.92em}
+.footer-nav a:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <a href="../copy-workflow-final.html">Workflow</a>
+  <span class="sep">/</span>
+  <span class="current">Step 03</span>
+</div>
+
+<div class="hero-sm">
+  <span class="step-badge">STEP 03 — 核心步骤</span>
+  <h1>导入 i18n → Figma Variable Collection</h1>
+  <p>将开发的 i18n 文件转换并导入 Figma，创建多语言 Variable Collection，绑定文本图层</p>
+</div>
+
+<div class="container">
+  <div class="role-bar">
+    <span class="role-chip r-des">Designer — 负责执行</span>
+  </div>
+
+  <!-- ═══ Phase A ═══ -->
+  <div class="phase">
+    <span class="phase-badge pb-a">Phase A</span>
+    <h3>将 i18n JSON 转换为 Figma 可导入格式</h3>
+
+    <div class="step-line">
+      <div class="sn">1</div>
+      <div class="sc">
+        <h4>从 GitHub 获取开发的 i18n JSON 文件</h4>
+        <p>下载开发在 Step 02 提交的 <code>en.json</code> 文件。</p>
+      </div>
+    </div>
+
+    <div class="step-line">
+      <div class="sn">2</div>
+      <div class="sc">
+        <h4>运行转换脚本，生成 Variable Importer 格式</h4>
+        <p>使用 <code>i18n2figma</code> 脚本将 dev i18n JSON 转换为 Variable Importer/Exporter 插件可识别的格式，同时生成三语 Mode 的初始值（中文部分先填入初稿翻译）。</p>
+      </div>
+    </div>
+
+    <div class="mock">
+      <div class="mock-header">
+        <span style="color:var(--gn)">&#9679;</span> copy-collection.json — Variable Importer 格式
+      </div>
+      <div class="mock-body"><pre>{
+  <span class="k">"collections"</span>: [{
+    <span class="k">"name"</span>: <span class="v">"Copy"</span>,
+    <span class="k">"modes"</span>: [<span class="v">"EN"</span>, <span class="v">"ZH-Hans"</span>, <span class="v">"ZH-Hant"</span>],
+    <span class="k">"variables"</span>: {
+      <span class="k">"goldenSeason"</span>: {
+        <span class="k">"badge"</span>: {
+          <span class="k">"type"</span>: <span class="v">"string"</span>,
+          <span class="k">"values"</span>: {
+            <span class="k">"EN"</span>: <span class="v">"New Listing"</span>,
+            <span class="k">"ZH-Hans"</span>: <span class="v">"最新上线"</span>,
+            <span class="k">"ZH-Hant"</span>: <span class="v">"最新上線"</span>
+          }
+        },
+        <span class="k">"heroTitle"</span>: {
+          <span class="k">"type"</span>: <span class="v">"string"</span>,
+          <span class="k">"values"</span>: {
+            <span class="k">"EN"</span>: <span class="v">"imToken x Tether"</span>,
+            <span class="k">"ZH-Hans"</span>: <span class="v">"imToken x Tether"</span>,
+            <span class="k">"ZH-Hant"</span>: <span class="v">"imToken x Tether"</span>
+          }
+        }
+      }
+    }
+  }]
+}</pre></div>
+    </div>
+  </div>
+
+  <div class="arrow-down">&#8595;</div>
+
+  <!-- ═══ Phase B ═══ -->
+  <div class="phase">
+    <span class="phase-badge pb-b">Phase B</span>
+    <h3>在 Figma 中导入 Variable Collection</h3>
+
+    <div class="step-line">
+      <div class="sn">1</div>
+      <div class="sc">
+        <h4>安装 Variable Importer/Exporter 插件</h4>
+        <p>在 Figma 社区搜索 "Variable Importer/Exporter"，安装插件。</p>
+      </div>
+    </div>
+
+    <div class="step-line">
+      <div class="sn">2</div>
+      <div class="sc">
+        <h4>运行插件 → 选择 Import → 上传 JSON</h4>
+        <p>在 Figma 中打开插件（Plugins → Variable Importer/Exporter），选择 Import 模式，上传 <code>copy-collection.json</code> 文件。</p>
+      </div>
+    </div>
+
+    <div class="step-line">
+      <div class="sn">3</div>
+      <div class="sc">
+        <h4>确认导入结果</h4>
+        <p>导入后在 Variables Panel 中可以看到 "Copy" Collection，包含 EN / ZH-Hans / ZH-Hant 三个 Mode。</p>
+      </div>
+    </div>
+
+    <div class="figma-ui">
+      <div class="fu-header">
+        <span>Variables</span>
+        <span style="font-size:.7em;color:#666">Copy Collection</span>
+      </div>
+      <div class="fu-body">
+        <div class="mode-switch">
+          <div class="mode-btn active">EN</div>
+          <div class="mode-btn">ZH-Hans</div>
+          <div class="mode-btn">ZH-Hant</div>
+        </div>
+        <div class="var-row header">
+          <span>Variable Name</span>
+          <span>EN</span>
+          <span>ZH-Hans</span>
+          <span>ZH-Hant</span>
+        </div>
+        <div class="var-row"><span class="vn">goldenSeason/badge</span><span class="vv">New Listing</span><span class="vv">最新上线</span><span class="vv">最新上線</span></div>
+        <div class="var-row"><span class="vn">goldenSeason/heroTitle</span><span class="vv">imToken x Tether</span><span class="vv">imToken x Tether</span><span class="vv">imToken x Tether</span></div>
+        <div class="var-row"><span class="vn">goldenSeason/heroSubtitle</span><span class="vv">Gold Grand Giveaway</span><span class="vv">黄金大派送</span><span class="vv">黃金大派送</span></div>
+        <div class="var-row"><span class="vn">goldenSeason/joinNow</span><span class="vv">JOIN NOW</span><span class="vv">立即参与</span><span class="vv">立即參與</span></div>
+        <div class="var-row"><span class="vn" style="color:#666">... (104 variables total)</span><span></span><span></span><span></span></div>
+      </div>
+    </div>
+
+    <div class="tip">
+      <strong>注意：</strong>Variable 名称中的 <code>/</code> 在 Figma 中会创建文件夹层级。例如 <code>goldenSeason/badge</code> 会在 "goldenSeason" 文件夹下创建 "badge" 变量。这有助于组织大量变量。
+    </div>
+  </div>
+
+  <div class="arrow-down">&#8595;</div>
+
+  <!-- ═══ Phase C ═══ -->
+  <div class="phase">
+    <span class="phase-badge pb-c">Phase C</span>
+    <h3>使用 Auto-Replace 批量绑定文本图层</h3>
+
+    <div class="step-line">
+      <div class="sn">1</div>
+      <div class="sc">
+        <h4>安装 Auto-Replace Text with Variables 插件</h4>
+        <p>在 Figma 社区搜索安装此插件。</p>
+      </div>
+    </div>
+
+    <div class="step-line">
+      <div class="sn">2</div>
+      <div class="sc">
+        <h4>选中页面中的所有 Frame → 运行插件</h4>
+        <p>选中包含文本的 Frame（或全选页面），运行 Auto-Replace 插件。插件会自动将文本内容与 Variable 的值进行匹配。</p>
+      </div>
+    </div>
+
+    <div class="step-line">
+      <div class="sn">3</div>
+      <div class="sc">
+        <h4>检查匹配结果</h4>
+        <p>插件会显示匹配成功和未匹配的文本。对于未匹配的文本（可能是文案有细微差异），手动绑定。</p>
+      </div>
+    </div>
+
+    <div class="step-line">
+      <div class="sn">4</div>
+      <div class="sc">
+        <h4>切换 Mode 验证</h4>
+        <p>绑定完成后，在 Figma 右侧面板切换 Variable Mode（EN → ZH-Hans → ZH-Hant），验证所有文本正确切换且无排版溢出。</p>
+      </div>
+    </div>
+
+    <div class="figma-ui">
+      <div class="fu-header">
+        <span>Design — Layer Properties</span>
+      </div>
+      <div class="fu-body" style="padding:16px">
+        <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:#ffffff08;border-radius:6px;margin-bottom:8px">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect width="14" height="14" rx="3" fill="#a259ff"/><text x="3" y="11" font-size="9" fill="#fff" font-weight="bold">T</text></svg>
+          <span style="font-size:.82em;color:#ddd;flex:1">heroTitle</span>
+          <span style="font-size:.72em;padding:3px 8px;background:#a259ff22;color:#a259ff;border-radius:4px">Variable bound</span>
+        </div>
+        <div style="font-size:.78em;color:#999;padding:4px 12px">
+          Content → <span style="color:#a259ff">goldenSeason/heroTitle</span><br>
+          Current mode: <span style="color:#98c379">EN → "imToken x Tether"</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="tip">
+      <strong>匹配原理：</strong>Auto-Replace 将文本图层的当前内容与 Variable 的当前 Mode 值进行文本精确匹配。因此需要确保 Figma 中的文案与 i18n 文件中的英文值一致（这也是 Step 01 设计师写 80% 英文文案的原因之一）。
+    </div>
+  </div>
+
+  <div class="output-box">
+    <h4>&#10148; 本步骤产出物</h4>
+    <p>Figma 文件中已创建 "Copy" Variable Collection（104 变量 × 3 语言 Mode），所有文本图层已绑定对应 Variable。可以通过切换 Mode 实时预览不同语言的 UI。</p>
+  </div>
+
+  <div class="footer-nav">
+    <a href="step-02-dev-keys.html">&#8592; Step 02</a>
+    <a href="step-04-team-review.html">Step 04: 团队审查 &#8594;</a>
+  </div>
+</div>
+
+</body>
+</html>

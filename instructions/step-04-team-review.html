@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Step 04 — 多方审查 & 定稿</title>
+<style>
+:root{--bg:#0f1117;--s:#1a1d27;--s2:#232733;--bd:#2e3345;--tx:#e4e6ef;--dm:#8b90a5;--ac:#a29bfe;--pk:#fd79a8;--gn:#00b894;--yl:#fdcb6e;--bl:#74b9ff}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--tx);line-height:1.75}
+.top-bar{padding:14px 28px;background:var(--s);border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:12px}
+.top-bar a{color:var(--ac);text-decoration:none;font-size:.9em}
+.top-bar a:hover{text-decoration:underline}
+.top-bar .sep{color:var(--bd)}
+.top-bar .current{color:var(--tx);font-weight:600;font-size:.9em}
+.hero-sm{padding:48px 28px 36px;border-bottom:1px solid var(--bd);background:linear-gradient(160deg,var(--s),#fdcb6e10)}
+.hero-sm .step-badge{display:inline-block;padding:4px 14px;border-radius:20px;font-size:.78em;font-weight:600;background:#fdcb6e22;color:var(--yl);margin-bottom:10px}
+.hero-sm h1{font-size:1.8em;font-weight:700;margin-bottom:6px}
+.hero-sm p{color:var(--dm);max-width:640px}
+.container{max-width:820px;margin:0 auto;padding:40px 28px 60px}
+.role-bar{display:flex;gap:8px;margin-bottom:32px;flex-wrap:wrap}
+.role-chip{padding:5px 14px;border-radius:20px;font-size:.82em;font-weight:500}
+.r-des{background:#fd79a822;color:var(--pk)}
+.r-team{background:#fdcb6e22;color:var(--yl)}
+.r-legal{background:var(--s2);color:var(--dm)}
+h2{font-size:1.25em;margin:36px 0 16px;padding-bottom:8px;border-bottom:1px solid var(--bd)}
+.step-card{background:var(--s);border:1px solid var(--bd);border-radius:12px;padding:24px;margin-bottom:16px;position:relative;padding-left:60px}
+.step-card .num{position:absolute;left:20px;top:24px;width:28px;height:28px;border-radius:50%;background:var(--yl);color:#000;display:flex;align-items:center;justify-content:center;font-size:.82em;font-weight:700}
+.step-card h4{font-size:1em;margin-bottom:6px}
+.step-card p{color:var(--dm);font-size:.92em}
+.tip{background:#fdcb6e15;border-left:3px solid var(--yl);border-radius:0 8px 8px 0;padding:14px 18px;margin:16px 0;font-size:.9em}
+.tip strong{color:var(--yl)}
+.review-matrix{width:100%;border-collapse:collapse;background:var(--s);border-radius:10px;overflow:hidden;border:1px solid var(--bd);font-size:.88em;margin:16px 0}
+.review-matrix th{padding:10px 14px;background:var(--s2);border-bottom:1px solid var(--bd);text-align:left;color:var(--dm);font-size:.85em}
+.review-matrix td{padding:10px 14px;border-bottom:1px solid var(--bd)}
+.review-matrix tr:last-child td{border:none}
+.figma-comment{background:#2c2c2c;border:1px solid #444;border-radius:10px;margin:16px 0;overflow:hidden}
+.fc-header{padding:10px 16px;background:#1e1e1e;border-bottom:1px solid #444;font-size:.78em;color:#999}
+.fc-body{padding:16px}
+.fc-item{display:flex;gap:12px;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid #333}
+.fc-item:last-child{border:none;margin-bottom:0;padding-bottom:0}
+.fc-avatar{width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.7em;font-weight:700;color:#fff}
+.fc-content{flex:1}
+.fc-name{font-size:.8em;font-weight:600;color:#ddd;margin-bottom:2px}
+.fc-name span{font-weight:400;color:#666;margin-left:6px}
+.fc-text{font-size:.82em;color:#bbb;line-height:1.5}
+.fc-text .mention{color:#a259ff}
+.fc-text .tag{display:inline-block;padding:1px 8px;border-radius:4px;font-size:.85em;margin-top:4px}
+.tag-change{background:#e1705522;color:#e17055}
+.tag-ok{background:#00b89422;color:var(--gn)}
+.checklist{list-style:none;padding:0}
+.checklist li{padding:10px 0;border-bottom:1px solid var(--bd);display:flex;gap:10px;font-size:.92em}
+.checklist li:last-child{border:none}
+.checklist .check{color:var(--gn);flex-shrink:0}
+.output-box{background:var(--s);border:1px solid var(--gn);border-radius:12px;padding:20px;margin-top:24px}
+.output-box h4{color:var(--gn);margin-bottom:8px}
+.output-box p{color:var(--dm);font-size:.9em}
+.footer-nav{display:flex;justify-content:space-between;margin-top:48px;padding-top:24px;border-top:1px solid var(--bd)}
+.footer-nav a{color:var(--ac);text-decoration:none;font-size:.92em}
+.footer-nav a:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <a href="../copy-workflow-final.html">Workflow</a>
+  <span class="sep">/</span>
+  <span class="current">Step 04</span>
+</div>
+
+<div class="hero-sm">
+  <span class="step-badge">STEP 04</span>
+  <h1>多方审查 & 定稿</h1>
+  <p>PM、Marketing、安全/合规团队在 Figma 中审查三语文案，设计师编辑 Variable 定稿</p>
+</div>
+
+<div class="container">
+  <div class="role-bar">
+    <span class="role-chip r-team">PM — 最终审批</span>
+    <span class="role-chip r-team">Mkt — 营销文案审查</span>
+    <span class="role-chip r-legal">Legal — 合规审查</span>
+    <span class="role-chip r-des">Designer — 编辑执行</span>
+  </div>
+
+  <h2>审查分工</h2>
+
+  <table class="review-matrix">
+    <thead><tr><th>审查人</th><th>关注重点</th><th>典型审查项</th></tr></thead>
+    <tbody>
+      <tr><td><strong>PM</strong></td><td>功能准确性、用户体验</td><td>CTA 是否清晰、流程引导是否正确、状态文案是否准确</td></tr>
+      <tr><td><strong>Marketing</strong></td><td>品牌语调、营销效果</td><td>标题是否吸引人、描述是否传达价值、用词是否一致</td></tr>
+      <tr><td><strong>Legal / Security</strong></td><td>合规、风险提示</td><td>免责声明是否完整、收益描述是否合规、隐私条款引用</td></tr>
+      <tr><td><strong>Designer</strong></td><td>排版适配、多语言展示</td><td>文案长度是否溢出、中文翻译是否自然、字符宽度问题</td></tr>
+    </tbody>
+  </table>
+
+  <h2>操作流程</h2>
+
+  <div class="step-card">
+    <div class="num">1</div>
+    <h4>设计师分享 Figma 文件链接给审查团队</h4>
+    <p>确保所有审查人拥有 Figma Comment 权限。发送文件链接时附上审查要求和截止日期。</p>
+  </div>
+
+  <div class="step-card">
+    <div class="num">2</div>
+    <h4>各方在 Figma 中添加 Comment 标注修改意见</h4>
+    <p>审查人直接在需要修改的文案区域添加 Comment，明确写出修改建议。</p>
+  </div>
+
+  <div class="figma-comment">
+    <div class="fc-header">Figma Comments — 审查示例</div>
+    <div class="fc-body">
+      <div class="fc-item">
+        <div class="fc-avatar" style="background:#e17055">PM</div>
+        <div class="fc-content">
+          <div class="fc-name">Sarah (PM) <span>2 hours ago</span></div>
+          <div class="fc-text">
+            "Premium box" 统一改为 "Mystery box"，与最新的产品命名保持一致。涉及的 key：openPremiumBox, premiumBoxOldUser, premiumBoxUsedOut, unlockPremiumBoxes<br>
+            <span class="mention">@Wilson</span> 请同步更新三语
+            <div><span class="tag tag-change">需修改</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="fc-item">
+        <div class="fc-avatar" style="background:#00b894">Mkt</div>
+        <div class="fc-content">
+          <div class="fc-name">Lisa (Mkt) <span>1 hour ago</span></div>
+          <div class="fc-text">
+            cardModalDesc 需要更新为产品介绍，不再用活动导向的文案。新文案建议："The imToken Card, launched by imToken and Swiss-licensed Fiat24, is a multi-currency Mastercard debit card."
+            <div><span class="tag tag-change">需修改</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="fc-item">
+        <div class="fc-avatar" style="background:#74b9ff">Legal</div>
+        <div class="fc-content">
+          <div class="fc-name">Alex (Legal) <span>30 min ago</span></div>
+          <div class="fc-text">
+            imTokenCardRequiredDescription 中移除 "Sorry"，改为更正式的表述。合规没有其他问题。
+            <div><span class="tag tag-ok">其余已通过</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-card">
+    <div class="num">3</div>
+    <h4>设计师收集反馈 → 直接编辑 Figma Variable 值</h4>
+    <p>设计师在 Variables Panel 中直接修改对应 key 的值。修改后 Figma 中绑定了该 Variable 的所有文本图层会同步更新，实时验证修改效果。</p>
+  </div>
+
+  <div class="step-card">
+    <div class="num">4</div>
+    <h4>三语同步更新</h4>
+    <p>修改英文后，必须同步更新 ZH-Hans 和 ZH-Hant 的翻译。在 Variables Panel 中切换 Mode 逐一编辑。</p>
+  </div>
+
+  <div class="step-card">
+    <div class="num">5</div>
+    <h4>切换语言 Mode 逐一检查排版</h4>
+    <p>在 Figma 右侧面板切换 Variable Mode，验证每种语言下文案没有截断、溢出或换行异常。</p>
+  </div>
+
+  <div class="step-card">
+    <div class="num">6</div>
+    <h4>PM 最终确认 → 标记"Approved"</h4>
+    <p>所有修改完成后，PM 在 Figma Comment 中回复 "Approved" 确认文案定稿。设计师 Resolve 所有 Comment。</p>
+  </div>
+
+  <div class="tip">
+    <strong>审查周期建议：</strong>设定固定的审查截止时间（如 48 小时）。超时未反馈视为默认通过。避免审查流程成为瓶颈。
+  </div>
+
+  <h2>定稿确认 Checklist</h2>
+  <ul class="checklist">
+    <li><span class="check">&#10003;</span> 所有 Figma Comment 已 Resolved</li>
+    <li><span class="check">&#10003;</span> PM 已在 Comment 中标记 "Approved"</li>
+    <li><span class="check">&#10003;</span> 三语文案已同步更新（无遗漏语言）</li>
+    <li><span class="check">&#10003;</span> 切换 EN / ZH-Hans / ZH-Hant 三种 Mode 无排版问题</li>
+    <li><span class="check">&#10003;</span> Legal 审查通过（合规内容无问题）</li>
+  </ul>
+
+  <div class="output-box">
+    <h4>&#10148; 本步骤产出物</h4>
+    <p>定稿后的 Figma Variable Collection — 三语文案已审核通过，可以导出同步到代码。</p>
+  </div>
+
+  <div class="footer-nav">
+    <a href="step-03-figma-variables.html">&#8592; Step 03</a>
+    <a href="step-05-export-pr.html">Step 05: 导出 & PR &#8594;</a>
+  </div>
+</div>
+
+</body>
+</html>
