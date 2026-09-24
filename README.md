@@ -42,6 +42,14 @@ public/
 
 演示文稿地址是 `/confu/ep03/`（结尾的斜杠不能省，文稿里的素材用相对路径加载）。
 
+每份演示文稿顶部都有一条「返回网站」导航：鼠标移到窗口最上沿就会出现（手机上是左上角的小按钮）。放入或替换演示文稿后运行一次：
+
+```bash
+node scripts/add-deck-nav.mjs
+```
+
+它会给 `public/confu/` 下所有 HTML 补上这一行 `<script src="/confu/site-nav.js" defer></script>`，原始演示文稿文件不需要改。
+
 **开放一个新板块**
 
 在 `content/site.ts` 里把对应板块的 `status` 改成 `'open'`，填上 `href`，再在 `app/` 下新建对应页面。
