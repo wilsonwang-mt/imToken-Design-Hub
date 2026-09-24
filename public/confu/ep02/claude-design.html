@@ -818,6 +818,291 @@ html { font-size: clamp(16px, min(1.04vw, 1.85vh), 30px); }
   .cd-lead .sp { font-size:.66rem; }
 }
 
+/* ================= Opening · the question (q-*) ================= */
+.q-big { color: var(--text); font-size: clamp(2.6rem, 5.4vw, 4.6rem); line-height: 1.18; font-weight: 800; letter-spacing: -.02em; margin: 0; }
+.q-big .muted { color: var(--text-muted); font-weight: 700; }
+.q-logos { display: flex; flex-wrap: wrap; gap: .65rem; justify-content: center; margin-top: 2.6rem; }
+.q-logos span { width: 3.1rem; height: 3.1rem; border-radius: 14px; background: var(--surface); border: 1px solid var(--border); display: grid; place-items: center; box-shadow: 0 4px 14px rgba(15,23,42,.05); }
+.q-logos img { width: 1.7rem; height: 1.7rem; object-fit: contain; }
+.q-cmp { display: grid; grid-template-columns: 1fr 1.5fr; gap: 1.3rem; margin-top: 1rem; align-items: stretch; }
+.q-side { border-radius: 16px; padding: .9rem 1rem 1rem; border: 1.5px solid var(--border); background: var(--surface); display: flex; flex-direction: column; min-width: 0; }
+.q-side.dft { border-style: dashed; background: var(--bg-alt); }
+.q-side.top { border-color: rgba(var(--brand-rgb),.35); background: rgba(var(--brand-rgb),.03); }
+.q-side .hd { display: flex; align-items: baseline; gap: .6rem; margin-bottom: .6rem; }
+.q-side .hd b { font-size: 1.02rem; }
+.q-side .hd span { font-family: var(--font-mono); font-size: .6rem; letter-spacing: .12em; font-weight: 700; color: var(--text-muted); }
+.q-side.top .hd span { color: var(--brand); }
+.q-shots { display: grid; gap: .6rem; flex: 1; min-height: 0; }
+.q-side.dft .q-shots { grid-template-rows: 1fr 1fr; }
+.q-side.top .q-shots { grid-template-columns: 1fr 1fr; grid-template-rows: 1.2fr 1fr; }
+.q-side.top .q-shots .s:first-child { grid-column: 1 / span 2; }
+.q-cmp { height: clamp(22rem, 58vh, 42rem); }
+.q-shots .s { position: relative; border-radius: 10px; overflow: hidden; border: 1px solid var(--border); background: var(--bg-alt); min-height: 0; }
+.q-shots .s img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; cursor: zoom-in; }
+.q-shots .s i { position: absolute; left: .45rem; bottom: .45rem; font-style: normal; font-size: .66rem; font-weight: 650; color: var(--text); background: rgba(255,255,255,.9); border-radius: 6px; padding: .12rem .45rem; box-shadow: 0 2px 8px rgba(15,23,42,.12); }
+.q-tags { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .6rem; }
+.q-tags span { font-size: .7rem; color: var(--text-secondary); border: 1px solid var(--border); background: var(--surface); border-radius: 999px; padding: .12rem .55rem; }
+.q-side .ft { margin-top: .55rem; font-size: .72rem; line-height: 1.5; color: var(--text-muted); }
+.q-why { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1.3rem; }
+.q-why .c { border-radius: 16px; padding: 1.2rem 1.25rem 1.1rem; border: 1.5px solid var(--border); background: var(--surface); display: flex; flex-direction: column; }
+.q-why .n { font-family: var(--font-mono); font-size: 2.6rem; font-weight: 800; line-height: 1; letter-spacing: -.04em; }
+.q-why h3 { font-size: 1.3rem; margin: .7rem 0 .5rem; line-height: 1.35; }
+.q-why p { font-size: .88rem; line-height: 1.65; color: var(--text-secondary); margin: 0; }
+.q-why .to { margin-top: auto; padding-top: .9rem; border-top: 1px dashed var(--border); margin-top: 1rem; }
+.q-why .to .pt { font-family: var(--font-mono); font-size: .6rem; letter-spacing: .14em; font-weight: 700; }
+.q-why .to b { display: block; font-size: 1rem; margin-top: .2rem; }
+.q-why .to span { display: block; font-size: .76rem; color: var(--text-muted); margin-top: .15rem; }
+.q-why .c.b { border-color: rgba(var(--brand-rgb),.35); } .q-why .c.b .n, .q-why .c.b .pt { color: var(--brand); }
+.q-why .c.p { border-color: rgba(var(--purple-rgb),.35); } .q-why .c.p .n, .q-why .c.p .pt { color: var(--purple); }
+.q-why .c.g { border-color: rgba(var(--green-rgb),.35); } .q-why .c.g .n, .q-why .c.g .pt { color: var(--green); }
+.q-bar { display: flex; gap: .4rem; margin-top: 1.1rem; }
+.q-bar > div { border-radius: 10px; padding: .55rem .8rem; border: 1.5px solid var(--border); background: var(--surface); min-width: 0; }
+.q-bar .mono { font-size: .6rem; letter-spacing: .12em; font-weight: 700; color: var(--text-muted); }
+.q-bar p { font-size: .84rem; margin: .15rem 0 0; color: var(--text); }
+.q-bar .b { border-color: rgba(var(--brand-rgb),.35); background: rgba(var(--brand-rgb),.05); } .q-bar .b .mono { color: var(--brand); }
+.q-bar .p { border-color: rgba(var(--purple-rgb),.35); background: rgba(var(--purple-rgb),.05); } .q-bar .p .mono { color: var(--purple); }
+.q-bar .g { border-color: rgba(var(--green-rgb),.35); background: rgba(var(--green-rgb),.05); } .q-bar .g .mono { color: var(--green); }
+.map-parts { display: grid; grid-template-columns: repeat(6, 1fr); gap: .7rem; margin-top: .7rem; }
+.map-parts > div { border-radius: 10px; padding: .5rem .8rem; font-size: .84rem; border: 1.5px solid var(--border); background: var(--surface); }
+.map-parts .mono { font-size: .58rem; letter-spacing: .12em; font-weight: 700; margin-right: .45rem; }
+.map-parts .b { grid-column: 1 / span 2; border-color: rgba(var(--brand-rgb),.4); background: rgba(var(--brand-rgb),.07); } .map-parts .b .mono { color: var(--brand); }
+.map-parts .p { grid-column: 3 / span 2; border-color: rgba(var(--purple-rgb),.4); background: rgba(var(--purple-rgb),.07); } .map-parts .p .mono { color: var(--purple); }
+.map-parts .k { grid-column: 5 / span 2; color: var(--text-muted); border-style: dashed; }
+.map-parts .g { grid-column: 1 / span 6; border-color: rgba(var(--green-rgb),.4); background: rgba(var(--green-rgb),.07); } .map-parts .g .mono { color: var(--green); }
+
+/* ================= Part 3 · the loop (lp-*) ================= */
+.lp-flow { display: grid; grid-template-columns: repeat(5, 1fr); gap: .8rem; margin-top: 1.1rem; position: relative; }
+.lp-st { border-radius: 14px; border: 1.5px solid var(--border); background: var(--surface); padding: .85rem .9rem .8rem; display: flex; flex-direction: column; gap: .45rem; position: relative; min-width: 0; }
+.lp-st + .lp-st::before { content: "→"; position: absolute; left: -.72rem; top: 1.05rem; color: var(--text-muted); font-size: .85rem; }
+.lp-st .n { font-family: var(--font-mono); font-size: .6rem; letter-spacing: .12em; font-weight: 700; color: var(--text-muted); }
+.lp-st h4 { margin: 0; font-size: 1.12rem; line-height: 1.3; }
+.lp-st .who { font-size: .76rem; line-height: 1.45; color: var(--text); background: rgba(var(--purple-rgb),.06); border-radius: 8px; padding: .35rem .5rem; }
+.lp-st .who b, .lp-st .gate b, .lp-st .out b { display: block; font-family: var(--font-mono); font-size: .56rem; letter-spacing: .1em; margin-bottom: .1rem; }
+.lp-st .who b { color: var(--purple); }
+.lp-st .out { font-size: .76rem; line-height: 1.45; color: var(--text-secondary); padding: 0 .1rem; }
+.lp-st .out b { color: var(--text-muted); }
+.lp-st .gate { font-size: .76rem; line-height: 1.45; color: var(--text); background: rgba(var(--brand-rgb),.06); border-radius: 8px; padding: .35rem .5rem; }
+.lp-st .gate b { color: var(--brand); }
+.lp-st .real { margin-top: auto; font-size: .7rem; line-height: 1.45; color: var(--green); border-top: 1px dashed var(--border); padding-top: .45rem; }
+.lp-st.b { border-color: rgba(var(--brand-rgb),.35); } .lp-st.b .n { color: var(--brand); }
+.lp-st.p { border-color: rgba(var(--purple-rgb),.35); } .lp-st.p .n { color: var(--purple); }
+.lp-st.a { border-color: rgba(var(--amber-rgb),.45); } .lp-st.a .n { color: var(--amber); }
+.lp-st.r { border-color: rgba(var(--red-rgb),.35); } .lp-st.r .n { color: var(--red); }
+.lp-st.g { border-color: rgba(var(--green-rgb),.35); } .lp-st.g .n { color: var(--green); }
+.lp-back { display: grid; grid-template-columns: repeat(5, 1fr); gap: .8rem; margin-top: .55rem; }
+.lp-back div { font-size: .78rem; color: var(--text-secondary); border-radius: 10px; padding: .45rem .75rem; border: 1.5px dashed rgba(var(--amber-rgb),.5); background: rgba(var(--amber-rgb),.05); text-align: center; }
+.lp-back .ar { grid-column: 3 / span 2; }
+.lp-back .ch { grid-column: 4 / span 2; border-color: rgba(var(--green-rgb),.45); background: rgba(var(--green-rgb),.05); }
+.lp-rules { display: grid; grid-template-columns: repeat(3, 1fr); gap: .8rem; margin-top: .9rem; }
+.lp-rules div { border-radius: 12px; padding: .7rem .9rem; background: var(--surface); border: 1px solid var(--border); font-size: .82rem; line-height: 1.55; }
+.lp-rules b { display: block; font-size: .92rem; margin-bottom: .15rem; }
+.lp-cases { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1rem; }
+.lp-case { border-radius: 16px; border: 1.5px solid var(--border); background: var(--surface); padding: 1rem 1.1rem; display: flex; flex-direction: column; gap: .55rem; min-width: 0; }
+.lp-case .n { font-family: var(--font-mono); font-size: .6rem; letter-spacing: .12em; font-weight: 700; }
+.lp-case h3 { margin: 0; font-size: 1.12rem; line-height: 1.35; }
+.lp-case .roles { display: flex; flex-wrap: wrap; gap: .3rem; }
+.lp-case .roles span { font-size: .7rem; border-radius: 999px; padding: .12rem .5rem; background: rgba(var(--purple-rgb),.08); color: var(--purple); font-weight: 600; }
+.lp-case ol { margin: 0; padding-left: 1.1rem; font-size: .8rem; line-height: 1.55; color: var(--text); }
+.lp-case ol li { margin: .12rem 0; }
+.lp-case ol li em { font-style: normal; color: var(--text-muted); font-size: .72rem; }
+.lp-case blockquote { margin: auto 0 0; font-size: .74rem; line-height: 1.6; color: var(--text-secondary); border-left: 2px solid rgba(var(--purple-rgb),.35); padding: .15rem 0 .15rem .65rem; }
+.lp-case.b { border-color: rgba(var(--brand-rgb),.35); } .lp-case.b .n { color: var(--brand); }
+.lp-case.p { border-color: rgba(var(--purple-rgb),.35); } .lp-case.p .n { color: var(--purple); }
+.lp-case.g { border-color: rgba(var(--green-rgb),.35); } .lp-case.g .n { color: var(--green); }
+.lp-pl { display: flex; gap: .35rem; flex-wrap: wrap; }
+.lp-pl span { font-family: var(--font-mono); font-size: .66rem; font-weight: 700; border-radius: 6px; padding: .1rem .45rem; color: #fff; }
+.lp-starter { display: grid; grid-template-columns: 1.35fr 1fr; gap: 1.2rem; margin-top: 1rem; align-items: stretch; }
+.lp-seg { display: grid; grid-template-columns: 6.2rem 1fr; gap: .1rem .8rem; font-size: .82rem; line-height: 1.5; }
+.lp-seg dt { font-weight: 700; padding: .38rem 0; border-bottom: 1px solid var(--border-light); }
+.lp-seg dd { margin: 0; padding: .38rem 0; border-bottom: 1px solid var(--border-light); color: var(--text-secondary); }
+.lp-seg dt i { font-style: normal; font-family: var(--font-mono); font-size: .6rem; color: var(--text-muted); margin-right: .35rem; }
+@media (min-height: 950px) {
+  .lp-st h4 { font-size: 1.25rem; } .lp-st .who, .lp-st .gate, .lp-st .out { font-size: .86rem; } .lp-st .real { font-size: .78rem; }
+  .lp-rules div { font-size: .9rem; } .lp-case ol { font-size: .9rem; } .lp-case blockquote { font-size: .82rem; }
+  .q-why p { font-size: .98rem; } .lp-seg { font-size: .92rem; }
+}
+@media (max-height: 800px) {
+  .lp-flow { margin-top: .7rem; gap: .6rem; } .lp-st { padding: .6rem .7rem; gap: .3rem; }
+  .lp-st h4 { font-size: .98rem; } .lp-st .who, .lp-st .gate, .lp-st .out { font-size: .68rem; padding: .25rem .4rem; } .lp-st .real { font-size: .64rem; }
+  .lp-rules { margin-top: .55rem; } .lp-rules div { font-size: .72rem; padding: .5rem .7rem; } .lp-rules b { font-size: .8rem; }
+  .lp-back div { font-size: .68rem; padding: .3rem .6rem; }
+  .lp-case { padding: .7rem .85rem; gap: .35rem; } .lp-case ol { font-size: .72rem; } .lp-case blockquote { font-size: .66rem; } .lp-case h3 { font-size: .98rem; }
+  .q-why .c { padding: .9rem 1rem; } .q-why p { font-size: .78rem; } .q-why h3 { font-size: 1.12rem; }
+  .lp-seg { font-size: .72rem; } .lp-seg dt, .lp-seg dd { padding: .22rem 0; }
+}
+
+/* ================= Part 1 · story pages (p1x-*) ================= */
+.p1bar { display: flex; gap: .4rem; margin-bottom: .9rem; align-items: center; }
+.p1bar span { font-size: .72rem; padding: .22rem .7rem; border-radius: 999px; border: 1px solid var(--border); color: var(--text-secondary); background: var(--surface); font-weight: 600; }
+.p1bar span.on { background: var(--brand); border-color: var(--brand); color: #fff; }
+.p1bar i { font-style: normal; color: var(--text-muted); font-size: .7rem; }
+.p1bar em { font-style: normal; font-family: var(--font-mono); font-size: .58rem; letter-spacing: .12em; color: var(--brand); font-weight: 700; margin-right: .3rem; }
+.adj { display: grid; grid-template-columns: .95fr 1.45fr; gap: 1.4rem; margin-top: 1rem; align-items: stretch; }
+.adj-l { display: flex; flex-direction: column; gap: .7rem; }
+.adj-say { align-self: flex-start; background: var(--brand); color: #fff; font-size: 1.12rem; font-weight: 650; border-radius: 18px 18px 18px 4px; padding: .75rem 1.1rem; line-height: 1.5; }
+.adj-hear { font-size: .82rem; color: var(--text-secondary); }
+.adj-hear b { color: var(--purple); }
+.adj-shot { flex: 1; min-height: 0; position: relative; border-radius: 12px; overflow: hidden; border: 1.5px dashed var(--border); background: var(--bg-alt); }
+.adj-shot img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: top left; cursor: zoom-in; }
+.adj-r { border-radius: 16px; border: 1.5px solid rgba(var(--brand-rgb),.3); background: rgba(var(--brand-rgb),.03); padding: .9rem 1rem 1rem; display: flex; flex-direction: column; }
+.adj-r .hd { font-size: 1rem; font-weight: 700; margin-bottom: .65rem; }
+.adj-r .hd span { font-family: var(--font-mono); font-size: .6rem; letter-spacing: .12em; color: var(--brand); font-weight: 700; margin-left: .5rem; }
+.adj-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .7rem; flex: 1; min-height: 0; }
+.adj-card { display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: .4rem; min-height: 0; }
+.adj-card .im { flex: 1; min-height: 0; position: relative; border-radius: 8px; overflow: hidden; background: var(--bg-alt); }
+.adj-card .im img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: top; cursor: zoom-in; }
+.adj-card .t { display: flex; align-items: baseline; gap: .45rem; margin: .4rem .2rem 0; font-size: .82rem; font-weight: 700; }
+.adj-card .t span { font-family: var(--font-mono); font-size: .56rem; letter-spacing: .1em; color: var(--text-muted); font-weight: 700; }
+.adj-card .d { font-size: .74rem; color: var(--text-secondary); margin: .1rem .2rem .15rem; line-height: 1.4; }
+.adj-h { height: clamp(22rem, 56vh, 40rem); }
+.moves { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1.2rem; }
+.mv3 { border-radius: 16px; border: 1.5px solid var(--border); background: var(--surface); padding: 1.1rem 1.2rem 1rem; display: flex; flex-direction: column; gap: .55rem; position: relative; }
+.mv3 + .mv3::before { content: "→"; position: absolute; left: -.85rem; top: 1.3rem; color: var(--text-muted); }
+.mv3 .n { font-family: var(--font-mono); font-size: .62rem; letter-spacing: .12em; font-weight: 700; color: var(--brand); }
+.mv3 h3 { margin: 0; font-size: 1.3rem; }
+.mv3 .q { font-size: .88rem; color: var(--text-secondary); line-height: 1.55; margin: 0; }
+.mv3 .row2 { display: grid; grid-template-columns: 3.4rem 1fr; gap: .3rem .5rem; font-size: .82rem; line-height: 1.5; margin-top: auto; padding-top: .6rem; border-top: 1px dashed var(--border); }
+.mv3 .row2 b { font-family: var(--font-mono); font-size: .58rem; letter-spacing: .1em; padding-top: .2rem; }
+.mv3 .row2 b.y { color: var(--brand); } .mv3 .row2 b.a { color: var(--purple); } .mv3 .row2 b.t { color: var(--green); }
+.mv3 .pg { font-family: var(--font-mono); font-size: .6rem; color: var(--text-muted); letter-spacing: .08em; }
+.twoway { display: grid; grid-template-columns: .85fr 1.15fr; gap: 1.2rem; margin-top: 1rem; align-items: start; }
+.tw { border-radius: 16px; padding: 1rem 1.15rem; display: flex; flex-direction: column; gap: .6rem; }
+.tw.weak { border: 1.5px dashed var(--border); background: var(--bg-alt); }
+.tw.strong { border: 1.5px solid rgba(var(--brand-rgb),.35); background: rgba(var(--brand-rgb),.03); }
+.tw .k { font-family: var(--font-mono); font-size: .6rem; letter-spacing: .12em; font-weight: 700; color: var(--text-muted); }
+.tw.strong .k { color: var(--brand); }
+.tw .say { font-size: 1.02rem; line-height: 1.75; color: var(--text); background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: .8rem 1rem; }
+.tw .say mark { background: rgba(var(--brand-rgb),.09); color: inherit; border-radius: 4px; padding: 0 .15rem; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+.tw .say .lb { display: inline-block; font-family: var(--font-mono); font-size: .56rem; letter-spacing: .08em; color: #fff; background: var(--brand); border-radius: 4px; padding: .02rem .3rem; margin-right: .3rem; vertical-align: 2px; }
+.tw ul { margin: 0; padding-left: 1.1rem; font-size: .84rem; line-height: 1.65; color: var(--text-secondary); }
+.tw.weak ul li::marker { color: var(--red); }
+.tw.strong ul li::marker { color: var(--green); }
+@media (min-height: 950px) { .mv3 .q { font-size: .98rem; } .mv3 .row2 { font-size: .9rem; } .tw .say { font-size: 1.12rem; } .tw ul { font-size: .92rem; } .adj-card .d { font-size: .8rem; } }
+@media (max-height: 800px) { .mv3 { padding: .8rem .9rem; gap: .35rem; } .mv3 h3 { font-size: 1.1rem; } .mv3 .q { font-size: .76rem; } .mv3 .row2 { font-size: .72rem; } .tw { padding: .7rem .85rem; gap: .4rem; } .tw .say { font-size: .86rem; line-height: 1.6; padding: .55rem .75rem; } .tw ul { font-size: .72rem; } .adj-say { font-size: .95rem; padding: .55rem .85rem; } .adj-card .d { font-size: .66rem; } .adj-card .t { font-size: .74rem; } }
+
+/* q-compare · live site tiles */
+.q-side.top .q-shots.web4 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
+.q-side.top .q-shots.web4 .s:first-child { grid-column: auto; }
+.q-shots .s.web { cursor: pointer; transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
+.q-shots .s.web img { cursor: pointer; }
+.q-shots .s.web:hover, .q-shots .s.web:focus-visible { transform: translateY(-2px); border-color: var(--brand); box-shadow: 0 12px 28px rgba(15,23,42,.14); outline: none; }
+.q-shots .s.web i em { font-style: normal; font-weight: 500; color: var(--text-secondary); margin-left: .4rem; }
+.q-shots .s.web b { position: absolute; right: .45rem; top: .45rem; font-size: .64rem; font-weight: 700; color: #fff; background: var(--brand); border-radius: 999px; padding: .15rem .55rem; opacity: .92; box-shadow: 0 2px 8px rgba(0,127,255,.35); }
+@media (max-height: 800px) { .q-shots .s.web i em { display: none; } }
+
+/* ================= One More Thing (omt-*) ================= */
+.omt-big { font-size: clamp(3.6rem, 9vw, 7.5rem); font-weight: 800; letter-spacing: -.035em; line-height: 1.02; margin: 0; color: var(--text); }
+.omt-nums { display: flex; gap: 2.4rem; justify-content: center; margin-top: 2.4rem; }
+.omt-nums div { text-align: center; }
+.omt-nums b { display: block; font-family: var(--font-mono); font-size: clamp(1.8rem, 3.2vw, 2.7rem); font-weight: 800; letter-spacing: -.03em; color: var(--text); line-height: 1; }
+.omt-nums b.hl { color: var(--brand); }
+.omt-nums span { display: block; font-size: .8rem; color: var(--text-muted); margin-top: .45rem; }
+.omt-rows { display: flex; flex-direction: column; gap: .6rem; margin-top: 1.1rem; }
+.omt-row { display: grid; grid-template-columns: 2.2rem 1.05fr 1.2fr 1fr; gap: 1rem; align-items: center; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: .8rem 1.1rem; }
+.omt-row .n { font-family: var(--font-mono); font-size: 1.3rem; font-weight: 800; color: var(--red); }
+.omt-row h4 { margin: 0; font-size: 1.02rem; line-height: 1.4; }
+.omt-row .say { font-size: .9rem; color: var(--text); background: var(--bg-alt); border-radius: 10px; padding: .45rem .75rem; line-height: 1.5; }
+.omt-row .say::before { content: "你说 "; font-family: var(--font-mono); font-size: .58rem; letter-spacing: .1em; color: var(--text-muted); font-weight: 700; }
+.omt-row .got { font-size: .86rem; color: var(--text-secondary); line-height: 1.5; }
+.omt-row .got::before { content: "结果 "; font-family: var(--font-mono); font-size: .58rem; letter-spacing: .1em; color: var(--red); font-weight: 700; }
+.omt-row .hd { font-family: var(--font-mono); font-size: .58rem; letter-spacing: .12em; font-weight: 700; color: var(--text-muted); }
+.omt-sol { display: grid; grid-template-columns: repeat(5, 1fr); gap: .75rem; margin-top: 1.1rem; }
+.omt-s { border-radius: 14px; border: 1.5px solid rgba(var(--brand-rgb),.28); background: var(--surface); padding: .9rem .95rem; display: flex; flex-direction: column; gap: .5rem; min-width: 0; }
+.omt-s .n { font-family: var(--font-mono); font-size: .6rem; letter-spacing: .12em; font-weight: 700; color: var(--brand); }
+.omt-s h4 { margin: 0; font-size: 1.05rem; line-height: 1.35; }
+.omt-s p { margin: 0; font-size: .8rem; line-height: 1.55; color: var(--text-secondary); }
+.omt-s .ex { margin-top: auto; font-size: .76rem; line-height: 1.55; color: var(--text); background: rgba(var(--brand-rgb),.06); border-radius: 8px; padding: .45rem .55rem; }
+.omt-s .ex b { display: block; font-family: var(--font-mono); font-size: .56rem; letter-spacing: .1em; color: var(--brand); margin-bottom: .15rem; }
+.omt-s .fx { font-family: var(--font-mono); font-size: .58rem; color: var(--red); letter-spacing: .06em; }
+.omt-ref { display: grid; grid-template-columns: .8fr 1.5fr; gap: 1.2rem; margin-top: 1rem; align-items: stretch; }
+.omt-tl { border-radius: 16px; border: 1px solid var(--border); background: var(--surface); padding: .95rem 1.1rem; }
+.omt-tl .hd { font-size: .95rem; font-weight: 700; margin-bottom: .55rem; }
+.omt-tl .hd span { font-family: var(--font-mono); font-size: .58rem; letter-spacing: .1em; color: var(--text-muted); margin-left: .4rem; }
+.omt-tl ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .35rem; }
+.omt-tl li { display: grid; grid-template-columns: 3.1rem 1fr; gap: .6rem; font-size: .84rem; line-height: 1.45; padding: .32rem 0; border-bottom: 1px dashed var(--border-light); }
+.omt-tl li:last-child { border-bottom: 0; }
+.omt-tl li i { font-style: normal; font-family: var(--font-mono); font-size: .66rem; color: var(--text-muted); padding-top: .12rem; }
+.omt-tl li.hl { color: var(--brand); font-weight: 650; }
+.omt-tl .ft { margin-top: .6rem; font-size: .74rem; color: var(--text-muted); line-height: 1.5; }
+.omt-flow { display: grid; grid-template-rows: auto auto auto; gap: .55rem; }
+.omt-step { border-radius: 14px; padding: .75rem 1rem; border: 1px solid var(--border); background: var(--surface); position: relative; }
+.omt-step .k { font-family: var(--font-mono); font-size: .58rem; letter-spacing: .12em; font-weight: 700; margin-bottom: .3rem; }
+.omt-step.q { border-color: rgba(var(--amber-rgb),.45); background: rgba(var(--amber-rgb),.05); } .omt-step.q .k { color: var(--amber); }
+.omt-step.q p { margin: 0; font-size: .9rem; line-height: 1.7; font-style: italic; color: var(--text); }
+.omt-step.l { border-color: rgba(var(--purple-rgb),.35); background: rgba(var(--purple-rgb),.04); } .omt-step.l .k { color: var(--purple); }
+.omt-step.v { border-color: rgba(var(--green-rgb),.4); background: rgba(var(--green-rgb),.05); } .omt-step.v .k { color: var(--green); }
+.omt-step ul { margin: 0; padding-left: 1.1rem; font-size: .84rem; line-height: 1.6; }
+.omt-step p { margin: 0; font-size: .86rem; line-height: 1.6; }
+.omt-step + .omt-step::before { content: "↓"; position: absolute; top: -.62rem; left: 1.4rem; font-size: .8rem; color: var(--text-muted); background: var(--bg); padding: 0 .2rem; line-height: 1; }
+.omt-tpl { display: grid; grid-template-columns: 1.1fr 1fr; gap: 1.1rem; margin-top: 1rem; align-items: stretch; }
+.omt-tpl .prompt { margin: 0; display: flex; flex-direction: column; }
+.omt-tpl .p-body { font-size: .76rem; line-height: 1.62; white-space: pre-line; flex: 1; }
+.omt-tpl .p-body b { color: var(--text); }
+@media (min-height: 950px) { .omt-row h4 { font-size: 1.12rem; } .omt-row .say, .omt-row .got { font-size: .96rem; } .omt-s p { font-size: .88rem; } .omt-s .ex { font-size: .84rem; } .omt-tl li { font-size: .92rem; } .omt-step.q p, .omt-step ul, .omt-step p { font-size: .96rem; } .omt-tpl .p-body { font-size: .84rem; } }
+@media (max-height: 800px) { .omt-row { padding: .5rem .8rem; gap: .7rem; } .omt-row h4 { font-size: .86rem; } .omt-row .say, .omt-row .got { font-size: .74rem; padding: .3rem .55rem; } .omt-s { padding: .65rem .7rem; gap: .35rem; } .omt-s h4 { font-size: .9rem; } .omt-s p { font-size: .68rem; } .omt-s .ex { font-size: .66rem; } .omt-tl { padding: .7rem .85rem; } .omt-tl li { font-size: .72rem; padding: .18rem 0; } .omt-step { padding: .5rem .8rem; } .omt-step.q p, .omt-step ul, .omt-step p { font-size: .74rem; line-height: 1.5; } .omt-tpl .p-body { font-size: .64rem; line-height: 1.5; } .omt-nums { margin-top: 1.6rem; } }
+
+/* ================= Part 3 v2 · design-quality loop (l3-*) ================= */
+.l3-why { display: flex; flex-direction: column; gap: .55rem; margin-top: 1.1rem; }
+.l3-why .r { display: grid; grid-template-columns: 2.2rem 1fr 1fr 1.15fr; gap: 1rem; align-items: center; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: .75rem 1.1rem; }
+.l3-why .r .n { font-family: var(--font-mono); font-size: 1.25rem; font-weight: 800; color: var(--red); }
+.l3-why .r h4 { margin: 0; font-size: 1rem; line-height: 1.45; }
+.l3-why .r .c { font-size: .84rem; line-height: 1.5; color: var(--text-secondary); }
+.l3-why .r .f { font-size: .84rem; line-height: 1.5; color: var(--text); background: rgba(var(--green-rgb),.07); border-radius: 10px; padding: .45rem .7rem; }
+.l3-why .hd { display: grid; grid-template-columns: 2.2rem 1fr 1fr 1.15fr; gap: 1rem; padding: 0 1.1rem; font-family: var(--font-mono); font-size: .58rem; letter-spacing: .12em; font-weight: 700; color: var(--text-muted); }
+.l3-why .hd span:last-child { color: var(--green); }
+.l3-st { display: grid; grid-template-columns: repeat(6, 1fr); gap: .65rem; margin-top: 1rem; }
+.l3-s { border-radius: 14px; border: 1.5px solid var(--border); background: var(--surface); padding: .8rem .8rem .75rem; display: flex; flex-direction: column; gap: .45rem; position: relative; min-width: 0; }
+.l3-s + .l3-s::before { content: "→"; position: absolute; left: -.6rem; top: .95rem; font-size: .78rem; color: var(--text-muted); }
+.l3-s .n { font-family: var(--font-mono); font-size: .56rem; letter-spacing: .1em; font-weight: 700; color: var(--text-muted); }
+.l3-s h4 { margin: 0; font-size: 1.04rem; line-height: 1.3; }
+.l3-s .q { font-size: .76rem; line-height: 1.5; color: var(--text); background: rgba(var(--brand-rgb),.06); border-radius: 8px; padding: .35rem .5rem; }
+.l3-s .o { font-size: .74rem; line-height: 1.5; color: var(--text-secondary); margin-top: auto; }
+.l3-s .o b { display: block; font-family: var(--font-mono); font-size: .54rem; letter-spacing: .1em; color: var(--text-muted); }
+.l3-s.b { border-color: rgba(var(--brand-rgb),.35); } .l3-s.b .n { color: var(--brand); }
+.l3-s.p { border-color: rgba(var(--purple-rgb),.35); } .l3-s.p .n { color: var(--purple); }
+.l3-s.r { border-color: rgba(var(--red-rgb),.35); } .l3-s.r .n { color: var(--red); }
+.l3-s.a { border-color: rgba(var(--amber-rgb),.45); } .l3-s.a .n { color: var(--amber); }
+.l3-s.g { border-color: rgba(var(--green-rgb),.4); } .l3-s.g .n { color: var(--green); }
+.l3-back { margin-top: .9rem; border-radius: 14px; border: 1.5px dashed rgba(var(--amber-rgb),.5); background: rgba(var(--amber-rgb),.04); padding: .75rem 1rem; }
+.l3-back .hd { font-size: .9rem; font-weight: 700; margin-bottom: .45rem; }
+.l3-back .hd span { font-family: var(--font-mono); font-size: .58rem; letter-spacing: .1em; color: var(--amber); margin-left: .4rem; }
+.l3-back .g { display: grid; grid-template-columns: repeat(5, 1fr); gap: .6rem; }
+.l3-back .g div { font-size: .76rem; line-height: 1.5; color: var(--text-secondary); background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: .45rem .6rem; }
+.l3-back .g b { display: block; font-size: .84rem; color: var(--text); margin-bottom: .1rem; }
+.l3-back .g i { font-style: normal; font-family: var(--font-mono); font-size: .6rem; color: var(--amber); font-weight: 700; }
+.l3-team { display: grid; grid-template-columns: 1.05fr 1fr; gap: 1.2rem; margin-top: 1rem; align-items: stretch; }
+.l3-roles { display: flex; flex-direction: column; gap: .6rem; }
+.l3-role { display: grid; grid-template-columns: 7.2rem 1fr; gap: .9rem; align-items: start; border-radius: 14px; border: 1.5px solid var(--border); background: var(--surface); padding: .8rem 1rem; }
+.l3-role .t b { display: block; font-size: 1.05rem; }
+.l3-role .t span { display: block; font-family: var(--font-mono); font-size: .56rem; letter-spacing: .08em; color: var(--text-muted); margin-top: .15rem; }
+.l3-role p { margin: 0; font-size: .82rem; line-height: 1.55; color: var(--text); }
+.l3-role .w { display: block; font-size: .74rem; color: var(--text-secondary); margin-top: .3rem; }
+.l3-role .w::before { content: "只写 "; font-family: var(--font-mono); font-size: .56rem; letter-spacing: .08em; color: var(--brand); font-weight: 700; }
+.l3-role.b { border-color: rgba(var(--brand-rgb),.35); } .l3-role.p { border-color: rgba(var(--purple-rgb),.35); } .l3-role.r { border-color: rgba(var(--red-rgb),.35); }
+.l3-pack { border-radius: 16px; border: 1px solid var(--border); background: var(--surface); padding: .9rem 1.05rem; display: flex; flex-direction: column; gap: .55rem; }
+.l3-pack .hd { font-size: .95rem; font-weight: 700; }
+.l3-pack .fl { display: grid; grid-template-columns: 1fr 1fr; gap: .45rem; }
+.l3-pack .fl div { border-radius: 10px; background: var(--bg-alt); padding: .45rem .6rem; font-size: .74rem; line-height: 1.45; color: var(--text-secondary); }
+.l3-pack .fl code { display: block; font-family: var(--font-mono); font-size: .68rem; color: var(--brand); font-weight: 700; margin-bottom: .1rem; }
+.l3-pack .ho { font-size: .76rem; line-height: 1.55; color: var(--text); border-top: 1px dashed var(--border); padding-top: .5rem; }
+.l3-pack .ho b { font-family: var(--font-mono); font-size: .56rem; letter-spacing: .1em; color: var(--purple); margin-right: .35rem; }
+.l3-ev { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-top: 1rem; align-items: stretch; }
+.l3-col { border-radius: 16px; border: 1.5px solid var(--border); background: var(--surface); padding: .9rem 1.05rem; display: flex; flex-direction: column; gap: .5rem; }
+.l3-col .k { font-family: var(--font-mono); font-size: .6rem; letter-spacing: .12em; font-weight: 700; }
+.l3-col h3 { margin: 0; font-size: 1.1rem; }
+.l3-col ul { margin: 0; padding-left: 1.05rem; font-size: .82rem; line-height: 1.6; color: var(--text); }
+.l3-col ul li { margin: .12rem 0; }
+.l3-col .sv { display: grid; grid-template-columns: 2.4rem 1fr; gap: .4rem .6rem; font-size: .8rem; line-height: 1.5; align-items: baseline; }
+.l3-col .sv span { font-family: var(--font-mono); font-size: .66rem; font-weight: 700; color: #fff; border-radius: 5px; text-align: center; padding: .08rem 0; }
+.l3-col .ft { margin-top: auto; font-size: .74rem; line-height: 1.5; color: var(--text-secondary); border-top: 1px dashed var(--border); padding-top: .45rem; }
+.l3-col.r { border-color: rgba(var(--red-rgb),.3); } .l3-col.r .k { color: var(--red); }
+.l3-col.a { border-color: rgba(var(--amber-rgb),.45); } .l3-col.a .k { color: var(--amber); }
+.l3-col.g { border-color: rgba(var(--green-rgb),.4); } .l3-col.g .k { color: var(--green); }
+.cd-demo .goto .open-demo { display: inline-flex; align-items: center; gap: .4rem; font-family: var(--font-body); font-size: .95rem; font-weight: 700; letter-spacing: 0; color: #fff; background: var(--brand); border: 0; border-radius: 999px; padding: .65rem 1.3rem; cursor: pointer; box-shadow: 0 8px 22px rgba(0,127,255,.28); margin-right: .8rem; }
+.cd-demo .goto .open-demo:hover { background: #066BD2; }
+@media (min-height: 950px) { .l3-why .r h4 { font-size: 1.1rem; } .l3-why .r .c, .l3-why .r .f { font-size: .92rem; } .l3-s .q, .l3-s .o { font-size: .84rem; } .l3-back .g div { font-size: .84rem; } .l3-role p { font-size: .9rem; } .l3-pack .fl div { font-size: .82rem; } .l3-col ul, .l3-col .sv { font-size: .9rem; } }
+@media (max-height: 800px) { .l3-why .r { padding: .45rem .8rem; gap: .7rem; } .l3-why .r h4 { font-size: .84rem; } .l3-why .r .c, .l3-why .r .f { font-size: .7rem; } .l3-s { padding: .55rem .55rem; gap: .3rem; } .l3-s h4 { font-size: .86rem; } .l3-s .q { font-size: .64rem; } .l3-s .o { font-size: .62rem; } .l3-back { padding: .5rem .75rem; margin-top: .6rem; } .l3-back .g div { font-size: .62rem; padding: .3rem .45rem; } .l3-back .g b { font-size: .7rem; } .l3-role { padding: .5rem .75rem; } .l3-role p { font-size: .7rem; } .l3-role .w { font-size: .64rem; } .l3-pack .fl div { font-size: .62rem; padding: .3rem .45rem; } .l3-pack .ho { font-size: .64rem; } .l3-col { padding: .65rem .8rem; gap: .35rem; } .l3-col h3 { font-size: .95rem; } .l3-col ul, .l3-col .sv { font-size: .68rem; line-height: 1.5; } .l3-col .ft { font-size: .62rem; } }
+
 </style>
 </head>
 <body>
@@ -828,22 +1113,23 @@ html { font-size: clamp(16px, min(1.04vw, 1.85vh), 30px); }
 <div class="deck">
 
 <!-- ═══ CLAUDE DESIGN · DIVIDER ═══ -->
-<section class="slide center" data-section="cd-divider" data-thumb="divider" data-thumb-color="purple" data-label="Claude Design · 用它做设计探索"
-         data-speaker-notes="【约 20 秒】这一段是独立的一块，讲我自己怎么用 Claude Design 做设计探索。三个项目都是真实做过、已经交付的，用法各不一样。每个项目我先用一页说清楚：用了什么工具、给了什么 Prompt、产出了什么、要注意什么；然后翻到大字 Demo 那一页，我切出去现场操作。每段演示回来，再用一页回顾：同一件事，常见写法和更专业的写法差在哪里，以及在 Claude Design 里怎么用得更顺。三个都讲完，用五页收尾：怎么选用法、七个做法、它做不好什么、起手 Prompt，最后一页是学习链接。时间提醒：每个项目约 10 分钟（介绍 1.5、演示 6、回顾 2），整段约 35 分钟。">
+<section class="slide center" data-section="cd-divider" data-thumb="divider" data-thumb-color="purple" data-label="Part 2 · 深入细节：用 Claude Design 做设计探索"
+         data-speaker-notes="【约 20 秒】这是第二个问题：你没有深入到细节里。这一段讲我自己怎么用 Claude Design 做设计探索：给足上下文，一边看一边批注，一边改。三个项目都是真实做过、已经交付的，用法各不一样。每个项目我先用一页说清楚：用了什么工具、给了什么 Prompt、产出了什么、要注意什么；然后翻到大字 Demo 那一页，我切出去现场操作。每段演示回来，再用一页回顾：同一件事，常见写法和更专业的写法差在哪里，以及在 Claude Design 里怎么用得更顺。三个都讲完，用五页收尾：怎么选用法、七个做法、它做不好什么、起手 Prompt，最后一页是学习链接。时间提醒：整段约 30 分钟，每个项目约 9 分钟（介绍 1、演示 6、回顾 2），收尾五页约 3 分钟，每页只讲结论句。超时的话，收尾只讲第一页（怎么选）和最后一页（学习链接）。">
     <div class="cover-bg">
         <div class="orb" style="width:560px;height:560px;background:var(--purple);top:-14%;left:12%;"></div>
         <svg class="grid-tex" width="100%" height="100%"><defs><pattern id="gridCD" width="60" height="60" patternUnits="userSpaceOnUse"><path d="M 60 0 L 0 0 0 60" fill="none" stroke="#0F172A" stroke-width="0.5"/></pattern></defs><rect width="100%" height="100%" fill="url(#gridCD)"/></svg>
     </div>
     <div class="stage">
-        <div class="label label-purple" style="margin-bottom:1.5rem;">CLAUDE DESIGN · 3 REAL PROJECTS</div>
-        <h1>用 <span class="grad-text">Claude Design</span><br>做设计探索</h1>
-        <p class="subtitle" style="margin:0 auto;">三个真实项目，对应三种用法。<br>每个项目先讲我是怎么做的，再现场演示，最后回顾 Prompt 怎么写得更好。</p>
+        <div class="mono" style="font-size:clamp(4.5rem,13vw,10rem);font-weight:800;line-height:1;letter-spacing:-0.05em;color:var(--border-light);margin-bottom:.6rem;">02</div>
+        <div class="label label-purple" style="margin-bottom:1.5rem;">PART 02 · CLAUDE DESIGN · 3 REAL PROJECTS</div>
+        <h1>深入细节：用 <span class="grad-text">Claude Design</span><br>做设计探索</h1>
+        <p class="subtitle" style="margin:0 auto;">给足上下文，随时批注，随时修改。三个真实项目，对应三种用法：<br>每个先讲我是怎么做的，再现场演示，最后回顾 Prompt 怎么写得更好。</p>
         <div class="mono muted" style="margin-top:2.2rem;font-size:.82rem;letter-spacing:.16em;">3 PROJECTS · 3 LIVE DEMOS · 3 RECAPS · LINKS</div>
     </div>
 </section>
 
 <!-- ═══ CLAUDE DESIGN · OVERVIEW ═══ -->
-<section class="slide" data-section="cd-overview" data-thumb="grid3" data-thumb-color="purple" data-group="Claude Design · 三个项目" data-label="三个项目，三种用法"
+<section class="slide" data-section="cd-overview" data-thumb="grid3" data-thumb-color="purple" data-group="Part 2 · 深入细节 · Claude Design" data-label="三个项目，三种用法"
          data-speaker-notes="【约 90 秒】这一页是这一段的地图。三张卡的区别在第二行那条路线：Claude Design 在整个流程里站在哪个位置。第一个项目，我在 Cowork 里对话，直接调用 /design，产出就是 Claude Design 的画布，从头到尾我一个人主导。第二个项目，设计和工程两条线同时跑，我在 Claude Design 的项目里做前端，最后把整个项目导出来发给工程师，他让自己的 Claude 读懂以后，用 Claude Code 接到后端上。第三个项目反过来，我本来在 Claude Code 里改一个很大的代码库，做到一半发现方向本身没想清楚，就切到 Claude Design 去探索，定下来以后用 Send to Claude Code 送回 repo 实现。每张卡最后一行写的是它适合的场景，大家可以先想一下自己的项目更像哪一种。">
     <div class="stage">
         <div class="kicker purple">OVERVIEW</div>
@@ -885,16 +1171,16 @@ html { font-size: clamp(16px, min(1.04vw, 1.85vh), 30px); }
             </div>
         </div>
         <div style="display:flex;gap:.4rem;margin-top:1.3rem;">
-            <div style="flex:2;border:1.5px solid rgba(var(--brand-rgb),.35);background:rgba(var(--brand-rgb),.06);border-radius:10px;padding:.65rem .9rem;"><div class="mono" style="font-size:.6rem;letter-spacing:.12em;color:var(--brand);font-weight:700;">≈ 10 MIN</div><p style="font-size:.88rem;margin:.2rem 0 0;">项目 1 · 介绍、Demo、回顾</p></div>
-            <div style="flex:2;border:1.5px solid rgba(var(--purple-rgb),.35);background:rgba(var(--purple-rgb),.06);border-radius:10px;padding:.65rem .9rem;"><div class="mono" style="font-size:.6rem;letter-spacing:.12em;color:var(--purple);font-weight:700;">≈ 10 MIN</div><p style="font-size:.88rem;margin:.2rem 0 0;">项目 2 · 介绍、Demo、回顾</p></div>
-            <div style="flex:2;border:1.5px solid rgba(var(--green-rgb),.35);background:rgba(var(--green-rgb),.06);border-radius:10px;padding:.65rem .9rem;"><div class="mono" style="font-size:.6rem;letter-spacing:.12em;color:var(--green);font-weight:700;">≈ 10 MIN</div><p style="font-size:.88rem;margin:.2rem 0 0;">项目 3 · 介绍、Demo、回顾</p></div>
-            <div style="flex:1.4;border:1.5px solid var(--border);background:var(--surface);border-radius:10px;padding:.65rem .9rem;"><div class="mono" style="font-size:.6rem;letter-spacing:.12em;color:var(--text-muted);font-weight:700;">≈ 6 MIN</div><p style="font-size:.88rem;margin:.2rem 0 0;">总结与学习链接</p></div>
+            <div style="flex:2;border:1.5px solid rgba(var(--brand-rgb),.35);background:rgba(var(--brand-rgb),.06);border-radius:10px;padding:.65rem .9rem;"><div class="mono" style="font-size:.6rem;letter-spacing:.12em;color:var(--brand);font-weight:700;">≈ 9 MIN</div><p style="font-size:.88rem;margin:.2rem 0 0;">项目 1 · 介绍、Demo、回顾</p></div>
+            <div style="flex:2;border:1.5px solid rgba(var(--purple-rgb),.35);background:rgba(var(--purple-rgb),.06);border-radius:10px;padding:.65rem .9rem;"><div class="mono" style="font-size:.6rem;letter-spacing:.12em;color:var(--purple);font-weight:700;">≈ 9 MIN</div><p style="font-size:.88rem;margin:.2rem 0 0;">项目 2 · 介绍、Demo、回顾</p></div>
+            <div style="flex:2;border:1.5px solid rgba(var(--green-rgb),.35);background:rgba(var(--green-rgb),.06);border-radius:10px;padding:.65rem .9rem;"><div class="mono" style="font-size:.6rem;letter-spacing:.12em;color:var(--green);font-weight:700;">≈ 9 MIN</div><p style="font-size:.88rem;margin:.2rem 0 0;">项目 3 · 介绍、Demo、回顾</p></div>
+            <div style="flex:1.4;border:1.5px solid var(--border);background:var(--surface);border-radius:10px;padding:.65rem .9rem;"><div class="mono" style="font-size:.6rem;letter-spacing:.12em;color:var(--text-muted);font-weight:700;">≈ 3 MIN</div><p style="font-size:.88rem;margin:.2rem 0 0;">总结与学习链接</p></div>
         </div>
     </div>
 </section>
 
 <!-- ═══ CLAUDE DESIGN · P1 我是主理人 ═══ -->
-<section class="slide" data-section="cd-p1" data-thumb="split" data-thumb-color="blue" data-group="Claude Design · 三个项目" data-label="项目 1 · 我是主理人官网：在 Cowork 里直接产出画布"
+<section class="slide" data-section="cd-p1" data-thumb="split" data-thumb-color="blue" data-group="Part 2 · 深入细节 · Claude Design" data-label="项目 1 · 我是主理人官网：在 Cowork 里直接产出画布"
          data-speaker-notes="【约 90 秒】先让大家看左边上下两张图三秒：上面是 Mkt 原来的站，下面是改完的。然后说这一页最重要的一句：右图看起来还不错，原因不是模型画得好，而是生成之前，我已经把这个站要讲什么、按什么规则画、怎么算合格，全都写成了文字。工具只念第一条：在 Cowork 里调用 /design，产出直接就是 Claude Design 的画布，不用另外打开什么。Prompt 这一格说清三层：22 KB 的设计 Brief 是我自己写的，花了 40 分钟，是整个项目的杠杆；委派给 agent 的指令只有 300 字，核心就是三句：先加载 design skill、完整读 Brief、截图自查再发布；给 Mkt 那边 AI 的改造 Prompt 是第三层。产出念三个数：三个画板、一份 240 行的 DESIGN.md、十条验收。注意事项里挑第一条讲：画布文件双击打不开，发给同事之前一定要转成独立 HTML。用时：两个工作日约 8 小时，我自己动手 4 小时。讲完直接翻到 Demo。">
     <div class="stage">
         <div class="kicker">PROJECT 01 · COWORK × /DESIGN</div>
@@ -927,7 +1213,7 @@ html { font-size: clamp(16px, min(1.04vw, 1.85vh), 30px); }
 </section>
 
 <!-- ═══ CD-P1-THINK ═══ -->
-<section class="slide cd-think" data-section="cd-p1-think" data-thumb="steps" data-thumb-color="blue" data-group="Claude Design · 三个项目" data-label="项目 1 · 我的 Prompt 思路"
+<section class="slide cd-think" data-section="cd-p1-think" data-thumb="steps" data-thumb-color="blue" data-group="Part 2 · 深入细节 · Claude Design" data-label="项目 1 · 我的 Prompt 思路"
          data-speaker-notes="【约 90 秒】这一页讲我在这个项目里是怎么想的，Demo 里大家会看到结果，这里先看过程。先说结论：我在三个角色之间切换，导演、体系作者、编辑，顺序不能反。大家最容易犯的错是一上来就当编辑：让 AI 先生成，然后它生成什么你改什么，一直被输出牵着走。逐行讲：前两步是导演，花了一个小时把 deck、现站、设计系统三样事实拿齐，然后把问题分成功能和视觉两层；第三步是体系作者，这一步最值钱，把「轻、透、有呼吸感」这种感觉写成可以检查的规则；第四步委派只说三句话，因为该说的都在 Brief 里了；最后一步才是编辑，只看截图。标着「待补原话」的三行，是 Cowork 对话里的原始 Prompt，Wilson 会补上截图。">
     <div class="stage">
         <div class="kicker ">HOW I PROMPTED · PROJECT 01</div>
@@ -938,7 +1224,7 @@ html { font-size: clamp(16px, min(1.04vw, 1.85vh), 30px); }
 </section>
 
 <!-- ═══ CD-P1-DEMO ═══ -->
-<section class="slide center cd-demo" data-section="cd-p1-demo" data-thumb="divider" data-thumb-color="blue" data-group="Claude Design · 三个项目" data-label="项目 1 · Demo"
+<section class="slide center cd-demo" data-section="cd-p1-demo" data-thumb="divider" data-thumb-color="blue" data-group="Part 2 · 深入细节 · Claude Design" data-label="项目 1 · Demo"
          data-speaker-notes="【约 6 分钟，现场演示】建议顺序：①打开 Cowork 里那次对话，往上翻到 BRIEF.md，停在「禁止」清单和「信息架构十一段顺序固定」两处，念一句就走；再找到 agent 的回报，指出它自己标的偏差：「Main 高度 6400 会裁掉 FAQ，改成 7600」。这就是让它自查的价值。②切到 Claude Design 画布：先缩小看三个画板并排；点一个标题当场改一个字；切一下顶部的强调色 Tweak，说明只有贯穿全站的变量才做成 Tweak，文案写死在页面里。③打开 handoff 文件夹：index.html 双击就能开；DESIGN.md 翻到禁用清单；AI_PROMPT_改造现站.md 翻到十条验收。收尾一句：同一份设计，给设计师的是画布，给工程的是 HTML，给对方 AI 的是 Prompt。网络不行时，回到上一页，用两张截图讲完。">
     <div class="cover-bg">
         <div class="orb" style="width:520px;height:520px;background:var(--brand);top:-16%;left:8%;"></div>
@@ -954,7 +1240,7 @@ html { font-size: clamp(16px, min(1.04vw, 1.85vh), 30px); }
 </section>
 
 <!-- ═══ CD-P1-RECAP ═══ -->
-<section class="slide cd-recap" data-section="cd-p1-recap" data-thumb="split" data-thumb-color="blue" data-group="Claude Design · 三个项目" data-label="项目 1 · 回顾：把要求写成 Brief"
+<section class="slide cd-recap" data-section="cd-p1-recap" data-thumb="split" data-thumb-color="blue" data-group="Part 2 · 深入细节 · Claude Design" data-label="项目 1 · 回顾：把要求写成 Brief"
          data-speaker-notes="【约 2 分钟】演示回来，先用一句话收住：刚才大家看到的画布之所以能一次就接近成品，是因为生成之前我已经把要求写全了。然后指左上的常见写法：这是大多数人第一次会写的 Prompt，它的问题不是短，而是 AI 只能猜，猜风格、猜内容、猜结构，猜出来的就是那种谁都能做的「科技感」页面。再指下面的 Brief 骨架，一行一行对应右上角的五样东西，不用全念，只念「不可妥协」那一行，告诉大家：否定句清单 AI 遵守得最好。右下是 Claude Design 里的操作技巧，前两条来自官方帮助中心：大改用对话、局部用评论、微调直接动手；反馈要具体到能执行。第三条是我的习惯：换方向前先存档，不然回不去。">
     <div class="stage">
         <div class="kicker ">RECAP 01 · 从零出画布</div>
@@ -974,7 +1260,7 @@ html { font-size: clamp(16px, min(1.04vw, 1.85vh), 30px); }
 </section>
 
 <!-- ═══ CLAUDE DESIGN · P2 世界杯 ═══ -->
-<section class="slide" data-section="cd-p2" data-thumb="split" data-thumb-color="purple" data-group="Claude Design · 三个项目" data-label="项目 2 · 世界杯 HyperAgent：设计导出，交给工程师的 AI"
+<section class="slide" data-section="cd-p2" data-thumb="split" data-thumb-color="purple" data-group="Part 2 · 深入细节 · Claude Design" data-label="项目 2 · 世界杯 HyperAgent：设计导出，交给工程师的 AI"
          data-speaker-notes="【约 90 秒】背景一句话：两个人一周上线，Ben 一边带娃一边用 vibe coding 跑通了 Polymarket 接入、钱包登录和一版黑色界面，就是左上那张；我同时在推 Cross-chain Send，抽空在 Claude Design 里做前端，就是左下那张。工具这一格要讲清交接：周四晚上，我把 Claude Design 项目整个导出来发给 Ben，他先让自己的 Claude 把文件读懂，再用 Claude Code 把前端接到他的后端上，当晚在 Vercel 上线。Prompt 这一格讲 Primer：我没有一屏一屏地描述风格，而是写了一份 Primer 贴在每次对话的最前面，后面才是这一屏的需求。Primer 迭代了三层：v2 定产品、参照和双主题 token，Supplement 补细节，Visual Refresh 把主色换成 Azure、加上玻璃材质。注意事项里重点讲第一条：原型里 mock 数据的字段名，我直接写进了接口文档，工程照着用，UI 一行都不用改。">
     <div class="stage">
         <div class="kicker purple">PROJECT 02 · DESIGN → ENGINEERING HANDOFF</div>
@@ -1007,7 +1293,7 @@ html { font-size: clamp(16px, min(1.04vw, 1.85vh), 30px); }
 </section>
 
 <!-- ═══ CD-P2-THINK ═══ -->
-<section class="slide cd-think" data-section="cd-p2-think" data-thumb="steps" data-thumb-color="purple" data-group="Claude Design · 三个项目" data-label="项目 2 · 我的 Prompt 思路"
+<section class="slide cd-think" data-section="cd-p2-think" data-thumb="steps" data-thumb-color="purple" data-group="Part 2 · 深入细节 · Claude Design" data-label="项目 2 · 我的 Prompt 思路"
          data-speaker-notes="【约 2 分钟】这一页最想让大家带走的是第一句：我几乎不直接写 Prompt。我先在 Cowork 里用大白话把想法说清楚，让它理解项目，再让它把我的话翻译成给 Claude Design 的 Prompt。逐行讲：第一行，先让它理解信息架构和用户从哪里来，这一步没有任何设计要求；第二行，我用中英混杂的大白话讲了两种用户进来的路径，最后一句是关键：「你需要把这些需求转化成为新增加的 prompt」；第三行，看到设计里紫色太多，我没有去改画面，而是让它写一份新的视觉规则，叠在原来的 Primer 上；第四行是 Claude Design 侧栏里的原话，Wilson 会补截图；最后一行是 Weavy 生图：先跑一张，满意了，就把这一张的风格锁成所有姿态共用的规则。这个项目我还否定过它一次：它给剪影写的 Prompt 连国旗颜色都定死了，我说细节太多、扩展性太差，只要讲清楚图片放哪、翻页怎么动。">
     <div class="stage">
         <div class="kicker purple">HOW I PROMPTED · PROJECT 02</div>
@@ -1018,7 +1304,7 @@ html { font-size: clamp(16px, min(1.04vw, 1.85vh), 30px); }
 </section>
 
 <!-- ═══ CD-P2-DEMO ═══ -->
-<section class="slide center cd-demo" data-section="cd-p2-demo" data-thumb="divider" data-thumb-color="purple" data-group="Claude Design · 三个项目" data-label="项目 2 · Demo"
+<section class="slide center cd-demo" data-section="cd-p2-demo" data-thumb="divider" data-thumb-color="purple" data-group="Part 2 · 深入细节 · Claude Design" data-label="项目 2 · Demo"
          data-speaker-notes="【约 6 分钟，现场演示】建议顺序：①打开 Claude Design 项目「world cup win with imToken」，先打开一屏，翻到对话开头给大家看 Primer 是整段贴进去的；再切一下浅色和深色、手机和桌面。②打开 Audit &amp; Plan：先看顶部的 3 / 6 / 6 / 3 四个数；念 P0 第 2 条（切换主题后文字颜色残留，截图里看不出来，它实际点过才发现）；再念最后的待决问题：Primer 和绑定的设计系统打架，它推荐 A，但让我拍板。③打开 Data Interface Spec 第 3 节，指「原型字段 → 正式接口」那张表：前端今天绑定的字段名，就是后端要给的字段名。④最后打开导出的文件夹，双击 Offline.html。收尾一句：导出不是把文件扔过去，而是连同读懂它需要的说明一起交出去。网络不行时，直接双击本地的 Offline.html 演示。">
     <div class="cover-bg">
         <div class="orb" style="width:520px;height:520px;background:var(--brand);top:-16%;left:8%;"></div>
@@ -1034,7 +1320,7 @@ html { font-size: clamp(16px, min(1.04vw, 1.85vh), 30px); }
 </section>
 
 <!-- ═══ CD-P2-RECAP ═══ -->
-<section class="slide cd-recap" data-section="cd-p2-recap" data-thumb="split" data-thumb-color="purple" data-group="Claude Design · 三个项目" data-label="项目 2 · 回顾：用 Primer 定规则，交接前先自审"
+<section class="slide cd-recap" data-section="cd-p2-recap" data-thumb="split" data-thumb-color="purple" data-group="Part 2 · 深入细节 · Claude Design" data-label="项目 2 · 回顾：用 Primer 定规则，交接前先自审"
          data-speaker-notes="【约 2 分钟】演示回来先收一句：这个项目能一周上线，关键是两件事，前面用 Primer 把规则定死，后面交出去之前先让它自己查一遍。指常见写法：「深色、有科技感、要高级」，这三个词在 AI 那里几乎没有信息量。再看 Primer：最有用的是「要像」和「不要像」两行，说「像 Linear 的密度」比说「高级」准得多；说「不要 DraftKings 的赌场感」，一下就排除了一整类风格。右上五条是写 Primer 的清单。右下讲交接：第一条的按钮复制的是自审 Prompt，就是刚才 Audit &amp; Plan 的结构；最后一条 /design-sync 是官方功能，工程同事会用得上：它能从代码库把组件和 token 导进 Claude Design，设计出来的东西直接用的就是你们的真组件。">
     <div class="stage">
         <div class="kicker purple">RECAP 02 · 设计交给工程</div>
@@ -1054,7 +1340,7 @@ html { font-size: clamp(16px, min(1.04vw, 1.85vh), 30px); }
 </section>
 
 <!-- ═══ CLAUDE DESIGN · P3 Portfolio D ═══ -->
-<section class="slide" data-section="cd-p3" data-thumb="split" data-thumb-color="green" data-group="Claude Design · 三个项目" data-label="项目 3 · Portfolio D：在 Claude Code 里转去 Claude Design 探索"
+<section class="slide" data-section="cd-p3" data-thumb="split" data-thumb-color="green" data-group="Part 2 · 深入细节 · Claude Design" data-label="项目 3 · Portfolio D：在 Claude Code 里转去 Claude Design 探索"
          data-speaker-notes="【约 90 秒】先讲起点：alpha.token.im 是一个很大的 monorepo，7 月 2 日我在 Claude Code 里让它在 playground 做了三个资产页方向，代码都能跑，但我都不满意，问题不在代码，而在方向本身没想清楚。所以我停下来，去 Claude Design 探索了一个新方向，叫 Token Universe，就是左上这张。定下来以后点 Send to Claude Code，设计连同 mock 数据被送回 repo，放在 design-reference/portfolio-d 下面，当天就实现成了 playground 里的一个变体。第二天做了一轮虚拟评审，把 8 处要改的写成 Brief。大家看左上截图里还有 Speculative、YOUR STAKE、「Earn 4.3% on Aave」，这三处都是评审抓出来的，Brief 第 1、4、8 条就是在改它们。注意事项里讲第一条：送回 repo 的是参考，不是代码，CSS 里 6 个裸色值不在 repo 的色板里，要先加成语义 token。左下的实现截图我会在演示里直接打开。">
     <div class="stage">
         <div class="kicker green">PROJECT 03 · CLAUDE CODE ⇄ CLAUDE DESIGN</div>
@@ -1087,7 +1373,7 @@ html { font-size: clamp(16px, min(1.04vw, 1.85vh), 30px); }
 </section>
 
 <!-- ═══ CD-P3-THINK ═══ -->
-<section class="slide cd-think" data-section="cd-p3-think" data-thumb="steps" data-thumb-color="green" data-group="Claude Design · 三个项目" data-label="项目 3 · 我的 Prompt 思路"
+<section class="slide cd-think" data-section="cd-p3-think" data-thumb="steps" data-thumb-color="green" data-group="Part 2 · 深入细节 · Claude Design" data-label="项目 3 · 我的 Prompt 思路"
          data-speaker-notes="【约 2 分钟】这个项目用了三个工具，思路的核心是：每次换工具，都先让 AI 把上下文整理成一份新的、能独立使用的 Prompt。逐行讲：第一行，我给的是方向和人群，不是画面要求，让 Cowork 写成给 Claude Design 的探索 Prompt；第二行是 Claude Design 侧栏里的原话，Wilson 会补截图；第三行最值得学：我先承认自己也有看不懂的地方，让它讲给我听，然后请一群虚拟角色，用户、UX、UI、CEO，一起挑刺，最后让它把结论写成给 Claude Design 的改进 Brief；第四行是我对它的一次纠正：它写的 Prompt 依赖一堆我们之前生成的文件，换个会话就失效，所以我要它改成全文本、不依赖文件、留有开放空间的版本。最后一行，在 Claude Code 里我每轮只做一件事：裁决它交上来的 DIVERGENCE 表。">
     <div class="stage">
         <div class="kicker green">HOW I PROMPTED · PROJECT 03</div>
@@ -1098,7 +1384,7 @@ html { font-size: clamp(16px, min(1.04vw, 1.85vh), 30px); }
 </section>
 
 <!-- ═══ CD-P3-DEMO ═══ -->
-<section class="slide center cd-demo" data-section="cd-p3-demo" data-thumb="divider" data-thumb-color="green" data-group="Claude Design · 三个项目" data-label="项目 3 · Demo"
+<section class="slide center cd-demo" data-section="cd-p3-demo" data-thumb="divider" data-thumb-color="green" data-group="Part 2 · 深入细节 · Claude Design" data-label="项目 3 · Demo"
          data-speaker-notes="【约 6 分钟，现场演示】建议顺序：①在终端里打开 alpha.token.im，跑起本地 dev server，进 portfolio-explore playground，快速切一下 Concept A / B / C，说一句：代码都能跑，但方向不对，这时候继续在代码里改只会越改越乱。②切到 Claude Design 的「Cross-chain Send」项目，打开 Portfolio D，指出 v1 里的 Speculative、YOUR STAKE 和 Earn 按钮；然后演示 Send to Claude Code。③回到终端，打开 design-reference/portfolio-d/README.md，念第一段：这是只读参考，不是可以 import 的代码；再念色值那一段：6 个裸 hex 要先加成语义 token。④最后在浏览器里打开实现出来的 Token Universe 页面。收尾一句：Claude Code 适合把事情做对，Claude Design 适合先想清楚做什么，两个来回切换，比在一个工具里硬磨要快。本地服务起不来时，用 Claude Design 里的 Portfolio D 讲完。">
     <div class="cover-bg">
         <div class="orb" style="width:520px;height:520px;background:var(--brand);top:-16%;left:8%;"></div>
@@ -1114,7 +1400,7 @@ html { font-size: clamp(16px, min(1.04vw, 1.85vh), 30px); }
 </section>
 
 <!-- ═══ CD-P3-RECAP ═══ -->
-<section class="slide cd-recap" data-section="cd-p3-recap" data-thumb="split" data-thumb-color="green" data-group="Claude Design · 三个项目" data-label="项目 3 · 回顾：两个工具之间怎么来回切"
+<section class="slide cd-recap" data-section="cd-p3-recap" data-thumb="split" data-thumb-color="green" data-group="Part 2 · 深入细节 · Claude Design" data-label="项目 3 · 回顾：两个工具之间怎么来回切"
          data-speaker-notes="【约 2 分钟】演示回来先收一句：Claude Code 擅长把事情做对，Claude Design 擅长先想清楚做什么；卡住的时候换工具，比在一个工具里硬磨快。指常见写法：「改得更好看一点，参考一下设计稿」，这句话会让 Claude Code 把设计稿当代码抄，还会顺手改掉它觉得不好看的地方。再看主 Prompt，重点讲最后两层：起点假设写明可以挑战，是给它留出发挥的空间；DIVERGENCE 协议是给它加一道闸，想偏离方案必须先停下来问我。我每轮只做一件事：裁决这张表。右下第一条是个实用提醒：Send to Claude Code 生成的指令依赖一个连接器，本地 Claude Code 有时读不到设计，这时在导出里改选下载 zip 就行，GitHub 上有人报过这个问题。">
     <div class="stage">
         <div class="kicker green">RECAP 03 · CLAUDE CODE ⇄ CLAUDE DESIGN</div>
@@ -1134,7 +1420,7 @@ html { font-size: clamp(16px, min(1.04vw, 1.85vh), 30px); }
 </section>
 
 <!-- ═══ CLAUDE DESIGN · COMPARE ═══ -->
-<section class="slide" data-section="cd-compare" data-thumb="table" data-thumb-color="purple" data-group="Claude Design · 三个项目" data-label="总结 1 · 三种用法怎么选"
+<section class="slide" data-section="cd-compare" data-thumb="table" data-thumb-color="purple" data-group="Part 2 · 深入细节 · Claude Design" data-label="总结 1 · 三种用法怎么选"
          data-speaker-notes="【约 60 秒】三个都演示完了，这一页帮大家对号入座。不用逐格念，只念最后一列「最容易出错的地方」，因为这三条都是我自己踩过的：第一种，把画布文件直接发给别人，对方打不开；第二种，导出包里夹着旧文件和假数据，对方的 AI 会照单全收；第三种，把设计参考当成代码直接搬进 repo，绕过了代码库自己的 token 和组件。然后说：你们比赛时大部分人会是第一种，已经有代码的团队可能是第三种。">
     <div class="stage">
         <div class="kicker purple">TAKEAWAY 1 / 5</div>
@@ -1154,7 +1440,7 @@ html { font-size: clamp(16px, min(1.04vw, 1.85vh), 30px); }
 </section>
 
 <!-- ═══ CLAUDE DESIGN · SEVEN PRACTICES ═══ -->
-<section class="slide" data-section="cd-practices" data-thumb="grid3" data-thumb-color="blue" data-group="Claude Design · 三个项目" data-label="总结 2 · 用好 Claude Design 的七个做法"
+<section class="slide" data-section="cd-practices" data-thumb="grid3" data-thumb-color="blue" data-group="Part 2 · 深入细节 · Claude Design" data-label="总结 2 · 用好 Claude Design 的七个做法"
          data-speaker-notes="【约 2 分钟】这七条都来自刚才三个项目，每条下面的紫色小标签写着出处，大家可以回头对照。不用七条都念，重点讲三条。第 2 条：这是设计师在 AI 时代最值钱的动作，把感觉翻译成可以检查的规则。你们不是设计师也没关系，照着参照写数值就行，这就是前面第 2 步 style-lock 在做的事。第 4 条：工程同事会很有感觉，数据先自洽，字段名先定好，原型做完接口也就定了。第 7 条：Claude Design 不知道你代码库的规矩，送回去以后一切以代码库为准。">
     <div class="stage">
         <div class="kicker">TAKEAWAY 2 / 5</div>
@@ -1167,7 +1453,7 @@ html { font-size: clamp(16px, min(1.04vw, 1.85vh), 30px); }
 </section>
 
 <!-- ═══ CLAUDE DESIGN · LIMITS ═══ -->
-<section class="slide" data-section="cd-limits" data-thumb="grid3" data-thumb-color="amber" data-group="Claude Design · 三个项目" data-label="总结 3 · 它做不好的，和必须你来做的"
+<section class="slide" data-section="cd-limits" data-thumb="grid3" data-thumb-color="amber" data-group="Part 2 · 深入细节 · Claude Design" data-label="总结 3 · 它做不好的，和必须你来做的"
          data-speaker-notes="【约 90 秒】左边是工具本身的限制，截至 9 月的预览版，提前告诉合作的人，免得他们踩坑。中间是它会犯的错，前三条在这三个项目里真实出现过，最危险的是第一条：它会把示例数据、猜的日期写得和事实一样自信。右边是必须你来做的五件事，没有一件需要会画图，但每一件都需要你理解这个产品为什么存在。最下面一行是什么时候别用它。">
     <div class="stage">
         <div class="kicker amber">TAKEAWAY 3 / 5</div>
@@ -1212,7 +1498,7 @@ html { font-size: clamp(16px, min(1.04vw, 1.85vh), 30px); }
 </section>
 
 <!-- ═══ CLAUDE DESIGN · STARTER PROMPT ═══ -->
-<section class="slide" data-section="cd-starter" data-thumb="split" data-thumb-color="green" data-group="Claude Design · 三个项目" data-label="总结 4 · 明天就能用的起手 Prompt"
+<section class="slide" data-section="cd-starter" data-thumb="split" data-thumb-color="green" data-group="Part 2 · 深入细节 · Claude Design" data-label="总结 4 · 明天就能用的起手 Prompt"
          data-speaker-notes="【约 60 秒】最后给一个可以直接带走的东西。三个项目里我写的 Prompt 长短不一，但结构都是这七段。最长、最值得花时间的是第 5 段规格，用表格写，AI 读表格比读一段话准得多。第 4 段不可妥协和最后的「不要做的事」清单，AI 的遵守程度很高；反过来，「适当发挥」这种话，每次理解都不一样。按钮复制的是空白模板，方括号里的部分换成你自己的。下一页是学习链接，这一段就收尾了。">
     <div class="stage">
         <div class="kicker green">TAKEAWAY 4 / 5</div>
@@ -1239,7 +1525,7 @@ html { font-size: clamp(16px, min(1.04vw, 1.85vh), 30px); }
 </section>
 
 <!-- ═══ CLAUDE DESIGN · LINKS ═══ -->
-<section class="slide" data-section="cd-links" data-thumb="grid3" data-thumb-color="blue" data-group="Claude Design · 三个项目" data-label="总结 5 · 学习链接：事后去哪里学、去哪里问"
+<section class="slide" data-section="cd-links" data-thumb="grid3" data-thumb-color="blue" data-group="Part 2 · 深入细节 · Claude Design" data-label="总结 5 · 学习链接：事后去哪里学、去哪里问"
          data-speaker-notes="【约 40 秒】最后一页不用讲，给大家拍照或者会后打开 deck 点。按顺序说一句怎么用：第一次用，先看左上官方入门里的帮助中心两篇，一篇讲怎么开始，一篇讲怎么导入设计系统；想把 Prompt 写好，看中间那组官方文档和交互式教程；遇到问题，先搜帮助中心，Claude Code 相关的去 GitHub Issues 搜，很多坑别人已经报过。右下是今天三个项目的原始材料，需要公司账号才能打开。所有链接都可以直接点。">
     <div class="stage">
         <div class="kicker">TAKEAWAY 5 / 5 · LINKS</div>

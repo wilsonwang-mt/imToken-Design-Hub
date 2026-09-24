@@ -28,7 +28,10 @@ content/              所有文字内容，改内容只改这里
 public/
   confu/ep01/         EP01 演示文稿（index.html）与资料包
   confu/ep02/         EP02 演示文稿、Claude Design 专题页、资料包
+  toolbox/atlas/      设计工具图鉴（由 sources/tool-atlas/build.py 生成，不要手改）
   toolbox/copy-workflow/  文案管理工作流（原仓库内容，已迁移到这里）
+sources/
+  tool-atlas/         设计工具图鉴的源数据：data-*.json、atlas.css / atlas.js、logos/
   brand/              imToken logo
 ```
 
@@ -49,6 +52,16 @@ node scripts/add-deck-nav.mjs
 ```
 
 它会给 `public/confu/` 下所有 HTML 补上这一行 `<script src="/confu/site-nav.js" defer></script>`，原始演示文稿文件不需要改。
+
+**更新设计工具图鉴**
+
+改 `sources/tool-atlas/` 里的 `data-*.json`（工具内容）、`logo-manifest.json`（标识）或 `atlas.css` / `atlas.js`，然后运行：
+
+```bash
+python3 sources/tool-atlas/build.py
+```
+
+它会重新生成 `public/toolbox/atlas/index.html`，并把网站导航、logo 文件一起带上。工具箱页面上的入口卡片文字在 `content/toolbox.ts` 的 `atlas` 里。
 
 **开放一个新板块**
 

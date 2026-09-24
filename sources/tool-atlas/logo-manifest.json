@@ -1,0 +1,170 @@
+[
+  {
+    "id": "refero",
+    "name": "Refero",
+    "file": "logos/refero.png",
+    "sourceUrl": "https://refero.design/android-icon-192x192.png",
+    "identity": "official product",
+    "note": "官方网站页面声明的 icon/apple-touch-icon；用于产品识别，不表示授权背书。"
+  },
+  {
+    "id": "mobbin",
+    "name": "Mobbin",
+    "file": "logos/mobbin.svg",
+    "sourceUrl": "https://framerusercontent.com/images/oPS7zaP2iinQmw4du221pyfo.svg",
+    "identity": "official product",
+    "note": "官方网站页面声明的 icon/apple-touch-icon；用于产品识别，不表示授权背书。"
+  },
+  {
+    "id": "figma",
+    "name": "Figma",
+    "file": "logos/figma.svg",
+    "sourceUrl": "https://static.figma.com/app/icon/2/favicon.svg",
+    "identity": "official product",
+    "note": "官方网站页面声明的 icon/apple-touch-icon；用于产品识别，不表示授权背书。"
+  },
+  {
+    "id": "framer",
+    "name": "Framer",
+    "file": "logos/framer.png",
+    "sourceUrl": "https://framerusercontent.com/images/aXvo6HfUhqvR7oFjFL8b4AcyGfg.png",
+    "identity": "official product",
+    "note": "官方网站页面声明的 icon/apple-touch-icon；用于产品识别，不表示授权背书。"
+  },
+  {
+    "id": "lovart",
+    "name": "Lovart",
+    "file": "logos/lovart.ico",
+    "sourceUrl": "https://www.lovart.ai/favicon.ico",
+    "identity": "official product",
+    "note": "官方网站页面声明的 icon/apple-touch-icon；用于产品识别，不表示授权背书。"
+  },
+  {
+    "id": "weave",
+    "name": "Weave（原 Weavy）",
+    "file": "logos/weave.svg",
+    "sourceUrl": "https://cdn.prod.website-files.com/681b040781d5b5e278a69989/6829dad31872740b3fb4f912_favicon.svg",
+    "identity": "official product",
+    "note": "从 weave.figma.com 页面声明的 favicon 获取；原网站资源路径仍可能保留 Weavy 历史标识。"
+  },
+  {
+    "id": "higgsfield",
+    "name": "Higgsfield",
+    "file": "logos/higgsfield.png",
+    "sourceUrl": "https://higgsfield.ai/apple-icon.png",
+    "identity": "official product",
+    "note": "官方网站页面声明的 icon/apple-touch-icon；用于产品识别，不表示授权背书。"
+  },
+  {
+    "id": "seedance",
+    "name": "Seedance",
+    "file": "logos/seed-brand.ico",
+    "sourceUrl": "https://lf3-static.bytednsdoc.com/obj/eden-cn/lapzild-tss/ljhwZthlaukjlkulzlp/favicon_1/favicon.ico",
+    "identity": "parent brand",
+    "note": "取自 ByteDance Seed 官网 favicon，代表 Seed 母品牌，并非独立 Seedance Logo。"
+  },
+  {
+    "id": "rive",
+    "name": "Rive",
+    "file": "logos/rive.png",
+    "sourceUrl": "https://framerusercontent.com/images/jMyKrhKKXqpc15qYqC3A0pZELw.png",
+    "identity": "official product",
+    "note": "官方网站页面声明的 icon/apple-touch-icon；用于产品识别，不表示授权背书。"
+  },
+  {
+    "id": "remotion",
+    "name": "Remotion",
+    "file": "logos/remotion.png",
+    "sourceUrl": "https://www.remotion.dev/img/favicon.png",
+    "identity": "official product",
+    "note": "官方网站页面声明的 icon/apple-touch-icon；用于产品识别，不表示授权背书。"
+  },
+  {
+    "id": "spline",
+    "name": "Spline",
+    "file": "logos/spline.png",
+    "sourceUrl": "https://spline.design/images/icon_favicon32x32.png",
+    "identity": "official product",
+    "note": "官方网站页面声明的 icon/apple-touch-icon；用于产品识别，不表示授权背书。"
+  },
+  {
+    "id": "chatgpt",
+    "name": "ChatGPT",
+    "file": "logos/openai-simpleicons.svg",
+    "sourceUrl": "https://raw.githubusercontent.com/simple-icons/simple-icons/13.21.0/icons/openai.svg",
+    "identity": "third-party brand asset",
+    "note": "Simple Icons 13.21.0公开仓库中的OpenAI母品牌标识，用于ChatGPT/Codex入口识别；不是独立产品Logo，不是官方托管素材。当前develop路径404，保留历史版来源；原文字fallback留档。"
+  },
+  {
+    "id": "codex",
+    "name": "Codex",
+    "file": "logos/openai-simpleicons.svg",
+    "sourceUrl": "https://raw.githubusercontent.com/simple-icons/simple-icons/13.21.0/icons/openai.svg",
+    "identity": "third-party brand asset",
+    "note": "Simple Icons 13.21.0公开仓库中的OpenAI母品牌标识，用于ChatGPT/Codex入口识别；不是独立产品Logo，不是官方托管素材。当前develop路径404，保留历史版来源；原文字fallback留档。"
+  },
+  {
+    "id": "claude",
+    "name": "Claude / Cowork",
+    "file": "logos/claude-simpleicons.svg",
+    "sourceUrl": "https://raw.githubusercontent.com/simple-icons/simple-icons/develop/icons/claude.svg",
+    "identity": "third-party brand asset",
+    "note": "Simple Icons公开仓库中的Claude品牌标识，三入口共用；不是Cowork/Code/Artifacts各自独立Logo，不是官方托管素材。原文字fallback留档。"
+  },
+  {
+    "id": "claude-code",
+    "name": "Claude Code",
+    "file": "logos/claude-simpleicons.svg",
+    "sourceUrl": "https://raw.githubusercontent.com/simple-icons/simple-icons/develop/icons/claude.svg",
+    "identity": "third-party brand asset",
+    "note": "Simple Icons公开仓库中的Claude品牌标识，三入口共用；不是Cowork/Code/Artifacts各自独立Logo，不是官方托管素材。原文字fallback留档。"
+  },
+  {
+    "id": "claude-artifacts",
+    "name": "Claude Artifacts",
+    "file": "logos/claude-simpleicons.svg",
+    "sourceUrl": "https://raw.githubusercontent.com/simple-icons/simple-icons/develop/icons/claude.svg",
+    "identity": "third-party brand asset",
+    "note": "Simple Icons公开仓库中的Claude品牌标识，三入口共用；不是Cowork/Code/Artifacts各自独立Logo，不是官方托管素材。原文字fallback留档。"
+  },
+  {
+    "id": "gemini",
+    "name": "Gemini",
+    "file": "logos/gemini.png",
+    "sourceUrl": "https://www.gstatic.com/lamda/images/gemini_sparkle_4g_512_lt_f94943af3be039176192d.png",
+    "identity": "official product",
+    "note": "从对应官方网站页面声明的icon获取。"
+  },
+  {
+    "id": "kimi",
+    "name": "Kimi",
+    "file": "logos/kimi.png",
+    "sourceUrl": "https://www.kimi.com/pwa-192.png",
+    "identity": "official product",
+    "note": "从对应官方网站页面声明的icon获取。"
+  },
+  {
+    "id": "humanizer",
+    "name": "Humanizer",
+    "file": "logos/github.svg",
+    "sourceUrl": "https://github.githubassets.com/favicons/favicon.svg",
+    "identity": "resource icon",
+    "note": "使用GitHub官方站点图标标识代码/Skill资源类型；不是此Skill的独立Logo，也不表示由GitHub维护。"
+  },
+  {
+    "id": "human-review",
+    "name": "human-review",
+    "file": "logos/github.svg",
+    "sourceUrl": "https://github.githubassets.com/favicons/favicon.svg",
+    "identity": "resource icon",
+    "note": "使用GitHub官方站点图标标识代码/Skill资源类型；不是此Skill的独立Logo，也不表示由GitHub维护。"
+  },
+  {
+    "id": "imtoken-html-slides",
+    "name": "imtoken-html-slides",
+    "file": "logos/imtoken.svg",
+    "sourceUrl": "local:training/v2/references/imtoken-html-slides/assets/imtoken-logo.svg",
+    "identity": "parent brand",
+    "note": "复用已存在的imToken品牌素材，代表母品牌；不是个人Skill独立Logo。"
+  }
+]

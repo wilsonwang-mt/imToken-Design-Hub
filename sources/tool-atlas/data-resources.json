@@ -1,0 +1,184 @@
+[
+  {
+    "id": "humanizer",
+    "name": "Humanizer",
+    "aliases": [
+      "humanizer skill",
+      "文案优化"
+    ],
+    "category": "Skills与审阅",
+    "kind": "Writing Skill",
+    "tagline": "把文案改得具体、自然、容易读。",
+    "url": "https://github.com/blader/humanizer",
+    "description": "审查夸张措辞、空泛总结和重复句式，在保留事实与作者语气的前提下修改表达。适合在课程、产品文案与讲稿已经有内容之后使用，把意思说清楚。",
+    "bestFor": [
+      "润色产品与界面文案",
+      "整理中文讲稿",
+      "检查研究总结的空话"
+    ],
+    "outputs": [
+      "可直接使用的修订文案",
+      "更清楚的句子和段落",
+      "保留事实的表达版本"
+    ],
+    "inputs": [
+      "已经写好的原稿",
+      "读者与使用场景",
+      "必须保留的事实和术语"
+    ],
+    "steps": [
+      "指定读者、用途和希望保留的语气。",
+      "让助手标出空泛、重复或夸大的句子，再修订。",
+      "逐条核对事实、引用、数字和原意。"
+    ],
+    "firstExercise": "取自己的一页讲稿，删去无法帮助听众行动的句子；对照原稿核查事实，再朗读一遍。",
+    "limits": [
+      "表达优化不能替代事实核查。",
+      "它是方法说明，能否安装为Skill取决于助手入口；也可粘贴方法使用。"
+    ],
+    "pairs": [
+      "human-review",
+      "imtoken-html-slides",
+      "claude",
+      "chatgpt"
+    ],
+    "tags": [
+      "写作",
+      "演讲",
+      "中文文案",
+      "Skill"
+    ],
+    "sources": [
+      {
+        "label": "官方仓库与说明",
+        "url": "https://github.com/blader/humanizer"
+      }
+    ],
+    "evidence": "本课已使用",
+    "evidenceNote": "本课已使用",
+    "evidenceStatus": "本课实跑"
+  },
+  {
+    "id": "human-review",
+    "name": "Human Review",
+    "aliases": [
+      "human-review",
+      "petergyang"
+    ],
+    "category": "Skills与审阅",
+    "kind": "Review tool / Skill",
+    "tagline": "在页面上改字、留批注，再交给AI继续修改。",
+    "url": "https://github.com/petergyang/human-review",
+    "description": "用可视化方式审阅HTML与Markdown，在具体文字或元素上留下意见，再批量交给Agent处理。适合讲师、设计师和制作者围绕同一份内容进行来回修改。",
+    "bestFor": [
+      "审阅长篇学习材料",
+      "批注网页与演讲内容",
+      "集中交付一轮修改意见"
+    ],
+    "outputs": [
+      "带位置的审阅意见",
+      "直接编辑的内容",
+      "交给Agent的批量反馈"
+    ],
+    "inputs": [
+      "要审阅的HTML或Markdown",
+      "可运行工具的本地环境",
+      "具体的修改目标"
+    ],
+    "steps": [
+      "按官方说明准备工具，打开目标文件或本地页面。",
+      "直接修改文字，并在具体位置留下批注。",
+      "发送反馈，让Agent修改，再复查对应位置。"
+    ],
+    "firstExercise": "打开一页讲稿，直接改一句话、给一张图留批注，把两条反馈一起发送并核对修改结果。",
+    "limits": [
+      "Human Review负责人的可视化审阅，不等同于Humanizer自动润色。",
+      "HTML直接编辑可能自动保存；练习前保留副本，注意官方撤销与反馈发送规则。"
+    ],
+    "pairs": [
+      "humanizer",
+      "imtoken-html-slides",
+      "codex",
+      "claude-code"
+    ],
+    "tags": [
+      "批注",
+      "反馈",
+      "HTML",
+      "Markdown"
+    ],
+    "sources": [
+      {
+        "label": "官方仓库与使用方法",
+        "url": "https://github.com/petergyang/human-review"
+      }
+    ],
+    "evidence": "待实操",
+    "evidenceNote": "待实操",
+    "evidenceStatus": "待实操"
+  },
+  {
+    "id": "imtoken-html-slides",
+    "name": "imToken HTML Slides",
+    "aliases": [
+      "imtoken-html-slides",
+      "imtoken slides",
+      "幻灯片插件"
+    ],
+    "category": "Skills与审阅",
+    "kind": "Personal plugin / Skill",
+    "tagline": "用imToken模板，把内容组织成可演讲的HTML。",
+    "url": "resources/imtoken-html-slides-SKILL.md",
+    "description": "你安装的个人演示插件，提供imToken视觉模板、键盘翻页、讲者备注与分步展示等能力。本课用它作为演讲材料的制作基础；具体展示模式按模板选择。",
+    "bestFor": [
+      "公司内部培训",
+      "产品方案讲解",
+      "黑客松现场演讲"
+    ],
+    "outputs": [
+      "HTML演示文稿",
+      "逐页讲者备注",
+      "带交互与媒体的课件"
+    ],
+    "inputs": [
+      "已整理的故事与章节",
+      "真实演示素材",
+      "每页重点和演讲时长"
+    ],
+    "steps": [
+      "选择合适模板，先把内容组织成一页一个重点。",
+      "放入真实素材、链接与讲者备注，检查每页密度。",
+      "实际测试翻页、播放、投屏和备用演示路线。"
+    ],
+    "firstExercise": "用三页说明一个用户问题、一次设计改动和改动依据，加入同状态前后图与讲者备注。",
+    "limits": [
+      "这是本地个人插件，没有确认的公开产品官网；入口提供当前安装的Skill说明副本。",
+      "模板能力需按实际版本检查；HTML文件引用外部媒体时，要连同媒体一起保存。"
+    ],
+    "pairs": [
+      "humanizer",
+      "human-review",
+      "remotion",
+      "figma"
+    ],
+    "tags": [
+      "Slides",
+      "imToken",
+      "演讲",
+      "HTML"
+    ],
+    "sources": [
+      {
+        "label": "已安装Skill说明",
+        "url": "resources/imtoken-html-slides-SKILL.md"
+      },
+      {
+        "label": "本课24页演示文稿",
+        "url": "../media-deck/index.html"
+      }
+    ],
+    "evidence": "本课已使用",
+    "evidenceNote": "本课已使用",
+    "evidenceStatus": "本课实跑"
+  }
+]

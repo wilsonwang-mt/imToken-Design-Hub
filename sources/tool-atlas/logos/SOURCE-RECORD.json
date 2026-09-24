@@ -1,0 +1,103 @@
+{
+  "checkedAt": "2026-09-24",
+  "method": "Fetched public official page HTML; extracted declared icon links; downloaded those assets with curl. No UI automation, image generation, or access-challenge bypass.",
+  "pages": [
+    {
+      "id": "refero",
+      "url": "https://refero.design",
+      "status": "page icon link extracted"
+    },
+    {
+      "id": "mobbin",
+      "url": "https://mobbin.com",
+      "status": "page icon link extracted"
+    },
+    {
+      "id": "figma",
+      "url": "https://www.figma.com",
+      "status": "page icon link extracted"
+    },
+    {
+      "id": "framer",
+      "url": "https://www.framer.com",
+      "status": "page icon link extracted"
+    },
+    {
+      "id": "lovart",
+      "url": "https://www.lovart.ai",
+      "status": "page icon link extracted"
+    },
+    {
+      "id": "weave",
+      "url": "https://weave.figma.com",
+      "status": "page icon link extracted"
+    },
+    {
+      "id": "higgsfield",
+      "url": "https://higgsfield.ai",
+      "status": "page icon link extracted"
+    },
+    {
+      "id": "seedance",
+      "url": "https://seed.bytedance.com",
+      "status": "page icon link extracted"
+    },
+    {
+      "id": "rive",
+      "url": "https://rive.app",
+      "status": "page icon link extracted"
+    },
+    {
+      "id": "remotion",
+      "url": "https://www.remotion.dev",
+      "status": "page icon link extracted"
+    },
+    {
+      "id": "spline",
+      "url": "https://spline.design",
+      "status": "page icon link extracted"
+    },
+    {
+      "id": "openai",
+      "url": "https://openai.com",
+      "status": "access/challenge page; plain text fallback used"
+    },
+    {
+      "id": "claude",
+      "url": "https://claude.ai",
+      "status": "access/challenge page; plain text fallback used"
+    },
+    {
+      "id": "gemini",
+      "url": "https://gemini.google.com",
+      "status": "page icon link extracted"
+    },
+    {
+      "id": "kimi",
+      "url": "https://www.kimi.com",
+      "status": "page icon link extracted"
+    },
+    {
+      "id": "github",
+      "url": "https://github.com",
+      "status": "page icon link extracted"
+    }
+  ],
+  "checks": [
+    "14 remote icon files identified as SVG/PNG/ICO using file command",
+    "imToken copied from existing project brand asset",
+    "5 plain-text SVG fallback labels generated, explicitly nonofficial",
+    "No HTML authored"
+  ],
+  "licenseNote": "Brand recognition assets; provenance is not a redistribution license. No claim of product endorsement.",
+  "followup": {
+    "date": "2026-09-24",
+    "reason": "Explicit request to replace five text fallbacks with independently hosted public brand SVGs",
+    "sources": [
+      "https://raw.githubusercontent.com/simple-icons/simple-icons/develop/icons/claude.svg",
+      "https://raw.githubusercontent.com/simple-icons/simple-icons/13.21.0/icons/openai.svg"
+    ],
+    "failedSource": "https://raw.githubusercontent.com/simple-icons/simple-icons/develop/icons/openai.svg returned 404",
+    "note": "No access-challenge bypass. Original fallback files retained; manifest now labels third-party brand asset."
+  }
+}

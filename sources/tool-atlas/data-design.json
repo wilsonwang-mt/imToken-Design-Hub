@@ -1,0 +1,712 @@
+[
+  {
+    "id": "refero",
+    "name": "Refero",
+    "aliases": [
+      "Refero Design",
+      "Refero MCP"
+    ],
+    "category": "研究参考",
+    "kind": "设计参考库",
+    "tagline": "把真实界面、流程和视觉方向带进设计判断。",
+    "url": "https://refero.design/",
+    "description": "按用户任务查找真实界面，再从字体、层级、密度和流程中提取规则。它提供参考库、设计方法与MCP连接，适合给AI补充可追溯的设计上下文；选哪些参考、如何迁移，仍需设计者判断。",
+    "bestFor": [
+      "研究关键页面的阅读顺序",
+      "比较视觉方向与组件形态",
+      "为AI建立有来源的参考约定"
+    ],
+    "outputs": [
+      "带来源的参考集合",
+      "观察事实与采用理由",
+      "可供后续设计读取的规则"
+    ],
+    "inputs": [
+      "用户正在完成的任务",
+      "待研究的页面或状态",
+      "品牌与使用场景约束"
+    ],
+    "steps": [
+      "按任务搜索，打开候选的完整画面。",
+      "选一个主参考，写出采用与舍弃理由。",
+      "把规则用于同内容的设计对照，检查任务是否更清楚。"
+    ],
+    "firstExercise": "找三张体现时间与状态关系的界面，选一条规则改旅行冲突卡。保留原文案，写清哪里借鉴、哪里没有照搬。",
+    "limits": [
+      "MCP需受支持入口、账户权限与连接授权；装Skill不代表获得参考库访问权限。",
+      "截图不能证明真实操作表现，参考样式也不等于原品牌正式设计系统。"
+    ],
+    "pairs": [
+      "figma",
+      "mobbin",
+      "framer"
+    ],
+    "tags": [
+      "参考研究",
+      "设计品味",
+      "MCP",
+      "Styles",
+      "Flows"
+    ],
+    "sources": [
+      {
+        "label": "官方研究库说明",
+        "url": "https://doc.refero.design/"
+      },
+      {
+        "label": "官方MCP连接与能力",
+        "url": "https://doc.refero.design/mcp/getting-started"
+      },
+      {
+        "label": "本课实际研究记录",
+        "url": "../design-playbook/REFERO-RESEARCH.md"
+      }
+    ],
+    "evidence": "本课实跑",
+    "evidenceNote": "本课实跑",
+    "evidenceStatus": "本课实跑"
+  },
+  {
+    "id": "mobbin",
+    "name": "Mobbin",
+    "aliases": [
+      "Mobbin MCP"
+    ],
+    "category": "研究参考",
+    "kind": "产品界面与流程参考库",
+    "tagline": "沿着前后步骤研究产品，而不只收藏一张截图。",
+    "url": "https://mobbin.com/",
+    "description": "把研究对象分成单屏、完整用户流程和网站区块，适合比较同一任务如何进入、决策与完成。可通过MCP让助手检索参考，再由人检查上下文，把观察转成设计假设，而非直接照抄画面。",
+    "bestFor": [
+      "研究多步骤操作与恢复路径",
+      "对比同类产品的信息组织",
+      "寻找网站区块与界面模式"
+    ],
+    "outputs": [
+      "有上下文的关键屏",
+      "完整流程的步骤记录",
+      "可检验的设计借鉴假设"
+    ],
+    "inputs": [
+      "明确的操作任务",
+      "目标产品形态与用户情境",
+      "希望研究的决策或失败状态"
+    ],
+    "steps": [
+      "先选屏幕、流程或网站区块的搜索对象。",
+      "查看前后步骤，记录触发、动作、反馈与退出。",
+      "比较两例，只带走一个适用于自己产品的变化。"
+    ],
+    "firstExercise": "选两条修改预约的流程，分别记下确认前后告诉用户什么。为自己的产品补一句必要提示，保留来源和验证方法。",
+    "limits": [
+      "可见内容与连接能力依账号权限；登录网页不代表MCP已授权。",
+      "复制参考图不等于取得原产品组件，已上线也不证明设计适合你的用户。"
+    ],
+    "pairs": [
+      "refero",
+      "figma",
+      "framer"
+    ],
+    "tags": [
+      "流程研究",
+      "App参考",
+      "网站区块",
+      "MCP",
+      "用户旅程"
+    ],
+    "sources": [
+      {
+        "label": "官方MCP搜索对象说明",
+        "url": "https://docs.mobbin.com/mcp/features"
+      },
+      {
+        "label": "本课连接与执行状态",
+        "url": "../TOOL-STATUS.json"
+      }
+    ],
+    "evidence": "待实操",
+    "evidenceNote": "待实操",
+    "evidenceStatus": "待实操"
+  },
+  {
+    "id": "figma",
+    "name": "Figma",
+    "aliases": [
+      "Figma Design",
+      "Figma MCP"
+    ],
+    "category": "界面与网站",
+    "kind": "可编辑界面与设计系统工具",
+    "tagline": "用原生画板、组件和变量把设计规则落到每一屏。",
+    "url": "https://www.figma.com/",
+    "description": "把任务和状态整理成可编辑界面，用组件和变量维持重复结构。适合精修信息层级、检查长文案，以及让共享规则作用于多个实例。支持的AI连接可读写原生结构，具体取决于工具、席位和文件权限。",
+    "bestFor": [
+      "制作与比较原生界面方案",
+      "建立组件和设计变量",
+      "检查跨页面的一致性"
+    ],
+    "outputs": [
+      "可编辑画板与状态稿",
+      "共享组件和变量",
+      "同状态修改前后对照"
+    ],
+    "inputs": [
+      "任务、状态与真实文案",
+      "现有组件与品牌规则",
+      "主参考及本轮修改假设"
+    ],
+    "steps": [
+      "读取现有结构，复制练习画板并记录基线。",
+      "只改一个设计判断，再检查整屏与长内容。",
+      "将有效规则放进组件，检查实例继承和尺寸变化。"
+    ],
+    "firstExercise": "复制旅行冲突画板，把冲突与比较入口提前。再复制行程组件，放大说明文字，检查两个实例是否继承及高度变化。",
+    "limits": [
+      "MCP写入需支持的客户端、写入工具、Full席位和文件编辑权限；读取连接不能保证写入。",
+      "画板与连线原型不能单独证明业务逻辑、键盘、读屏或真实触控已通过。"
+    ],
+    "pairs": [
+      "refero",
+      "mobbin",
+      "framer",
+      "remotion"
+    ],
+    "tags": [
+      "UI设计",
+      "组件",
+      "变量",
+      "设计系统",
+      "MCP"
+    ],
+    "sources": [
+      {
+        "label": "官方原生画布写入与权限",
+        "url": "https://developers.figma.com/docs/figma-mcp-server/write-to-canvas/"
+      },
+      {
+        "label": "本课精修与组件复做",
+        "url": "../runs/figma-refinement/README.md"
+      }
+    ],
+    "evidence": "本课实跑",
+    "evidenceNote": "本课实跑",
+    "evidenceStatus": "本课实跑"
+  },
+  {
+    "id": "framer",
+    "name": "Framer",
+    "aliases": [],
+    "category": "界面与网站",
+    "kind": "可视化网站制作与发布平台",
+    "tagline": "把网站方向变成可预览、可维护的响应式页面。",
+    "url": "https://www.framer.com/",
+    "description": "适合将产品价值、真实界面和品牌素材组织成宣传网站。可以从Figma导入起步，再补响应式布局、内容和交互。导入只是起点，仍要检查中间宽度、真实链接和行动入口，才能判断页面是否可用。",
+    "bestFor": [
+      "黑客松产品介绍页",
+      "品牌与作品展示网站",
+      "需要继续维护的宣传页面"
+    ],
+    "outputs": [
+      "可编辑网页",
+      "响应式预览",
+      "可发布的网站"
+    ],
+    "inputs": [
+      "页面结构与核心主张",
+      "品牌规则及图片素材",
+      "真实链接与行动入口"
+    ],
+    "steps": [
+      "先做问题、产品过程、价值和行动四段结构。",
+      "设置桌面与手机布局，再拖动中间宽度检查。",
+      "替换正式内容，走通链接并检查后再发布。"
+    ],
+    "firstExercise": "把旅行产品做成单页：一句价值、一次冲突、两个选择、一个体验入口。分别检查手机与桌面，记录一处导入后需修的布局。",
+    "limits": [
+      "Figma导入后仍需响应式和交互整理，不保证复杂结构自动正确。",
+      "官方此工作流交付托管网站，不应承诺导出一套独立HTML/CSS/JS源文件。"
+    ],
+    "pairs": [
+      "figma",
+      "lovart",
+      "spline"
+    ],
+    "tags": [
+      "网站",
+      "Landing Page",
+      "响应式",
+      "发布",
+      "品牌表达"
+    ],
+    "sources": [
+      {
+        "label": "官方Figma到网站流程与边界",
+        "url": "https://www.framer.com/solutions/figma-to-html/"
+      }
+    ],
+    "evidence": "待实操",
+    "evidenceNote": "待实操",
+    "evidenceStatus": "待实操"
+  },
+  {
+    "id": "lovart",
+    "name": "Lovart",
+    "aliases": [
+      "Lovart AI"
+    ],
+    "category": "图像与工作流",
+    "kind": "AI设计画布与图像编辑工具",
+    "tagline": "围绕选定主视觉，用局部编辑逐步控制结果。",
+    "url": "https://www.lovart.ai/",
+    "description": "适合探索宣传主视觉，再围绕选中的画面修改物体、材质或构图。可用Touch Edit标记局部，也可尝试把图像元素拆开调整。先看主体、留白与一致性，再决定是否扩展成一套素材。",
+    "bestFor": [
+      "产品宣传主视觉",
+      "选定图像的局部修改",
+      "同一方向的构图探索"
+    ],
+    "outputs": [
+      "选定的主视觉",
+      "保留对照的修改版本",
+      "按实际能力导出的图片或分层文件"
+    ],
+    "inputs": [
+      "用途、画幅与标题位置",
+      "主体、光线与材质要求",
+      "少量指定参考及保持项"
+    ],
+    "steps": [
+      "提出两个构图方向，选定后再生成。",
+      "标记一个局部修改，保留其余主体与构图。",
+      "并排检查变化，核对图层和导出文件。"
+    ],
+    "firstExercise": "做一张左侧留标题的旅行主视觉。选定后只改背包颜色，比较主体、光线和背景是否漂移；标题与产品UI留给后期排版。",
+    "limits": [
+      "局部编辑和分层结果仍需检查，不能保证每次都保留全部未指定区域。",
+      "本课内置生图产物不是Lovart输出；本工具的生成与导出尚待实操。"
+    ],
+    "pairs": [
+      "weave",
+      "figma",
+      "higgsfield",
+      "remotion"
+    ],
+    "tags": [
+      "主视觉",
+      "生图",
+      "局部编辑",
+      "Touch Edit",
+      "素材"
+    ],
+    "sources": [
+      {
+        "label": "官方局部与元素编辑教程",
+        "url": "https://www.lovart.ai/docs/edit-your-design/advanced-ai-editing"
+      },
+      {
+        "label": "本课首练步骤与Prompt",
+        "url": "../LEARNING-LABS.md"
+      }
+    ],
+    "evidence": "待实操",
+    "evidenceNote": "待实操",
+    "evidenceStatus": "待实操"
+  },
+  {
+    "id": "weave",
+    "name": "Weavy / Weave",
+    "aliases": [
+      "Weavy",
+      "Weave",
+      "Figma Weave",
+      "weavy.ai",
+      "weavy ai"
+    ],
+    "category": "图像与工作流",
+    "kind": "节点式创意工作流平台",
+    "tagline": "把素材生成和处理拆成可追溯、可重复的步骤。",
+    "url": "https://www.weavy.ai/",
+    "description": "把输入、模型处理和输出连接成节点流程，适合双画幅、批量变体和生成分支。先锁定主体与风格，再调整需要变化的参数；保存每一步输入和结果，方便定位问题并复用已有流程。",
+    "bestFor": [
+      "同一主图的多画幅处理",
+      "生成分支与版本比较",
+      "重复执行固定素材流程"
+    ],
+    "outputs": [
+      "可回到的节点流程",
+      "不同用途的素材变体",
+      "输入参数与输出记录"
+    ],
+    "inputs": [
+      "已选择的主图",
+      "固定的风格与保持项",
+      "每种输出的画幅和用途"
+    ],
+    "steps": [
+      "在编辑器连接输入、处理与输出节点。",
+      "先做不生成的裁切分支，必要时再增加生成步骤。",
+      "验证流程后封装可用Tool，供支持的Agent重复运行。"
+    ],
+    "firstExercise": "用同一张旅行图输出16:9和1:1。先只调裁切，分别保留标题空间；记录哪个参数改变了结果，再换一张图检查能否复用。",
+    "limits": [
+      "经Figma MCP当前可运行已有Weave Tools，不能据此承诺创建或编辑工作流；需账号关联和正确工作区。",
+      "本课只查询过模型信息，尚未生成；执行生成需核对现有额度、费用确认与导出条件。"
+    ],
+    "pairs": [
+      "lovart",
+      "higgsfield",
+      "seedance",
+      "remotion"
+    ],
+    "tags": [
+      "节点工作流",
+      "多画幅",
+      "素材生产",
+      "参数",
+      "MCP"
+    ],
+    "sources": [
+      {
+        "label": "官方节点说明",
+        "url": "https://help.weavy.ai/en/articles/12292386-understanding-nodes"
+      },
+      {
+        "label": "官方MCP运行已有Tools的边界",
+        "url": "https://help.weavy.ai/en/articles/16202764-running-weave-tools-from-external-agents-mcp"
+      },
+      {
+        "label": "本课执行状态",
+        "url": "../TOOL-STATUS.json"
+      }
+    ],
+    "evidence": "部分实跑",
+    "evidenceNote": "部分实跑",
+    "evidenceStatus": "部分实跑"
+  },
+  {
+    "id": "higgsfield",
+    "name": "Higgsfield",
+    "aliases": [
+      "Higgsfield AI",
+      "Cinema Studio",
+      "higgfied",
+      "higgsfield.ai"
+    ],
+    "category": "视频与动效",
+    "kind": "多模型影像创作平台",
+    "tagline": "在创作工作区组织参考、镜头要求和生成素材。",
+    "url": "https://higgsfield.ai/",
+    "description": "提供影像生成与导演式工作区，可围绕参考、镜头和场景组织创作。适合给产品宣传补一段情境镜头。平台与底层模型要分别记录，先稳定一张起始画面，再比较一个运动变化。",
+    "bestFor": [
+      "宣传片的场景镜头",
+      "固定参考下的镜头探索",
+      "围绕同一主体组织素材"
+    ],
+    "outputs": [
+      "生成式短片素材",
+      "镜头候选与选择理由",
+      "输入、模型与设置记录"
+    ],
+    "inputs": [
+      "已选定的参考画面",
+      "一个动作或镜头要求",
+      "风格、时长与禁止变化项"
+    ],
+    "steps": [
+      "确认当前工作区、模型和可选设置。",
+      "用固定参考试一个短镜头，只改变一个主要变量。",
+      "检查首中尾及实际播放，下载合格素材后交给剪辑。"
+    ],
+    "firstExercise": "用旅行纸艺图做短镜头：先固定机位，再只尝试缓慢推进。对比建筑变形、光照跳变和新增元素，保留原视频与设置。",
+    "limits": [
+      "Cinema Studio版本不是模型版本，支持的参考、时长和控制项以当前入口为准。",
+      "本课已确认登录但未生成；生成场景不能当作产品操作或功能已实现的证据。"
+    ],
+    "pairs": [
+      "lovart",
+      "seedance",
+      "weave",
+      "remotion"
+    ],
+    "tags": [
+      "视频平台",
+      "生成镜头",
+      "Cinema Studio",
+      "镜头控制",
+      "宣传"
+    ],
+    "sources": [
+      {
+        "label": "官方Cinema Studio版本与操作",
+        "url": "https://higgsfield.ai/creator-hub/help-center/tools/how-do-i-use-cinema-studio"
+      },
+      {
+        "label": "本课镜头首练",
+        "url": "../LEARNING-LABS.md"
+      }
+    ],
+    "evidence": "待实操",
+    "evidenceNote": "待实操",
+    "evidenceStatus": "待实操"
+  },
+  {
+    "id": "seedance",
+    "name": "Seedance",
+    "aliases": [
+      "Seed dance",
+      "ByteDance Seedance"
+    ],
+    "category": "视频与动效",
+    "kind": "视频生成模型系列",
+    "tagline": "根据文字与参考素材生成或编辑视频片段。",
+    "url": "https://seed.bytedance.com/en/seedance2_5",
+    "description": "字节的音视频生成模型系列，可从支持它的创作平台或开发者入口使用。适合尝试场景运动、参考控制与视频编辑。选型时同时记录模型版本和宿主平台，避免把平台的全部功能都算作模型能力。",
+    "bestFor": [
+      "静态场景的运动探索",
+      "有参考约束的概念短片",
+      "在可用入口尝试视频编辑"
+    ],
+    "outputs": [
+      "生成视频片段",
+      "按所用版本支持的音视频结果",
+      "输入与设置可追溯的候选"
+    ],
+    "inputs": [
+      "文字描述和镜头意图",
+      "入口允许的图像或视频参考",
+      "保持项、时长与输出要求"
+    ],
+    "steps": [
+      "从官方入口或已授权平台确认实际模型版本。",
+      "固定参考，只试一个动作并记录设置。",
+      "检查稳定性与可用片段，再加入真实UI和文案。"
+    ],
+    "firstExercise": "在已有入口选一个可用Seedance版本，用同一场景只比较静止与缓慢推进。记录实际时长、模型和错误，不同时换风格。",
+    "limits": [
+      "模型能力不保证每个宿主都开放相同参数、时长或接口。",
+      "本课查询过候选型号但未调用生成；模型生成画面不能证明真实产品交互。"
+    ],
+    "pairs": [
+      "higgsfield",
+      "weave",
+      "remotion"
+    ],
+    "tags": [
+      "视频模型",
+      "参考控制",
+      "生成式视频",
+      "场景运动",
+      "音视频"
+    ],
+    "sources": [
+      {
+        "label": "ByteDance官方模型说明与入口",
+        "url": "https://seed.bytedance.com/en/seedance2_5"
+      },
+      {
+        "label": "Higgsfield中的模型与工作区区分",
+        "url": "https://higgsfield.ai/creator-hub/help-center/tools/how-do-i-use-cinema-studio"
+      }
+    ],
+    "evidence": "待实操",
+    "evidenceNote": "待实操",
+    "evidenceStatus": "待实操"
+  },
+  {
+    "id": "rive",
+    "name": "Rive",
+    "aliases": [
+      "Rive Editor",
+      "Rive Runtime"
+    ],
+    "category": "视频与动效",
+    "kind": "实时交互图形与动画工具",
+    "tagline": "让图形按用户操作和产品状态响应。",
+    "url": "https://rive.app/",
+    "description": "通过动画、状态机和数据绑定，让图形响应操作或业务数据。适合加载、成功、失败等反馈，也适合可互动的角色与图表。先定义状态和触发条件，再设计运动，并在实际运行环境验证。",
+    "bestFor": [
+      "有成功失败分支的反馈",
+      "由数据驱动的图形",
+      "需要响应操作的品牌角色"
+    ],
+    "outputs": [
+      "可响应事件的交互资产",
+      "状态机与数据绑定规则",
+      "接入运行环境的行为说明"
+    ],
+    "inputs": [
+      "状态和转换条件",
+      "业务需要传入的数据",
+      "关键姿态与动效草图"
+    ],
+    "steps": [
+      "用简单图形建立等待、执行中、成功与失败状态。",
+      "用属性、监听或状态机条件连接触发与变化。",
+      "在目标运行环境测试取消、重试和重复触发。"
+    ],
+    "firstExercise": "做一个提交反馈图形：输入处理中、成功或失败，能回到等待。先让四种状态正确切换，再微调动效速度与幅度。",
+    "limits": [
+      "导出或编辑器预览不能替代目标运行环境中的数据接入与行为检查。",
+      "动效不能单独承担重要状态表达；还需提供文字或其他可感知反馈。"
+    ],
+    "pairs": [
+      "figma",
+      "framer",
+      "remotion"
+    ],
+    "tags": [
+      "交互动效",
+      "状态机",
+      "Data Binding",
+      "实时图形",
+      "Runtime"
+    ],
+    "sources": [
+      {
+        "label": "官方Data Binding核心概念",
+        "url": "https://rive.app/blog/getting-started-with-data-binding"
+      },
+      {
+        "label": "本课工具工作流",
+        "url": "../TOOL-WORKFLOWS.md"
+      }
+    ],
+    "evidence": "待实操",
+    "evidenceNote": "待实操",
+    "evidenceStatus": "待实操"
+  },
+  {
+    "id": "remotion",
+    "name": "Remotion",
+    "aliases": [
+      "Remotion Studio",
+      "Remotion Skills"
+    ],
+    "category": "视频与动效",
+    "kind": "用代码编排和渲染视频的工具",
+    "tagline": "精确控制界面素材、文字、声音和每一段时长。",
+    "url": "https://www.remotion.dev/",
+    "description": "把界面图、录屏、插画、字幕和声音放到可编辑时间线上，用代码重复渲染。适合产品讲解和宣传版本迭代，也可交给支持代码项目的AI协作。素材来源与真实操作证据仍需分别保留。",
+    "bestFor": [
+      "产品介绍和教学动画",
+      "字幕与旁白的准确编排",
+      "同结构的多版本视频"
+    ],
+    "outputs": [
+      "可播放的影片",
+      "关键帧与备用画面",
+      "可编辑并再次渲染的源工程"
+    ],
+    "inputs": [
+      "有来源的界面和媒体素材",
+      "分镜时长、字幕与配音",
+      "分辨率、帧率和品牌规则"
+    ],
+    "steps": [
+      "先写场景、冲突、选择、结果和行动五段。",
+      "把素材和音频编排到时间线，检查文字与节奏。",
+      "渲染后查看关键帧并连续播放，记录声音和画面问题。"
+    ],
+    "firstExercise": "复用本课30秒工程，只替换一段文案和一张界面图。保持时间线，重新渲染并检查字幕是否来得及读、声音是否被截断。",
+    "limits": [
+      "编排设计状态图得到的是演示动画，只有真实采集的操作片段才能称操作录屏。",
+      "渲染完成不代表投屏、耳听和播放器验收完成，现场仍需独立检查。"
+    ],
+    "pairs": [
+      "figma",
+      "lovart",
+      "higgsfield",
+      "seedance"
+    ],
+    "tags": [
+      "视频编排",
+      "代码",
+      "字幕",
+      "配音",
+      "Skills"
+    ],
+    "sources": [
+      {
+        "label": "官方创建与运行项目",
+        "url": "https://www.remotion.dev/docs/"
+      },
+      {
+        "label": "官方Agent Skills",
+        "url": "https://www.remotion.dev/docs/ai/skills"
+      },
+      {
+        "label": "本课30秒成片与复做",
+        "url": "../motion/PROMO-30S.md"
+      }
+    ],
+    "evidence": "本课实跑",
+    "evidenceNote": "本课实跑",
+    "evidenceStatus": "本课实跑"
+  },
+  {
+    "id": "spline",
+    "name": "Spline",
+    "aliases": [
+      "Spline 3D",
+      "Spline MCP"
+    ],
+    "category": "三维交互",
+    "kind": "可交互三维场景设计工具",
+    "tagline": "用物体、镜头和状态变化解释空间关系。",
+    "url": "https://spline.design/",
+    "description": "在三维场景中设计物体、材质、灯光和交互，用事件触发状态变化。适合设备外观、接口位置和空间关系演示。先确保结构与视角清楚，再增加必要交互，避免效果遮住产品要表达的信息。",
+    "bestFor": [
+      "设备外观和接口展示",
+      "需要空间关系的产品说明",
+      "有目的的三维网页交互"
+    ],
+    "outputs": [
+      "可编辑三维场景",
+      "由事件驱动的状态变化",
+      "按支持方式导出的展示素材"
+    ],
+    "inputs": [
+      "物体结构与尺寸关系",
+      "固定视角和材质方向",
+      "需要用户理解的交互目的"
+    ],
+    "steps": [
+      "先做简单物体，固定镜头和材质。",
+      "添加一个事件，连接对象状态或视角变化。",
+      "进入预览检查可见性、输入方式和加载表现。"
+    ],
+    "firstExercise": "做一个设备正面与接口视角，用一次点击切换。分别检查鼠标与触控能否完成；先把接口位置讲清楚，再加装饰。",
+    "limits": [
+      "官方MCP依赖正在运行的桌面App及实际连接条件，不把网页登录视为MCP可用。",
+      "本课已写入并回读对象，但渲染仍无可用成品；不能把对象存在说成画面已通过。"
+    ],
+    "pairs": [
+      "figma",
+      "framer",
+      "remotion"
+    ],
+    "tags": [
+      "3D",
+      "设备展示",
+      "空间关系",
+      "交互场景",
+      "MCP"
+    ],
+    "sources": [
+      {
+        "label": "官方事件与交互教程",
+        "url": "https://docs.spline.design/interaction-states-events-and-actions/concepts/events-interactivity"
+      },
+      {
+        "label": "官方MCP运行条件",
+        "url": "https://docs.spline.design/generate/spline-mcp-server"
+      },
+      {
+        "label": "本课场景执行记录",
+        "url": "../runs/spline-demo/README.md"
+      }
+    ],
+    "evidence": "部分实跑",
+    "evidenceNote": "部分实跑",
+    "evidenceStatus": "部分实跑"
+  }
+]

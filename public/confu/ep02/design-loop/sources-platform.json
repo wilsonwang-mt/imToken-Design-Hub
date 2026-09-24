@@ -1,0 +1,34 @@
+[
+  {
+    "id": "claude-code-subagents",
+    "platform": "Claude Code",
+    "capability": "官方文档支持把独立子任务交给子 Agent：分别使用上下文、任务指令和工具范围，再将结果返回主任务；也给出了并行研究与串行接力的用法。",
+    "url": "https://code.claude.com/docs/en/sub-agents",
+    "notes": "本条核实 Claude Code，不把此能力自动扩展到所有 Claude 网页入口或 Artifacts。子 Agent 不应被假定知道主任务所有已读材料；交付任务时明确文件、约束、输出和权限。是否可用以实际版本与会话为准。",
+    "verified": "2026-09-24"
+  },
+  {
+    "id": "codex-subagents",
+    "platform": "Codex / 支持该功能的 ChatGPT Work",
+    "capability": "官方文档描述由主 Agent 发起并行子 Agent、等待与整合结果的工作流；建议优先用于独立探索、测试、分析等任务，并提醒多人同时写文件会产生冲突。",
+    "url": "https://learn.chatgpt.com/docs/agent-configuration/subagents",
+    "notes": "这是产品功能文档，不是拿 API 的 Agent 示例推断普通 ChatGPT 对话已有同样能力。可用入口和账户条件有差异；并行工作会增加模型和工具用量。课程应先检查当前会话是否真的提供子 Agent 工具。",
+    "verified": "2026-09-24"
+  },
+  {
+    "id": "gemini-cli-mcp",
+    "platform": "Gemini CLI",
+    "capability": "官方文档支持配置 MCP 服务、发现工具、调用工具并读取资源，可将设计资料或外部服务接入工作流。",
+    "url": "https://geminicli.com/docs/tools/mcp-server/",
+    "notes": "本条只核实 Gemini CLI 的 MCP 接入，不据此断言 Gemini 网页版或所有入口具有原生多 Agent。MCP 解决工具连接，子 Agent 解决任务委派，两者不同。若入口不支持子 Agent，可手动分开研究、制作和审查对话，并共享同一份上下文与问题清单。",
+    "verified": "2026-09-24"
+  },
+  {
+    "id": "kimi-entry",
+    "platform": "Kimi / Kimi Code",
+    "capability": "官方入门资料区分聊天、Agent、Agent Swarm和Kimi Code等入口。课堂可先用共同任务包按角色推进；具有实际委派能力的入口再把独立任务并行交出。",
+    "url": "https://www.kimi.com/en/help/new-user-guide/overview",
+    "notes": "产品说明不等于当前账号已开放全部能力。先确认可调用工具、输入输出和权限；不要把网页聊天、Swarm与本地Code视为同一执行环境。纯聊天时可以由人传递独立审查对话的结果。",
+    "verified": "2026-09-24"
+  }
+]

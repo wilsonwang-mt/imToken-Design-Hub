@@ -1,0 +1,450 @@
+[
+  {
+    "id": "chatgpt",
+    "name": "ChatGPT",
+    "aliases": [
+      "OpenAI",
+      "ChatGPT Work"
+    ],
+    "category": "AI助手与开发",
+    "kind": "对话研究与任务交付",
+    "tagline": "先把问题说清，再把结果做出来",
+    "url": "https://chatgpt.com/",
+    "description": "把零散想法、资料与反馈整理成可讨论的方案，再逐轮修改。聊天适合澄清任务、研究和写作；需要完整文件时，可使用当前账户可用的工作入口。先给用户场景、证据和完成标准，别只要求它把页面做得高级。",
+    "bestFor": [
+      "把模糊Idea收敛成一个用户任务",
+      "比较参考的采用理由与代价",
+      "审查方案并准备讲解稿"
+    ],
+    "outputs": [
+      "产品任务与状态说明",
+      "带来源的研究摘要",
+      "方案评审和演讲草稿"
+    ],
+    "inputs": [
+      "一句话目标与目标用户",
+      "已有材料、截图或可引用原文",
+      "输出格式、保留项和验收标准"
+    ],
+    "steps": [
+      "先问当前入口能读取哪些材料、使用哪些工具，再交付任务包。",
+      "要求先区分事实与假设，给出一个最小方案和取舍。",
+      "对照原始材料逐项复核，把通过的规则与待验证项保存下来。"
+    ],
+    "firstExercise": "把Daylight的3项任务、已完成1项和剩余2项交给它；让它只改信息顺序，并说明“开始下一项”后哪些数据不应改变。",
+    "limits": [
+      "聊天、Work与Codex的可用工具和权限依入口、账户及组织设置而异。",
+      "通用Prompt可以迁移；插件安装方式与工具授权要在目标入口重新确认。"
+    ],
+    "pairs": [
+      "refero",
+      "mobbin",
+      "figma",
+      "codex"
+    ],
+    "tags": [
+      "任务定义",
+      "研究",
+      "Prompt",
+      "方案评审",
+      "演讲"
+    ],
+    "sources": [
+      {
+        "label": "官方：如何使用ChatGPT",
+        "url": "https://learn.chatgpt.com/docs/use-chatgpt"
+      },
+      {
+        "label": "官方：Skills与MCP的职责",
+        "url": "https://developers.openai.com/plugins/concepts/skills"
+      }
+    ],
+    "evidence": "2026-09-24核对官方文档；本卡是建议练习，不是ChatGPT入口的独立实跑记录。",
+    "evidenceNote": "2026-09-24核对官方文档；本卡是建议练习，不是ChatGPT入口的独立实跑记录。",
+    "evidenceStatus": "待实操"
+  },
+  {
+    "id": "codex",
+    "name": "Codex",
+    "aliases": [
+      "OpenAI Codex",
+      "Codex CLI",
+      "Codex desktop"
+    ],
+    "category": "AI助手与开发",
+    "kind": "文件与代码工作代理",
+    "tagline": "把设计决定变成可检查的文件改动",
+    "url": "https://learn.chatgpt.com/docs/quickstart",
+    "description": "围绕项目文件推进制作：读取现有实现、修改页面、运行检查，再交出可追踪的改动。适合把设计方向落成原型，或给已有产品做局部改造。和聊天共用品牌不代表权限相同；开始前要确认工作目录、工具与执行范围。",
+    "bestFor": [
+      "把体验契约实现成可运行原型",
+      "在现有仓库中做有限改造",
+      "批量生成资料并保存检查记录"
+    ],
+    "outputs": [
+      "HTML、CSS和组件代码",
+      "可审阅的文件差异",
+      "实际检查结果与交接说明"
+    ],
+    "inputs": [
+      "可访问的项目副本或代码仓库",
+      "任务包、参考规则和界面素材",
+      "允许修改的文件及完成标准"
+    ],
+    "steps": [
+      "打开项目副本，要求先读现有行为与约束，保存基线。",
+      "指定一个问题和保留项，让它修改；需要MCP时先确认连接可用。",
+      "查看差异与实际检查，保留未验证项，再决定下一轮。"
+    ],
+    "firstExercise": "在Daylight副本中，把“开始下一项”接成“进行中”；总数3、完成1、剩余2不变。交付改动、检查方法与未验项。",
+    "limits": [
+      "执行命令、文件访问和外部工具受环境与授权限制；生成代码不等于运行通过。",
+      "可复用Prompt与方法，不能假设其他平台直接加载相同插件包或配置文件。"
+    ],
+    "pairs": [
+      "figma",
+      "refero",
+      "remotion",
+      "chatgpt"
+    ],
+    "tags": [
+      "原型",
+      "代码",
+      "Git",
+      "MCP",
+      "Skills",
+      "多Agent"
+    ],
+    "sources": [
+      {
+        "label": "官方：Codex CLI本地项目工作流",
+        "url": "https://learn.chatgpt.com/docs/codex/cli"
+      },
+      {
+        "label": "官方：Chat、Work与Codex入口",
+        "url": "https://learn.chatgpt.com/docs/use-chatgpt"
+      }
+    ],
+    "evidence": "2026-09-24核对官方文档；本课已用Codex制作文件并调用Refero/Figma。网页交互仍按各案例的验收记录判断。",
+    "evidenceNote": "2026-09-24核对官方文档；本课已用Codex制作文件并调用Refero/Figma。网页交互仍按各案例的验收记录判断。",
+    "evidenceStatus": "本课实跑"
+  },
+  {
+    "id": "claude",
+    "name": "Claude / Cowork",
+    "aliases": [
+      "Anthropic",
+      "Claude Cowork",
+      "Fable 5.1（用户指定名称，未核验）"
+    ],
+    "category": "AI助手与开发",
+    "kind": "对话与多步骤文件任务",
+    "tagline": "把材料交给它，把交付标准留在你手里",
+    "url": "https://claude.ai/",
+    "description": "用对话梳理问题，也可在获得相应权限后处理资料、调用工具并生成文件。适合整理设计上下文、研究笔记和演讲材料。官方正在逐步合并聊天与Cowork体验；课堂应按实际可见入口示范，而不是要求所有人找到同一个按钮。",
+    "bestFor": [
+      "将访谈与参考整理成设计任务包",
+      "根据多份资料生成可修改文件",
+      "按审查意见逐轮完善方案"
+    ],
+    "outputs": [
+      "结构化研究与设计说明",
+      "可继续编辑的文档和演讲稿",
+      "多步骤任务结果与处理摘要"
+    ],
+    "inputs": [
+      "任务目标与交付物清单",
+      "上传资料或授权的工作文件夹",
+      "参考标准、排除项和停止条件"
+    ],
+    "steps": [
+      "打开实际可用的Claude入口，提供资料；本地文件任务只授权练习文件夹。",
+      "让它列出将读取什么、生成什么、怎样复核，再推进一轮。",
+      "检查输出与来源，指出最值得修改的一处；保存决定和下一步。"
+    ],
+    "firstExercise": "提供Daylight的任务与状态，要求生成一页设计Brief：用户时刻、主行动、保留数据、验收方法。只让它澄清，不先画整套产品。",
+    "limits": [
+      "Chat/Cowork合并逐步开放，文件、连接器与执行能力以当前账户和入口为准。",
+      "模型偏好不能替代质量验收；相同Prompt可复用，Skills与插件仍需确认目标平台支持。"
+    ],
+    "pairs": [
+      "claude-artifacts",
+      "claude-code",
+      "refero",
+      "figma"
+    ],
+    "tags": [
+      "上下文",
+      "研究",
+      "文件任务",
+      "Cowork",
+      "演讲"
+    ],
+    "sources": [
+      {
+        "label": "官方：Claude聊天与Cowork整合说明",
+        "url": "https://support.claude.com/en/articles/16761823-claude-cowork-and-chat-are-one-claude"
+      },
+      {
+        "label": "官方：Cowork工作位置与首次任务",
+        "url": "https://academy.claude.com/tutorials/get-started-in-claude-cowork-in-three-steps"
+      }
+    ],
+    "evidence": "2026-09-24核对官方说明；用户已登录不等于本课已完成Cowork实操。这里保留可复做路线，不宣称模型优劣。",
+    "evidenceNote": "2026-09-24核对官方说明；用户已登录不等于本课已完成Cowork实操。这里保留可复做路线，不宣称模型优劣。",
+    "evidenceStatus": "待实操"
+  },
+  {
+    "id": "claude-code",
+    "name": "Claude Code",
+    "aliases": [
+      "Claude Code CLI",
+      "Anthropic Claude Code"
+    ],
+    "category": "AI助手与开发",
+    "kind": "面向代码仓库的开发代理",
+    "tagline": "用同一份上下文持续修改真实项目",
+    "url": "https://code.claude.com/docs/en/overview",
+    "description": "在代码仓库里读取文件、修改实现、运行命令，并连接开发工具。它有终端、编辑器、桌面和网页入口，适合持续制作同一个产品。设计要求应进入项目上下文，复用方法再整理为Skill；每轮都用实际改动与检查判断质量。",
+    "bestFor": [
+      "用Git保存设计迭代与实现",
+      "把重复的制作步骤整理为Skill",
+      "连接设计工具并核对实现结果"
+    ],
+    "outputs": [
+      "组件与页面代码改动",
+      "可复用的任务说明或Skill",
+      "检查记录、问题清单和交接摘要"
+    ],
+    "inputs": [
+      "项目仓库及运行说明",
+      "设计参考、任务状态和组件约束",
+      "CLAUDE.md或等效项目要求"
+    ],
+    "steps": [
+      "在项目副本开始，先让它说明当前结构、保留行为和运行方式。",
+      "把本轮限制写清；重复流程可用Skill，外部工具另配MCP并核对权限。",
+      "查看代码差异，执行相关检查；把失败、修复与未验部分一起保存。"
+    ],
+    "firstExercise": "给它Daylight代码与相同业务数据，只改善键盘焦点提示。要求列出改动文件，并实际检查开始按钮；不能运行则明确记录。",
+    "limits": [
+      "终端、编辑器和网页入口的文件环境不同，不能把一处可执行当作处处可执行。",
+      "CLAUDE.md、Skills、MCP和插件各有配置；迁移方法不等于直接复制所有安装文件。"
+    ],
+    "pairs": [
+      "figma",
+      "refero",
+      "remotion",
+      "claude-artifacts"
+    ],
+    "tags": [
+      "CLI",
+      "Git",
+      "Skills",
+      "MCP",
+      "代码",
+      "迭代"
+    ],
+    "sources": [
+      {
+        "label": "官方：Claude Code概览",
+        "url": "https://code.claude.com/docs/en/overview"
+      },
+      {
+        "label": "官方：Skills、MCP与插件的分工",
+        "url": "https://code.claude.com/docs/en/features-overview"
+      }
+    ],
+    "evidence": "2026-09-24核对官方文档；这是讲师常用路线的教程卡，本课尚无Claude Code独立实跑录像。",
+    "evidenceNote": "2026-09-24核对官方文档；这是讲师常用路线的教程卡，本课尚无Claude Code独立实跑录像。",
+    "evidenceStatus": "待实操"
+  },
+  {
+    "id": "claude-artifacts",
+    "name": "Claude Artifacts",
+    "aliases": [
+      "Claude Design（用户所指入口）",
+      "Artifacts"
+    ],
+    "category": "AI助手与开发",
+    "kind": "可预览、可迭代的视觉产物入口",
+    "tagline": "把讨论变成一份能看见、能修改的东西",
+    "url": "https://claude.ai/artifacts",
+    "description": "让对话产生可以打开、修改和分享的设计、文档或交互工具。本课沿用用户提供的Artifacts入口作为Claude Design演示路线。先做一个完整任务，再围绕同一份产物迭代；预览效果、外部连接和分享权限要分别确认。",
+    "bestFor": [
+      "快速展示一个界面方向",
+      "把说明变成小型交互工具",
+      "围绕同一产物做多轮视觉反馈"
+    ],
+    "outputs": [
+      "可预览的界面或交互产物",
+      "可修改的设计与内容版本",
+      "按权限分享的产物链接"
+    ],
+    "inputs": [
+      "一条具体任务与状态数据",
+      "两三张参考及明确采用规则",
+      "希望预览的尺寸与反馈重点"
+    ],
+    "steps": [
+      "打开本卡链接或对话中的Artifacts入口，提交完整任务包。",
+      "要求生成最小可预览版本；先核对数据、状态和主行动。",
+      "只改一个阅读或交互问题，保存前后版本；分享前确认访问范围。"
+    ],
+    "firstExercise": "创建Daylight任务页：3项、完成1项、剩余2项；点击“开始下一项”只变为进行中。保留首版，再改善一次信息层级。",
+    "limits": [
+      "Artifacts是产物入口；这里的Claude Design名称不代表一个可安装的Design Skill。",
+      "预览、MCP、存储与分享依账户和权限；生成界面不证明后端、真数据或整套体验已完成。"
+    ],
+    "pairs": [
+      "refero",
+      "mobbin",
+      "figma",
+      "claude-code"
+    ],
+    "tags": [
+      "Claude Design",
+      "Artifacts",
+      "界面",
+      "原型",
+      "视觉迭代"
+    ],
+    "sources": [
+      {
+        "label": "官方：Artifacts与Claude Design",
+        "url": "https://claude.com/features/artifacts"
+      },
+      {
+        "label": "官方：Artifacts能力与使用限制",
+        "url": "https://support.claude.com/en/articles/9487310-what-are-artifacts-and-how-do-i-use-them"
+      }
+    ],
+    "evidence": "2026-09-24核对官方说明；用户已提供登录入口，本课尚未完成该入口的生成、交互与录屏验证。",
+    "evidenceNote": "2026-09-24核对官方说明；用户已提供登录入口，本课尚未完成该入口的生成、交互与录屏验证。",
+    "evidenceStatus": "待实操"
+  },
+  {
+    "id": "gemini",
+    "name": "Gemini",
+    "aliases": [
+      "Google Gemini",
+      "Gemini Canvas"
+    ],
+    "category": "AI助手与开发",
+    "kind": "对话研究与Canvas创作",
+    "tagline": "从资料讨论走到可预览的页面",
+    "url": "https://gemini.google.com/",
+    "description": "可用来讨论资料和写作，也可在Canvas中制作文档、网页与交互原型。适合先解释一个产品任务，再将它变成能看见的结果。研究结论、页面实现和使用体验要分别检查；Gemini网页、开发平台和命令行工具并不共享所有能力。",
+    "bestFor": [
+      "整理研究后制作交互说明",
+      "在Canvas中探索页面方案",
+      "对同一任务做第二平台复做"
+    ],
+    "outputs": [
+      "研究与方案说明",
+      "Canvas文档或网页原型",
+      "依据反馈修改的可视结果"
+    ],
+    "inputs": [
+      "任务目标和已有资料",
+      "固定数据、文案与状态说明",
+      "参考方向和完成判据"
+    ],
+    "steps": [
+      "在可用账户中选择Canvas，提交与其他平台相同的任务包。",
+      "先检查主要流程和数据，再只调整一个布局或文案问题。",
+      "保存输出或分享入口，并用同一检查表比较；未运行的项目保留待验。"
+    ],
+    "firstExercise": "把Daylight同一任务包放进Canvas，制作任务页。比较“已完成”与“进行中”是否清楚，不通过改变任务数制造更好看的结果。",
+    "limits": [
+      "Canvas功能受设备、地区和账户条件影响；手机与桌面的编辑能力也可能不同。",
+      "Gemini网页、AI Studio与Gemini CLI是不同入口；Prompt可迁移，MCP和插件配置不能直接推定。"
+    ],
+    "pairs": [
+      "refero",
+      "figma",
+      "chatgpt",
+      "kimi"
+    ],
+    "tags": [
+      "Google",
+      "Canvas",
+      "研究",
+      "原型",
+      "跨平台"
+    ],
+    "sources": [
+      {
+        "label": "官方：Gemini Canvas功能与入口",
+        "url": "https://gemini.google/overview/canvas/"
+      }
+    ],
+    "evidence": "2026-09-24核对官方Canvas说明；本课尚未在Gemini执行同一任务，不能声称已验证跨平台等效。",
+    "evidenceNote": "2026-09-24核对官方Canvas说明；本课尚未在Gemini执行同一任务，不能声称已验证跨平台等效。",
+    "evidenceStatus": "待实操"
+  },
+  {
+    "id": "kimi",
+    "name": "Kimi",
+    "aliases": [
+      "Moonshot",
+      "Kimi 3（用户称呼）"
+    ],
+    "category": "AI助手与开发",
+    "kind": "中文资料处理与Agent任务入口",
+    "tagline": "用已有材料起步，先做一份能检查的结果",
+    "url": "https://www.kimi.com/",
+    "description": "可围绕资料进行搜索、问答与写作，也提供制作文档、演示和网页的任务能力。适合把中文材料整理成清楚的产品说明，再尝试一个小型交付。先确认当前模式和可用工具；聊天、网页任务与本地开发入口的权限不能混为一谈。",
+    "bestFor": [
+      "将中文资料整理为产品Brief",
+      "根据材料准备演示结构",
+      "复用同一Prompt比较设计方案"
+    ],
+    "outputs": [
+      "带依据的资料摘要",
+      "产品说明与演讲提纲",
+      "当前Agent入口支持的文件或网页"
+    ],
+    "inputs": [
+      "现有文档或直接粘贴的材料",
+      "目标用户、任务与事实数据",
+      "需要的格式、范围和检查方法"
+    ],
+    "steps": [
+      "提供材料并要求列出已读取的依据，先确认任务与输出形式。",
+      "用当前可用模式做一个小交付；若无预览能力，先输出完整说明或代码。",
+      "逐项核对数字与来源，实际打开结果；将差异反馈给下一轮。"
+    ],
+    "firstExercise": "用相同Daylight数据生成一页设计说明，再请求网页草稿。若当前入口无法预览，输出完整HTML并列出需要人工检查的行为。",
+    "limits": [
+      "模式、上传限制和Agent工具以当前账户为准；本课未验证具体型号的优劣或性能。",
+      "通用任务包可以复用；Kimi网页、本地Work与Code的Skills、MCP和执行权限需各自确认。"
+    ],
+    "pairs": [
+      "figma",
+      "refero",
+      "gemini",
+      "codex"
+    ],
+    "tags": [
+      "中文资料",
+      "研究",
+      "Agent",
+      "演讲",
+      "跨平台"
+    ],
+    "sources": [
+      {
+        "label": "官方：Kimi产品与能力概览",
+        "url": "https://www.kimi.com/en/help/new-user-guide/overview"
+      },
+      {
+        "label": "官方：Kimi帮助中心",
+        "url": "https://www.kimi.com/en/help"
+      }
+    ],
+    "evidence": "2026-09-24核对官方入门说明；本卡练习尚未实跑，不将用户给出的型号名称当作能力保证。",
+    "evidenceNote": "2026-09-24核对官方入门说明；本卡练习尚未实跑，不将用户给出的型号名称当作能力保证。",
+    "evidenceStatus": "待实操"
+  }
+]

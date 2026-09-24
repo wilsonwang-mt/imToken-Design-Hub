@@ -1,0 +1,15 @@
+{
+  "tools": 21,
+  "embeddedLogos": 21,
+  "duplicateIds": false,
+  "localLinks": "pass",
+  "schema": "pass",
+  "logoVisualInspection": "21 identifiers inspected in contact sheet; not page screenshot",
+  "browserQA": "blocked by Browser Use local URL security policy; no workaround attempted",
+  "reviewFixes": [
+    "dialog-local copy status",
+    "long-query wrapping",
+    "compare tray focus restoration"
+  ],
+  "filterChecks": "9 logic checks passed; no browser interaction exercised"
+}

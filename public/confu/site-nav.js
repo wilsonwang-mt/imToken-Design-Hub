@@ -11,6 +11,7 @@
   var titles = { ep01: 'EP01 · 会前十分钟，用 Skill 准备一次亮眼的演讲', ep02: 'EP02 · Design with AI' }
   var title = titles[ep] || document.title
   if (/claude-design\.html$/.test(location.pathname)) title = 'EP02 · Claude Design 专题'
+  if (/\/design-loop\//.test(location.pathname)) title = 'EP02 · 设计质量 Loop'
 
   var host = document.createElement('div')
   host.id = 'imt-design-nav'

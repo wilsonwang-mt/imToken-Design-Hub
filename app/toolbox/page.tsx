@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import Icon from '@/components/Icon'
 import { Ambient, Footer, Nav } from '@/components/Chrome'
-import { episodes, series, workflows } from '@/content/toolbox'
+import { atlas, episodes, series, workflows } from '@/content/toolbox'
 
 export const metadata: Metadata = {
   title: '设计师工具箱',
@@ -26,6 +26,41 @@ export default function Toolbox() {
           <p className="lead">
             我们日常在用的 AI 工具和方法。每一期 Confu 分享讲完后，演示文稿和资料包都会放在这里。
           </p>
+        </section>
+
+        <section className="wrap block tight atlas-block" aria-label={atlas.title}>
+          <a href={atlas.href} className="glass atlas">
+            <div className="atlas-main">
+              <p className="eyebrow">{atlas.eyebrow}</p>
+              <h2 className="atlas-title">
+                {atlas.title}
+                <span className="atlas-go"><Icon name="arrow" size={20} /></span>
+              </h2>
+              <p className="atlas-desc">{atlas.desc}</p>
+              <ul className="atlas-cats" aria-label="分类">
+                {atlas.categories.map((c) => (
+                  <li key={c}>{c}</li>
+                ))}
+              </ul>
+            </div>
+            <div className="atlas-side">
+              <div className="atlas-stats">
+                {atlas.stats.map((s) => (
+                  <div key={s.label}>
+                    <b>{s.value}</b>
+                    <span>{s.label}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="atlas-logos" aria-hidden="true">
+                {atlas.logos.map((l) => (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <span key={l.name} title={l.name}><img src={l.src} alt="" loading="lazy" /></span>
+                ))}
+              </div>
+              <span className="atlas-cta">打开图鉴 <Icon name="arrowUpRight" size={16} /></span>
+            </div>
+          </a>
         </section>
 
         <section className="wrap block tight" aria-labelledby="series-title">
