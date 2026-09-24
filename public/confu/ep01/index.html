@@ -1,0 +1,2488 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- ============================================================
+     Confu · 设计师 AI 工具箱 EP01
+     《会前十分钟，用 Skill 准备一次亮眼的演讲》
+     Built with the imtoken-html-slides skill · paged deck · light theme
+     ============================================================ -->
+<title>Confu EP01 · 会前十分钟，用 Skill 准备一次亮眼的演讲</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+SC:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+    /* ===== BRAND (official imToken azure — matches the logo gradient) ===== */
+    --brand: #007FFF;        --brand-rgb: 0,127,255;
+    --brand-dark: #0066D6;   --brand-light: #E5F2FF;
+    --purple: #7C3AED;       --purple-rgb: 124,58,237;   --purple-light: #EDE9FE;
+    --ai: #A78BFA;                                        /* AI / Agent content ONLY */
+    --green: #059669;        --green-rgb: 5,150,105;      --green-light: #D1FAE5;
+    --amber: #D97706;        --amber-rgb: 217,119,6;      --amber-light: #FEF3C7;
+    --red: #DC2626;          --red-rgb: 220,38,38;        --red-light: #FEE2E2;
+    --teal: #0D9488;         --cyan: #0891B2;             --cyan-light: #CFFAFE;
+
+    --bg: #FAFCFF; --bg-alt: #F0F6FF; --bg-dark: #0B1120; --surface: #FFFFFF;
+    --text: #0F172A; --text-secondary: #475569; --text-muted: #94A3B8;
+    --border: #E2E8F0; --border-light: #F1F5F9;
+
+    --font-display: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    --font-body:    'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    --font-mono:    'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+
+    --shadow-sm: 0 1px 2px rgba(15,23,42,0.04);
+    --shadow-md: 0 4px 12px rgba(15,23,42,0.06);
+    --shadow-lg: 0 8px 32px rgba(15,23,42,0.08);
+    --shadow-xl: 0 16px 48px rgba(15,23,42,0.12);
+    --radius: 16px; --radius-sm: 8px; --radius-xs: 4px; --radius-lg: 24px;
+    --nav-width: 18rem;
+}
+/* ── 大屏缩放锚点 ──────────────────────────────────────────────
+   deck 的字号、间距、卡片、最大宽度全部以 rem 表达，所以只要根字号
+   随视口放大，整套构图就等比放大。
+   · 同时受宽高约束（min(vw,vh)）：超宽屏不会因为够宽就把内容顶出屏幕；
+   · 1920×1080 恰好落在 16px —— 现有构图分毫不变；
+   · 2560×1440 → 21px，3840×2160 → 30px（封顶）；
+   · 低于 1920 时下限锁 16px，不会缩小。                    */
+html { font-size: clamp(16px, min(0.834vw, 1.482vh), 30px); }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: var(--font-body); background: var(--bg); color: var(--text); line-height: 1.6; -webkit-font-smoothing: antialiased; overflow: hidden; }
+
+/* ===== SELECTION ===== */
+/* 界面外壳不可选中，正文可选中：拖动经过侧边栏/页脚时不会产生零碎的选区 */
+.sidebar-nav, .kbd-hint, .progress, .rail-hotzone, .slide-footer, .page-indicator,
+.replay, .copy-btn, .demo-btn { user-select: none; -webkit-user-select: none; }
+.slide .stage { user-select: text; -webkit-user-select: text; }
+::selection { background: rgba(0,127,255,0.22); }
+
+/* ===== PROGRESS BAR ===== */
+.progress { position: fixed; top: 0; left: 0; height: 3px; width: 0; background: linear-gradient(90deg, var(--brand), var(--purple)); z-index: 300; transition: width 0.4s ease; }
+
+/* ===== LEFT SIDEBAR — auto-hide interactive rail ===== */
+.sidebar-nav {
+    position: fixed; top: 0; left: 0; bottom: 0; width: var(--nav-width);
+    background: rgba(255,255,255,0.97); backdrop-filter: blur(20px);
+    border-right: 1px solid var(--border); z-index: 101;
+    display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start;
+    padding: 0.9rem 0.55rem; overflow-y: auto; scrollbar-width: none;
+    transform: translateX(-100%);
+    transition: transform 240ms cubic-bezier(.3,.7,.4,1);
+    box-shadow: 8px 0 32px rgba(15,23,42,0.08);
+}
+.sidebar-nav.peek { transform: translateX(0); }
+.rail-hotzone { position: fixed; left: 0; top: 0; bottom: 0; width: 24px; z-index: 100; background: transparent; }
+.sidebar-nav::-webkit-scrollbar { display: none; }
+
+/* 目录行：缩略图 + 编号 + 标题 */
+.nav-thumb {
+    display: flex; align-items: center; gap: 0.6rem; flex-shrink: 0;
+    padding: 0.3rem 0.45rem; margin: 0.06rem 0; border-radius: 0.5rem;
+    cursor: pointer; position: relative; background: transparent;
+    border-left: 2px solid transparent;
+    transition: background 0.18s ease, border-color 0.18s ease;
+}
+.nav-thumb:hover { background: var(--bg-alt); }
+.nav-thumb.active { background: rgba(var(--brand-rgb),0.08); border-left-color: var(--brand); }
+.nav-thumb .thumb-frame {
+    width: 3rem; height: 2rem; border-radius: 0.25rem; background: #fff;
+    border: 1px solid var(--border); overflow: hidden; flex-shrink: 0;
+    display: flex; align-items: stretch; transition: border-color 0.18s ease;
+}
+.nav-thumb:hover .thumb-frame { border-color: var(--text-muted); }
+.nav-thumb.active .thumb-frame { border-color: var(--brand); }
+.nav-meta { min-width: 0; flex: 1; }
+.nav-num {
+    font-family: var(--font-mono); font-size: 0.6rem; font-weight: 700; letter-spacing: 0.09em;
+    color: var(--text-muted); line-height: 1.1; transition: color 0.18s ease;
+}
+.nav-thumb.active .nav-num { color: var(--brand); }
+.nav-title {
+    font-size: 0.74rem; line-height: 1.32; color: var(--text-secondary); margin-top: 0.13rem;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    transition: color 0.18s ease;
+}
+.nav-thumb.active .nav-title { color: var(--text); font-weight: 600; }
+/* 每个 Part 起始处一条分隔线，便于快速定位 */
+.nav-thumb.part-start { margin-top: 0.55rem; padding-top: 0.5rem; border-top: 1px solid var(--border-light); }
+.nav-thumb.part-start .nav-num { color: var(--brand); }
+.thumb-inner { width: 100%; height: 100%; padding: 3px; display: flex; flex-direction: column; gap: 1px; overflow: hidden; }
+.thumb-inner.cover-type { align-items: center; justify-content: center; gap: 2px; }
+.thumb-line { height: 2px; border-radius: 1px; flex-shrink: 0; }
+.thumb-block { border-radius: 1px; flex-shrink: 0; }
+.thumb-row { display: flex; gap: 1px; width: 100%; flex-shrink: 0; }
+
+/* ===== DECK / SLIDES ===== */
+.deck { position: relative; width: 100vw; height: 100vh; }
+.slide {
+    position: absolute; inset: 0; display: none; flex-direction: column;
+    padding: 7vh 5vw 13vh 5vw;
+    opacity: 0; transition: opacity 0.5s ease; overflow: auto;
+}
+.slide.active { display: flex; opacity: 1; }
+.slide .stage { flex: 1; display: flex; flex-direction: column; justify-content: center; max-width: min(90vw, 100rem); width: 100%; margin: 0 auto; }
+.slide.center .stage { align-items: center; text-align: center; }
+.slide.bg-alt { background: var(--bg-alt); }
+.slide.wide .stage { max-width: min(94vw, 112rem); }
+.slide.top .stage { justify-content: flex-start; padding-top: 1vh; }
+
+/* entrance: stagger direct children of .stage */
+.slide.active .stage > * { animation: fadeUp 0.55s cubic-bezier(0.25,1,0.5,1) both; }
+.slide.active .stage > *:nth-child(1) { animation-delay: 0.05s; }
+.slide.active .stage > *:nth-child(2) { animation-delay: 0.13s; }
+.slide.active .stage > *:nth-child(3) { animation-delay: 0.21s; }
+.slide.active .stage > *:nth-child(4) { animation-delay: 0.29s; }
+.slide.active .stage > *:nth-child(5) { animation-delay: 0.37s; }
+.slide.active .stage > *:nth-child(6) { animation-delay: 0.45s; }
+.slide.active .stage > *:nth-child(7) { animation-delay: 0.53s; }
+@keyframes fadeUp   { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeInDown { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: none; } }
+@keyframes float    { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-30px); } }
+@keyframes pulseDot { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: .55; transform: scale(.82); } }
+@keyframes spinSlow { to { transform: rotate(360deg); } }
+@keyframes dashFlow { to { stroke-dashoffset: -28; } }
+
+/* ===== STEPPED REVEAL (motion-interactions.md) ===== */
+[data-step] { opacity: 0; transform: translateY(16px); transition: opacity .55s ease, transform .55s ease; }
+[data-step].on { opacity: 1; transform: none; }
+[data-step].scale-in { transform: scale(.88); }
+[data-step].scale-in.on { transform: scale(1); }
+.replay {
+    position: absolute; top: 6vh; right: 5vw; z-index: 30;
+    font-family: var(--font-mono); font-size: .68rem; letter-spacing: .08em;
+    color: var(--text-muted); background: var(--surface);
+    border: 1px solid var(--border); border-radius: 100px; padding: 5px 13px;
+    cursor: pointer; opacity: 0; pointer-events: none; transition: opacity .4s ease, color .2s, border-color .2s;
+}
+.replay.show { opacity: .75; pointer-events: auto; }
+.replay:hover { color: var(--brand); border-color: var(--brand); opacity: 1; }
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
+}
+
+/* ===== FIXED FOOTER — left label · CENTER LOGO · right counter ===== */
+.foot {
+    position: fixed; bottom: 1.6rem; left: 5vw; right: 5vw;
+    display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
+    font-size: 0.75rem; color: var(--text-muted); font-family: var(--font-mono); z-index: 20;
+    pointer-events: none;
+}
+.foot .foot-label { text-align: left; letter-spacing: 0.04em; }
+.foot .foot-num { text-align: right; }
+.footer-logo { display: flex; align-items: center; justify-content: center; opacity: 0.9; }
+.footer-logo svg { height: 1.15rem; width: auto; display: block; }
+
+/* ===== TYPOGRAPHY ===== */
+.kicker { font-family: var(--font-mono); font-size: 0.75rem; color: var(--brand); text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 1rem; font-weight: 600; }
+.kicker.purple { color: var(--purple); } .kicker.green { color: var(--green); } .kicker.amber { color: var(--amber); } .kicker.red { color: var(--red); }
+h1 { font-family: var(--font-display); font-size: clamp(2.8rem, 6vw, 5rem); font-weight: 800; letter-spacing: -0.035em; line-height: 1.08; margin-bottom: 1.25rem; }
+h2 { font-family: var(--font-display); font-size: clamp(1.9rem, 3.9vw, 3.1rem); font-weight: 700; letter-spacing: -0.028em; line-height: 1.18; margin-bottom: 1rem; }
+h3 { font-family: var(--font-display); font-size: 1.25rem; font-weight: 650; letter-spacing: -0.01em; margin-bottom: 0.5rem; }
+h4 { font-family: var(--font-display); font-size: 1rem; font-weight: 650; letter-spacing: -0.005em; margin-bottom: 0.35rem; }
+.subtitle { font-size: clamp(1.05rem, 1.6vw, 1.35rem); color: var(--text-secondary); line-height: 1.7; max-width: 68ch; }
+.slide.center .subtitle { margin-left: auto; margin-right: auto; }
+p { color: var(--text-secondary); font-size: 1.0rem; line-height: 1.7; }
+strong { color: var(--text); font-weight: 650; }
+.big-statement { font-family: var(--font-display); font-size: clamp(2.4rem, 5.4vw, 4.4rem); font-weight: 800; letter-spacing: -0.038em; line-height: 1.16; }
+.grad-text { background: linear-gradient(135deg, var(--brand), var(--purple)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.hairline { width: 64px; height: 2px; background: linear-gradient(90deg, var(--brand), var(--purple)); border-radius: 2px; margin: 0 0 1.75rem; }
+.slide.center .hairline { margin-left: auto; margin-right: auto; }
+.mono { font-family: var(--font-mono); }
+.muted { color: var(--text-muted); }
+.gloss { font-size: 0.78rem; color: var(--text-secondary); font-weight: 400; }
+
+.label { display: inline-block; font-size: 0.72rem; font-weight: 650; text-transform: uppercase; letter-spacing: 0.1em; padding: 5px 12px; border-radius: 100px; }
+.label-blue { background: var(--brand-light); color: var(--brand); }
+.label-purple { background: var(--purple-light); color: var(--purple); }
+.label-green { background: var(--green-light); color: var(--green); }
+.label-amber { background: var(--amber-light); color: var(--amber); }
+.label-red { background: var(--red-light); color: var(--red); }
+.label-gray { background: var(--border-light); color: var(--text-muted); }
+.label.cn { text-transform: none; letter-spacing: 0.02em; font-size: 0.76rem; }
+
+/* ===== CARDS & GRID ===== */
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.6rem 1.75rem; box-shadow: var(--shadow-sm); }
+.card.accent-left { border-left: 3px solid var(--brand); }
+.card.purple-left { border-left: 3px solid var(--purple); }
+.card.green-left  { border-left: 3px solid var(--green); }
+.card.amber-left  { border-left: 3px solid var(--amber); }
+.card.red-left    { border-left: 3px solid var(--red); }
+.card.highlight   { background: var(--bg-alt); border-color: transparent; }
+.card.tight       { padding: 1.15rem 1.3rem; }
+.card.lift { transition: transform .22s cubic-bezier(0.23,1,0.32,1), box-shadow .22s; }
+.card.lift:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+.card .ghost-num { position: absolute; top: 10px; right: 14px; font-size: 2.1rem; font-weight: 800; color: var(--border-light); line-height: 1; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.1rem; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.1rem; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.9rem; }
+.grid-5 { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 0.85rem; }
+.grid-auto { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.1rem; }
+.stack { display: flex; flex-direction: column; gap: 0.9rem; }
+.row { display: flex; gap: 1rem; align-items: center; }
+.row.wrap { flex-wrap: wrap; }
+.mt-1 { margin-top: 0.75rem; } .mt-2 { margin-top: 1.5rem; } .mt-3 { margin-top: 2.25rem; }
+
+/* ===== BIG STAT ===== */
+.stat { text-align: center; }
+.stat .num { font-family: var(--font-mono); font-size: clamp(2rem, 3.6vw, 3rem); font-weight: 800; line-height: 1; background: linear-gradient(135deg, var(--brand), var(--purple)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.stat .cap { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.45rem; letter-spacing: .02em; }
+.stat-row { display: flex; gap: 2.5rem; flex-wrap: wrap; }
+.slide.center .stat-row { justify-content: center; }
+
+/* ===== STATUS PILL (dot + text) ===== */
+.spill { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.2rem; border-radius: 100px;
+         background: rgba(var(--brand-rgb),0.07); border: 1px solid rgba(var(--brand-rgb),0.16);
+         font-size: 0.82rem; font-weight: 550; color: var(--brand); }
+.spill .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+.spill.live .dot { animation: pulseDot 1.6s ease-in-out infinite; }
+.spill.purple { background: rgba(var(--purple-rgb),0.07); border-color: rgba(var(--purple-rgb),0.16); color: var(--purple); }
+.spill.green  { background: rgba(var(--green-rgb),0.08);  border-color: rgba(var(--green-rgb),0.18);  color: var(--green); }
+.spill.amber  { background: rgba(var(--amber-rgb),0.08);  border-color: rgba(var(--amber-rgb),0.18);  color: var(--amber); }
+.spill.red    { background: rgba(var(--red-rgb),0.07);    border-color: rgba(var(--red-rgb),0.16);    color: var(--red); }
+
+/* ===== CHIPS ===== */
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 0.32rem 0.62rem; border-radius: 8px;
+        font-size: 0.72rem; color: var(--text-secondary); background: rgba(var(--brand-rgb),0.05);
+        border: 1px solid rgba(var(--brand-rgb),0.16); white-space: nowrap; }
+.chip.purple { background: rgba(var(--purple-rgb),0.05); border-color: rgba(var(--purple-rgb),0.16); }
+.chip.green  { background: rgba(var(--green-rgb),0.06);  border-color: rgba(var(--green-rgb),0.18); }
+.chip.amber  { background: rgba(var(--amber-rgb),0.06);  border-color: rgba(var(--amber-rgb),0.18); }
+.chip.red    { background: rgba(var(--red-rgb),0.05);    border-color: rgba(var(--red-rgb),0.16); }
+.chip.gray   { background: var(--border-light); border-color: var(--border); color: var(--text-muted); }
+.chip.dashed { border-style: dashed; }
+.chip svg { width: 13px; height: 13px; flex-shrink: 0; }
+
+/* ===== COMPARISON TABLE ===== */
+.comparison { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+.comparison th { text-align: left; padding: 0.85rem 1rem; font-weight: 650; border-bottom: 2px solid var(--border);
+                 font-size: 0.8rem; letter-spacing: 0.02em; color: var(--text-secondary); font-family: var(--font-body); }
+.comparison td { padding: 0.85rem 1rem; border-bottom: 1px solid var(--border-light); vertical-align: top; color: var(--text-secondary); }
+.comparison tr:last-child td { border-bottom: none; }
+.comparison .from-cell { color: var(--text-muted); font-style: italic; }
+.comparison .to-cell { color: var(--text); font-weight: 600; }
+.comparison td strong { color: var(--text); }
+
+/* ===== SCHEDULE TABLE ===== */
+.schedule { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 0.88rem; }
+.schedule th { padding: 0.65rem 0.9rem; text-align: left; font-weight: 700; font-size: 0.8rem;
+               letter-spacing: 0.02em; background: var(--bg-alt); border-bottom: 2px solid var(--border); color: var(--text-secondary); font-family: var(--font-body); }
+.schedule th:first-child { border-radius: var(--radius-sm) 0 0 0; }
+.schedule th:last-child { border-radius: 0 var(--radius-sm) 0 0; }
+.schedule td { padding: 0.6rem 0.9rem; border-bottom: 1px solid var(--border-light); vertical-align: middle; color: var(--text-secondary); }
+.schedule tr:last-child td { border-bottom: none; }
+.time-tag { font-family: var(--font-mono); font-size: 0.72rem; font-weight: 600; color: var(--brand);
+            background: var(--brand-light); padding: 2px 8px; border-radius: 4px; white-space: nowrap; }
+.time-tag.purple { color: var(--purple); background: var(--purple-light); }
+.time-tag.green  { color: var(--green);  background: var(--green-light); }
+.time-tag.amber  { color: var(--amber);  background: var(--amber-light); }
+
+/* ===== FLOW STEPS (vertical) ===== */
+.flow-step { display: flex; gap: 1rem; align-items: flex-start; }
+.flow-dot { width: 30px; height: 30px; border-radius: 50%; background: var(--brand); color: #fff;
+            display: flex; align-items: center; justify-content: center; font-size: 0.78rem; font-weight: 700;
+            flex-shrink: 0; font-family: var(--font-mono); }
+.flow-dot.purple { background: var(--purple); } .flow-dot.green { background: var(--green); }
+.flow-dot.amber { background: var(--amber); } .flow-dot.red { background: var(--red); }
+.flow-dot.ghost { background: #fff; border: 1.5px solid var(--border); color: var(--text-muted); }
+.flow-line { width: 2px; height: 20px; background: var(--border); margin-left: 14px; }
+
+/* ===== HORIZONTAL FLOW (arrow between steps) ===== */
+.hflow { display: flex; align-items: stretch; gap: 0; }
+.hstep { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 13px; padding: 1rem 1.1rem; position: relative; }
+.hstep + .hstep { margin-left: 32px; }
+.hstep + .hstep::before { content: "→"; position: absolute; left: -25px; top: 50%; transform: translateY(-50%);
+                          color: var(--text-muted); font-size: 17px; }
+.hstep .fn { font-family: var(--font-mono); font-size: 0.62rem; font-weight: 800; color: var(--brand); margin-bottom: 5px; letter-spacing: .08em; text-transform: uppercase; }
+.hstep b { font-size: 0.92rem; display: block; margin-bottom: 4px; color: var(--text); }
+.hstep p { margin: 0; font-size: 0.78rem; line-height: 1.55; }
+
+/* ===== PHASE BLOCK ===== */
+.phase-block { border-radius: var(--radius); padding: 1.4rem 1.6rem; border: 1px solid var(--border); }
+.phase-block.p1 { background: linear-gradient(135deg,#EFF6FF,#F8FAFC); border-left: 4px solid var(--brand); }
+.phase-block.p2 { background: linear-gradient(135deg,#F5F3FF,#F8FAFC); border-left: 4px solid var(--purple); }
+.phase-block.p3 { background: linear-gradient(135deg,#FFFBEB,#F8FAFC); border-left: 4px solid var(--amber); }
+.phase-block.p4 { background: linear-gradient(135deg,#ECFDF5,#F8FAFC); border-left: 4px solid var(--green); }
+
+/* ===== PLACEHOLDER (missing screenshot / asset) ===== */
+.placeholder { background: linear-gradient(135deg, var(--bg-alt), #F8F0FF); border: 2px dashed var(--border);
+               border-radius: var(--radius); padding: 2rem 1.5rem; text-align: center;
+               display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .35rem;
+               position: relative; overflow: hidden; }
+.placeholder .ph-icon { color: var(--text-muted); opacity: .5; margin-bottom: .35rem; }
+.placeholder .ph-title { font-weight: 650; font-size: 0.95rem; color: var(--text); }
+.placeholder .ph-file { font-family: var(--font-mono); font-size: 0.72rem; color: var(--brand); background: var(--brand-light);
+                        padding: 3px 9px; border-radius: 5px; margin-top: .3rem; }
+.placeholder .ph-desc { font-size: 0.78rem; color: var(--text-muted); max-width: 46ch; }
+.placeholder img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+
+/* ===== TERMINAL BLOCK ===== */
+.term { background: #0B1120; border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-lg); border: 1px solid #1E293B; }
+.term-bar { height: 34px; display: flex; align-items: center; gap: 7px; padding: 0 13px; background: #131C2E; border-bottom: 1px solid #1E293B; }
+.term-bar .dot { width: 9px; height: 9px; border-radius: 50%; }
+.term-bar .ttl { flex: 1; text-align: center; font-family: var(--font-mono); font-size: 0.66rem; color: #64748B; }
+.term-body { padding: 1.1rem 1.3rem; font-family: var(--font-mono); font-size: 0.8rem; line-height: 1.85; color: #CBD5E1; overflow-x: auto; }
+.term-body .pr { color: #34D399; } .term-body .cm { color: #64748B; } .term-body .hl { color: #7FB6FF; }
+.term-body .ok { color: #34D399; } .term-body .wr { color: #FBBF24; } .term-body .em { color: #fff; font-weight: 600; }
+
+/* ===== PROMPT BLOCK (copyable) ===== */
+.prompt { background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--brand);
+          border-radius: var(--radius-sm); padding: 1rem 1.2rem; position: relative; }
+.prompt .p-head { display: flex; align-items: center; gap: .6rem; margin-bottom: .55rem; }
+.prompt .p-tag { font-family: var(--font-mono); font-size: 0.62rem; font-weight: 800; letter-spacing: .1em;
+                 color: var(--brand); text-transform: uppercase; }
+.prompt .p-body { font-size: 0.85rem; line-height: 1.75; color: var(--text-secondary); }
+.prompt .p-body em { color: var(--brand); font-style: normal; font-weight: 600; background: var(--brand-light); padding: 1px 5px; border-radius: 4px; }
+.copy-btn { margin-left: auto; font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: .06em; color: var(--text-muted);
+            background: var(--bg-alt); border: 1px solid var(--border); border-radius: 100px; padding: 3px 10px; cursor: pointer; transition: all .2s; }
+.copy-btn:hover { color: var(--brand); border-color: var(--brand); }
+.copy-btn.done { color: var(--green); border-color: var(--green); }
+
+/* ===== COVER ORBS + GRID TEXTURE ===== */
+.cover-bg { position: absolute; inset: 0; overflow: hidden; z-index: 0; pointer-events: none; }
+.cover-bg .orb { position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.15; animation: float 12s ease-in-out infinite; }
+.cover-bg .grid-tex { position: absolute; inset: 0; opacity: .035; }
+.slide .stage { position: relative; z-index: 1; }
+
+/* ===== DEMO / LINK BUTTONS ===== */
+.demo-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 0.62rem 1.15rem; border-radius: 100px; border: 1px solid var(--brand);
+    background: var(--brand-light); color: var(--brand);
+    font-family: var(--font-body); font-size: 0.84rem; font-weight: 650;
+    cursor: pointer; transition: all 0.2s;
+}
+.demo-btn:hover { background: var(--brand); color: #fff; box-shadow: 0 4px 16px rgba(var(--brand-rgb),0.3); }
+.demo-btn svg { width: 15px; height: 15px; flex-shrink: 0; }
+.demo-btn.solid { background: var(--brand); color: #fff; }
+.demo-btn.solid:hover { background: var(--brand-dark); }
+.demo-btn.purple { border-color: var(--purple); background: var(--purple-light); color: var(--purple); }
+.demo-btn.purple:hover { background: var(--purple); color: #fff; box-shadow: 0 4px 16px rgba(var(--purple-rgb),0.3); }
+.demo-btn.ghost { border-color: var(--border); background: var(--surface); color: var(--text-secondary); }
+.demo-btn.ghost:hover { border-color: var(--brand); color: var(--brand); background: var(--brand-light); box-shadow: none; }
+.demo-btn[data-url-missing="1"] { border-style: dashed; opacity: .78; }
+
+/* ===== KEYBOARD HINT ===== */
+.kbd-hint { position: fixed; bottom: 3.9rem; left: 50%; transform: translateX(-50%);
+    font-family: var(--font-mono); font-size: 0.7rem; color: var(--text-muted);
+    background: var(--surface); border: 1px solid var(--border); border-radius: 100px;
+    padding: 6px 15px; z-index: 25; opacity: 0; pointer-events: none;
+    transition: opacity 0.6s ease; box-shadow: var(--shadow-sm); }
+.kbd-hint.show { opacity: 1; }
+kbd { font-family: var(--font-mono); font-size: .92em; background: var(--bg-alt); border: 1px solid var(--border);
+      border-bottom-width: 2px; border-radius: 4px; padding: 1px 5px; color: var(--text-secondary); }
+
+/* ===== SPEAKER NOTES PANEL (press N) ===== */
+.notes-panel { position: fixed; left: 0; right: 0; bottom: 0; z-index: 260;
+    background: rgba(11,17,32,.96); backdrop-filter: blur(14px); color: #E2E8F0;
+    padding: 1.1rem 5vw 1.2rem; transform: translateY(101%); transition: transform .35s cubic-bezier(0.23,1,0.32,1);
+    box-shadow: 0 -8px 40px rgba(0,0,0,.25); max-height: 42vh; overflow-y: auto; }
+.notes-panel.open { transform: translateY(0); }
+.notes-panel .n-head { font-family: var(--font-mono); font-size: .62rem; letter-spacing: .14em; text-transform: uppercase;
+    color: #7FB6FF; margin-bottom: .5rem; display: flex; align-items: center; gap: .8rem; }
+.notes-panel .n-body { font-size: .92rem; line-height: 1.75; color: #CBD5E1; white-space: pre-wrap; max-width: 100ch; }
+.notes-panel .n-close { margin-left: auto; cursor: pointer; color: #64748B; font-size: .68rem; }
+.notes-panel .n-close:hover { color: #fff; }
+
+/* ===== MOBILE PROTOTYPE — right slide-in panel ===== */
+.demo-panel {
+    position: fixed; top: 0; right: 0; bottom: 0; width: 440px;
+    background: var(--bg); border-left: 1px solid var(--border);
+    box-shadow: -8px 0 40px rgba(0,0,0,0.1); z-index: 200;
+    transform: translateX(100%); transition: transform 0.4s cubic-bezier(0.23,1,0.32,1);
+    display: flex; flex-direction: column; align-items: center; padding: 16px 20px 20px; overflow-y: auto;
+}
+.demo-panel.open { transform: translateX(0); }
+.demo-panel-header { display: flex; align-items: center; justify-content: space-between; width: 100%; margin-bottom: 12px; flex-shrink: 0; }
+.demo-panel-header span { font-size: 0.78rem; font-weight: 600; color: var(--text-muted); letter-spacing: 0.04em; font-family: var(--font-mono); }
+.overlay-close { width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s; flex-shrink: 0; }
+.overlay-close:hover { background: var(--bg-alt); }
+.demo-phone-frame { width: 393px; height: 852px; border-radius: 40px; overflow: hidden; border: 6px solid #1a1a2e; box-shadow: 0 12px 48px rgba(0,0,0,0.15); flex-shrink: 0; background: #000; position: relative; }
+.demo-phone-frame iframe { width: 100%; height: 100%; border: none; }
+@media (min-width: 1400px) { body.demo-open .slide { padding-right: calc(440px + 3vw); transition: padding 0.4s cubic-bezier(0.23,1,0.32,1); } }
+
+/* ===== DESKTOP PROTOTYPE — center fade-in modal ===== */
+.desktop-modal-backdrop {
+    position: fixed; inset: 0; z-index: 300;
+    background: rgba(11,17,32,0.5); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity 0.35s ease;
+}
+.desktop-modal-backdrop.open { opacity: 1; pointer-events: auto; }
+.desktop-modal {
+    width: min(1320px, 92vw); height: min(820px, 88vh);
+    background: var(--surface); border-radius: 16px; overflow: hidden;
+    box-shadow: var(--shadow-xl); display: flex; flex-direction: column;
+    transform: scale(0.96) translateY(12px); transition: transform 0.35s cubic-bezier(0.23,1,0.32,1);
+}
+.desktop-modal-backdrop.open .desktop-modal { transform: scale(1) translateY(0); }
+.desktop-modal-bar { height: 44px; flex-shrink: 0; display: flex; align-items: center; gap: 8px; padding: 0 14px; background: var(--bg-alt); border-bottom: 1px solid var(--border); }
+.desktop-modal-bar .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.desktop-modal-bar .url { flex: 1; text-align: center; font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 0 .5rem; }
+.desktop-modal-bar .ext { font-family: var(--font-mono); font-size: .64rem; color: var(--text-muted); border: 1px solid var(--border);
+    background: var(--surface); border-radius: 100px; padding: 4px 11px; cursor: pointer; text-decoration: none; transition: all .2s; flex-shrink: 0; }
+.desktop-modal-bar .ext:hover { color: var(--brand); border-color: var(--brand); }
+.desktop-modal .frame-wrap { flex: 1; position: relative; background: var(--bg-alt); }
+.desktop-modal iframe { width: 100%; height: 100%; border: none; display: block; }
+
+/* ===== IMAGE LIGHTBOX — 点击放大，关闭后回到原页 ===== */
+.zoomable { cursor: zoom-in; transition: transform .22s cubic-bezier(.23,1,.32,1); }
+.zoomable:hover { transform: scale(1.015); }
+.zoom-hint {
+    position: absolute; right: .7rem; bottom: .7rem; z-index: 3; pointer-events: none;
+    display: inline-flex; align-items: center; gap: .35rem;
+    font-family: var(--font-mono); font-size: .62rem; letter-spacing: .06em;
+    color: var(--text-secondary); background: rgba(255,255,255,.92);
+    border: 1px solid var(--border); border-radius: 100px; padding: .28rem .6rem;
+    box-shadow: var(--shadow-sm); opacity: 0; transition: opacity .22s ease;
+}
+.has-zoom:hover .zoom-hint { opacity: 1; }
+.lightbox {
+    position: fixed; inset: 0; z-index: 320;
+    background: rgba(11,17,32,.84); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    display: flex; align-items: center; justify-content: center; padding: 4vh 4vw;
+    opacity: 0; pointer-events: none; transition: opacity .3s ease; cursor: zoom-out;
+}
+.lightbox.open { opacity: 1; pointer-events: auto; }
+.lightbox img {
+    /* width/height 100% + contain：既能缩小也能放大，永远填满可用区。
+       用 max-* 会只封顶不放大，在 4K 上点开比页内还小。 */
+    width: 100%; height: 100%; object-fit: contain; background: transparent;
+    border-radius: var(--radius); box-shadow: 0 30px 90px rgba(0,0,0,.5);
+    transform: scale(.97); transition: transform .3s cubic-bezier(.23,1,.32,1);
+}
+.lightbox.open img { transform: scale(1); }
+.lb-close { position: absolute; top: 2rem; right: 2.2rem; background: rgba(255,255,255,.94); border-color: transparent; }
+.lb-hint { position: absolute; bottom: 1.8rem; left: 50%; transform: translateX(-50%);
+    font-family: var(--font-mono); font-size: .74rem; letter-spacing: .06em; color: rgba(255,255,255,.6); }
+
+/* Dual-safety fallback: shown when an external site refuses to be framed */
+.frame-fallback { position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center;
+    gap: .9rem; text-align: center; padding: 2rem; background: linear-gradient(135deg, var(--bg-alt), #F8F0FF); }
+.frame-fallback.show { display: flex; }
+/* Non-blocking variant: we could not verify the frame painted (cross-origin), so we
+   never cover working content — we just offer a visible escape hatch along the bottom. */
+.frame-fallback.hint { display: flex; inset: auto 0 0 0; flex-direction: row; gap: .9rem;
+    padding: .7rem 1.1rem; background: rgba(15,23,42,.92); backdrop-filter: blur(8px);
+    border-top: 1px solid rgba(255,255,255,.12); text-align: left; }
+.frame-fallback.hint .ff-title { color: #fff; font-size: .85rem; }
+.frame-fallback.hint .ff-desc { color: rgba(255,255,255,.62); font-size: .76rem; max-width: none; flex: 1; }
+.frame-fallback.hint .ff-url, .frame-fallback.hint > svg { display: none; }
+.frame-fallback.hint .demo-btn { flex-shrink: 0; }
+.frame-fallback .ff-title { font-size: 1.05rem; font-weight: 650; color: var(--text); }
+.frame-fallback .ff-desc { font-size: .84rem; color: var(--text-muted); max-width: 46ch; line-height: 1.7; }
+.frame-fallback .ff-url { font-family: var(--font-mono); font-size: .76rem; color: var(--brand); background: var(--brand-light);
+    padding: 5px 12px; border-radius: 6px; word-break: break-all; max-width: 70ch; }
+
+/* ===== RESPONSIVE ===== */
+/* Short viewports (e.g. a 1366x768 laptop mirroring to the projector): stop centring,
+   tighten the frame, so tall slides scroll from the top instead of clipping. */
+@media (max-height: 900px) {
+    .slide { padding: 4.5vh 4.5vw 10vh 4.5vw; }
+    .slide .stage { justify-content: flex-start; padding-top: .5vh; }
+    .slide.center .stage { justify-content: center; padding-top: 0; }
+    .foot { bottom: 1.1rem; }
+    .replay { top: 3.5vh; right: 4.5vw; }
+    /* recover vertical budget so the densest slides still fit without scrolling */
+    .card { padding: 1.2rem 1.35rem; }
+    .card.tight { padding: .9rem 1.05rem; }
+    h2 { margin-bottom: .7rem; }
+    .subtitle { font-size: 1.02rem; line-height: 1.6; }
+    .grid-2, .grid-3, .grid-auto { gap: .9rem; }
+    .stack { gap: .7rem; }
+    .hflow .hstep { padding: .8rem .9rem; }
+    .slide[data-section="habits-sum"] .scale-in { padding: 1.15rem 1.5rem !important; }
+    .slide[data-section="move-6"] .flow-step { gap: .55rem !important; }
+    .slide[data-section="move-6"] .stack { gap: .28rem !important; }
+    .slide[data-section="move-6"] .card { padding: 1rem 1.2rem !important; }
+    .slide[data-section="demo-cowork"] .placeholder { height: min(41rem, 56vh) !important; }
+    .slide[data-section="habits-sum"] .scale-in > div:last-child { font-size: 1.5rem !important; }
+}
+@media (max-width: 1100px) {
+    .sidebar-nav, .rail-hotzone { display: none; }
+    .demo-panel { width: 100vw; }
+    .replay { right: 4vw; }
+    .hflow { flex-direction: column; gap: .8rem; }
+    .hstep + .hstep { margin-left: 0; margin-top: 20px; }
+    .hstep + .hstep::before { content: "↓"; left: 50%; top: -22px; transform: translateX(-50%); }
+}
+@media (max-width: 768px) {
+    body { overflow: auto; }
+    .deck { height: auto; }
+    .slide { position: static; display: none; min-height: 100vh; padding: 9vh 1.5rem 14vh; }
+    .slide.active { display: flex; }
+    .grid-2, .grid-3, .grid-4, .grid-5, .grid-auto { grid-template-columns: 1fr; }
+    .foot { font-size: 0.62rem; left: 1.5rem; right: 1.5rem; }
+    .stat-row { gap: 1.4rem; }
+    .notes-panel { padding-left: 1.5rem; padding-right: 1.5rem; }
+    .comparison, .schedule { font-size: .8rem; }
+    .comparison th, .comparison td, .schedule th, .schedule td { padding: .55rem .5rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="progress" id="prog"></div>
+<div class="sidebar-nav" id="sidebarNav"></div>
+
+<div class="deck">
+<section class="slide center" data-section="cover" data-thumb="cover" data-thumb-color="blue" data-label="封面" data-speaker-notes="不要自我介绍，不要念 agenda，直接进场景。深呼吸，看全场三秒再开口。">
+    <div class="cover-bg">
+        <div class="orb" style="width:520px;height:520px;background:var(--brand);top:-12%;left:14%;"></div>
+        <div class="orb" style="width:430px;height:430px;background:var(--purple);bottom:-8%;right:10%;animation-delay:-6s;"></div>
+        <svg class="grid-tex" width="100%" height="100%"><defs><pattern id="gridCover" width="60" height="60" patternUnits="userSpaceOnUse"><path d="M 60 0 L 0 0 0 60" fill="none" stroke="#0F172A" stroke-width="0.5"/></pattern></defs><rect width="100%" height="100%" fill="url(#gridCover)"/></svg>
+    </div>
+    <div class="stage">
+        <div><span class="label cn label-blue" style="font-size:.8rem;">Confu · 设计师 AI 工具箱 EP01</span></div>
+        <h1>会前十分钟，<br>用 Skill 准备一次<span class="grad-text">亮眼的演讲</span>。</h1>
+        <p class="subtitle" style="margin-bottom:2.5rem;">一套让 AI 从项目第一天就在场的方法 —— 以及为什么最亮的那部分，AI 给不了你。</p>
+        <div class="stat-row" style="margin-bottom:2.5rem;">
+            <div class="stat"><div class="num">60</div><div class="cap">分钟</div></div>
+            <div class="stat"><div class="num">2</div><div class="cap">个 Live Demo</div></div>
+            <div class="stat"><div class="num">1</div><div class="cap">场现场实操</div></div>
+        </div>
+        <div class="mono muted" style="font-size:.78rem;letter-spacing:.06em;line-height:2;">Wilson Wang · Principal Product Designer · imToken UXD<br>2026.08.07 FRI 17:00</div>
+    </div>
+</section>
+
+<section class="slide" data-section="panic" data-thumb="split" data-thumb-color="red" data-group="Opening" data-label="会前恐慌" data-speaker-notes="讲得慢一点，让每个人都想起自己那次。停顿在&quot;决定空手上场&quot;后面。约 90 秒。">
+    <div class="stage">
+        <div class="kicker red">THE VILLAIN · FRI 16:50</div>
+        <h2>「会前恐慌」</h2>
+        <p class="subtitle" style="margin-bottom:2rem;">周五 16:50，17:00 要汇报。接下来的八分钟，你做的每一件事都不是在准备演讲。</p>
+        <div class="grid-2" style="grid-template-columns:1.05fr .95fr;gap:1.6rem;align-items:start;">
+            <div class="stack" style="gap:0;">
+                <div class="flow-step" data-step="1">
+                    <div class="flow-dot">50</div>
+                    <div><div style="font-size:.98rem;font-weight:650;color:var(--text);">打开电脑，先翻 Slack</div><div class="gloss" style="margin-top:.15rem;">找上周的会议纪要，翻了三个频道</div></div>
+                </div>
+                <div class="flow-line" data-step="1"></div>
+                <div class="flow-step" data-step="1">
+                    <div class="flow-dot">54</div>
+                    <div><div style="font-size:.98rem;font-weight:650;color:var(--text);">再翻 Figma，找最新的稿</div><div class="gloss" style="margin-top:.15rem;">「final / final-2 / final-真的最终」到底哪个是最新</div></div>
+                </div>
+                <div class="flow-line" data-step="2"></div>
+                <div class="flow-step" data-step="2">
+                    <div class="flow-dot amber">57</div>
+                    <div><div style="font-size:.98rem;font-weight:650;color:var(--text);">问同事：「那个数据最后定的是多少来着？」</div><div class="gloss" style="margin-top:.15rem;">对方在开会，没回</div></div>
+                </div>
+                <div class="flow-line" data-step="2"></div>
+                <div class="flow-step" data-step="2">
+                    <div class="flow-dot red">58</div>
+                    <div><div style="font-size:1.15rem;font-weight:700;color:var(--red);">你决定空手上场。</div><div class="gloss" style="margin-top:.15rem;">带着一份没打开过的文档走进会议室</div></div>
+                </div>
+            </div>
+            <div class="card red-left" data-step="3" style="position:relative;">
+                <div class="row" style="align-items:center;gap:.6rem;margin-bottom:.9rem;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color:var(--red);"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg>
+                    <span class="label cn label-red">帮凶</span>
+                </div>
+                <h3>你伸手抓的救命稻草</h3>
+                <p style="font-size:.88rem;margin:0 0 .9rem;">打开 AI，粘贴三段零碎信息：「帮我做一份项目进展汇报 PPT。」十页，结构完整，配色专业 —— 然后你不敢投屏。</p>
+                <div class="row wrap" style="gap:.4rem;"><span class="chip red">数据是编的</span><span class="chip red">项目名是猜的</span><span class="chip red">结论是通用的</span></div>
+                <div style="border-top:1px solid var(--border);margin-top:1rem;padding-top:.9rem;">
+                    <div class="mono" style="font-size:.62rem;letter-spacing:.12em;color:var(--text-muted);margin-bottom:.5rem;">WHY IT FAILS</div>
+                    <div style="font-size:.84rem;line-height:1.95;color:var(--text-secondary);">它不知道你上周做了什么<br>它没见过你的 Figma、你的文档<br>它只能拿通用行业常识来填空</div>
+                </div>
+            </div>
+        </div>
+        <div style="margin-top:1.8rem;"><span class="spill red" data-step="3"><span class="dot"></span>这不是时间管理问题 —— 是上下文管理问题</span></div>
+    </div>
+    <button class="replay">↻ replay</button>
+</section>
+
+<section class="slide center" data-section="headline" data-thumb="statement" data-thumb-color="blue" data-group="Opening" data-label="今晚的那句话" data-speaker-notes="这句话今晚会重复至少四次。说完停两秒，不要马上翻页。">
+    <div class="stage">
+        <div class="mono" style="font-size:.72rem;letter-spacing:.22em;color:var(--text-muted);margin-bottom:1.4rem;">THE ONE LINE</div>
+        <div class="hairline"></div>
+        <div class="big-statement">让 AI 从项目<span class="grad-text">第一天</span>就在场，<br>最后十分钟只是<span class="grad-text">收获</span>。</div>
+        <p class="subtitle muted" style="margin-top:2.5rem;font-size:1.05rem;">今天所有内容，都是为了让这句话变得可执行。</p>
+    </div>
+</section>
+
+<section class="slide" data-section="roadmap" data-thumb="grid3" data-thumb-color="purple" data-group="Opening" data-label="今天的路线图" data-speaker-notes="这是路线图，也是三的法则本身 —— 结尾会回来指认这一点。40 秒讲完，别恋战。">
+    <div class="stage">
+        <div class="kicker">ROADMAP · RULE OF THREE</div>
+        <h2>今天给你们三样东西</h2>
+        <p class="subtitle" style="margin-bottom:2rem;">不是三个技巧，是一个习惯、一个工具、一个你今晚带走的真相。</p>
+        <div class="grid-3">
+            <div class="card" style="position:relative;">
+                <div class="ghost-num">1</div>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color:var(--brand);margin-bottom:.9rem;"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M12 13v3l2 1"/></svg>
+                <div style="margin-bottom:.6rem;"><span class="label label-blue">A HABIT</span></div>
+                <h3>一个习惯</h3>
+                <p style="font-size:.88rem;margin:0;">让 AI 全程在场，从项目第一天开始持续积累上下文。<br>不是会前才想起它。</p>
+            </div>
+            <div class="card" style="position:relative;">
+                <div class="ghost-num">2</div>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color:var(--purple);margin-bottom:.9rem;"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="m3.3 7 8.7 5 8.7-5M12 22V12"/></svg>
+                <div style="margin-bottom:.6rem;"><span class="label label-purple">A TOOL</span></div>
+                <h3>一个工具</h3>
+                <p style="font-size:.88rem;margin:0;">一个跨平台的 Slides Skill。<br>今天现场装、现场用，散会就能带走。</p>
+            </div>
+            <div class="card" style="position:relative;">
+                <div class="ghost-num">3</div>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color:var(--amber);margin-bottom:.9rem;"><path d="M12 3.2l2.1 5.3 5.7.4-4.4 3.7 1.4 5.5L12 15.1l-4.8 3 1.4-5.5-4.4-3.7 5.7-.4z"/><path d="M19 3v3M20.5 4.5h-3"/></svg>
+                <div style="margin-bottom:.6rem;"><span class="label label-amber">A TRUTH</span></div>
+                <h3>一个真相</h3>
+                <p style="font-size:.88rem;margin:0;">AI 拉平了制作，放大了表达。<br>最亮的那部分，它给不了你。</p>
+            </div>
+        </div>
+        <div class="mono muted" style="margin-top:1.9rem;font-size:.75rem;letter-spacing:.1em;">RUNNING ORDER &nbsp;·&nbsp; Live 起手 → 方法论 → 双 Demo → 你们动手 → 现场点评 → 乔布斯的六招</div>
+    </div>
+</section>
+
+<section class="slide" data-section="washer-start" data-thumb="stack" data-thumb-color="green" data-group="Opening" data-label="先把任务发出去" data-speaker-notes="只演示三件事，90 秒，不解释原理 —— 制造悬念。发完立刻转身讲 Part 1，不要盯着屏幕等。">
+    <div class="stage">
+        <div class="kicker green">LIVE · 00:03</div>
+        <h2>先把任务发出去</h2>
+        <p class="subtitle" style="margin-bottom:2rem;">生成一份 deck 要 5–10 分钟。所以现在就发出去，我们先去讲方法论，十分钟后回来取结果。</p>
+        <div class="prompt">
+            <div class="p-head">
+                <span class="p-tag">PROMPT · COWORK</span>
+                <button class="copy-btn">复制</button>
+            </div>
+            <div class="p-body">基于这个文件夹里 <em>Sigil on OpenClaw Demo</em> 的全部资料，做一份 <em>10 页以内</em>的进展汇报 slides，听众是全公司同事（多数没接触过这个项目），<em>暗色主题</em>，中文。重点讲清楚：这是什么、为什么做、现在到哪了、接下来要什么支持。</div>
+        </div>
+        <div class="grid-3" style="margin-top:1.3rem;">
+            <div class="card tight">
+                <div class="row" style="align-items:center;gap:.6rem;margin-bottom:.45rem;">
+                    <span class="flow-dot" style="width:22px;height:22px;font-size:.66rem;">1</span>
+                    <h4 style="margin:0;">项目文件夹已连接</h4>
+                </div>
+                <p style="margin:0;font-size:.84rem;">资料早就在那儿了 —— 我不是现在才开始收集。</p>
+            </div>
+            <div class="card tight">
+                <div class="row" style="align-items:center;gap:.6rem;margin-bottom:.45rem;">
+                    <span class="flow-dot" style="width:22px;height:22px;font-size:.66rem;">2</span>
+                    <h4 style="margin:0;">Prompt 只交代三件事</h4>
+                </div>
+                <p style="margin:0;font-size:.84rem;">听众是谁、要多长、要回答哪四个问题。没有特殊话术。</p>
+            </div>
+            <div class="card tight">
+                <div class="row" style="align-items:center;gap:.6rem;margin-bottom:.45rem;">
+                    <span class="flow-dot" style="width:22px;height:22px;font-size:.66rem;">3</span>
+                    <h4 style="margin:0;">发出后不用守着</h4>
+                </div>
+                <p style="margin:0;font-size:.84rem;">异步任务的用法就是这样：发出去，转身做别的事。</p>
+            </div>
+        </div>
+        <div class="row wrap" style="gap:1rem;margin-top:1.5rem;align-items:center;">
+            <span class="spill live"><span class="dot"></span>任务已发出 · Part 2 回来取结果</span>
+            <button class="demo-btn" data-url-missing="1" onclick="toggleDesktopModal('REPLACE_ME_URL','Cowork · Sigil on OpenClaw Demo 生成任务')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="14" rx="2"/><path d="M8 21h8M12 18v3"/></svg>
+                打开 Cowork 任务
+            </button>
+        </div>
+    </div>
+</section>
+
+<section class="slide center" data-section="part1-divider" data-thumb="divider" data-thumb-color="blue" data-label="Part 1 · AI 在场方法论" data-speaker-notes="这是全场的理论核心，10 分钟。语速放稳。">
+    <div class="cover-bg">
+        <div class="orb" style="width:560px;height:560px;background:var(--brand);top:-14%;right:12%;"></div>
+        <svg class="grid-tex" width="100%" height="100%"><defs><pattern id="gridP1" width="60" height="60" patternUnits="userSpaceOnUse"><path d="M 60 0 L 0 0 0 60" fill="none" stroke="#0F172A" stroke-width="0.5"/></pattern></defs><rect width="100%" height="100%" fill="url(#gridP1)"/></svg>
+    </div>
+    <div class="stage">
+        <div class="mono" style="font-size:clamp(4.5rem,13vw,10rem);font-weight:800;line-height:1;letter-spacing:-0.05em;color:var(--border-light);margin-bottom:.6rem;">01</div>
+        <div class="label label-blue" style="margin-bottom:1.5rem;">PART 01</div>
+        <h1>AI 在场方法论</h1>
+        <p class="subtitle" style="margin:0 auto;">三个习惯，把「最后十分钟」变成一件轻松的事。<br>我给它起了个名字：Context Farming —— 一路种上下文，最后一次收成。</p>
+        <div class="mono muted" style="margin-top:2.2rem;font-size:.82rem;letter-spacing:.16em;">10 MIN</div>
+    </div>
+</section>
+<!-- ===================== S7 ===================== -->
+<section class="slide" data-section="villain-ai" data-label="反派升级：临时抱佛脚的 AI"
+         data-group="Part 1 · AI 在场方法论" data-thumb="grid2" data-thumb-color="red"
+         data-speaker-notes="左边那张卡是全场共鸣点 —— 很多人被 AI 编过。念到「数字是假的、术语是错的」时停一下，等笑声，笑完再切右边。约 90 秒。">
+    <div class="stage">
+        <div class="kicker red">THE REAL VILLAIN</div>
+        <h2>比没有 AI 更糟的，是没有上下文的 AI</h2>
+        <div class="grid-2" style="margin-top:2rem;">
+            <div class="card" data-step="1" style="border-color:var(--border);background:var(--border-light);">
+                <div class="mono" style="font-size:.62rem;letter-spacing:.14em;color:var(--text-muted);margin-bottom:.7rem;">BEFORE</div>
+                <h3 style="color:var(--text-secondary);margin-bottom:.7rem;">最后十分钟才想起 AI</h3>
+                <p style="font-size:.92rem;font-style:italic;color:var(--text-secondary);margin:0 0 .8rem;">它不知道你的项目、不知道你的同事叫什么、不知道上周决定了什么。</p>
+                <p style="font-size:.92rem;font-style:italic;color:var(--text-secondary);margin:0 0 .9rem;">于是它给你一份看起来很完整、内容全是编的 deck。</p>
+                <div class="row wrap" style="gap:.4rem;">
+                    <span class="chip gray">栏目齐全</span>
+                    <span class="chip red">数字是假的</span>
+                    <span class="chip red">术语是错的</span>
+                </div>
+                <p class="gloss" style="margin-top:.9rem;">你上台前才发现 —— 或者更糟，上台后才被指出来。</p>
+            </div>
+            <div class="card accent-left" data-step="2">
+                <div class="mono" style="font-size:.62rem;letter-spacing:.14em;color:var(--brand);margin-bottom:.7rem;">AFTER</div>
+                <h3 style="margin-bottom:.7rem;">从第一天就在场的 AI</h3>
+                <p style="font-size:.92rem;color:var(--text);margin:0 0 .8rem;">它读过你的决策记录、认识你的同事、知道上周为什么改了方案。</p>
+                <p style="font-size:.92rem;color:var(--text);margin:0 0 .9rem;">你说一句话，它给你一份<strong>数字要么能追到源文件、要么被明确标成待补</strong>的 deck。</p>
+                <div class="row wrap" style="gap:.4rem;">
+                    <span class="chip">决策有据</span>
+                    <span class="chip green">数字可核验</span>
+                    <span class="chip green">术语是对的</span>
+                </div>
+                <p class="gloss" style="margin-top:.9rem;">上台前你唯一要做的，是把它读一遍。</p>
+            </div>
+        </div>
+        <div class="card highlight" style="margin-top:1.6rem;">
+            <p style="font-size:1.05rem;line-height:1.7;margin:0;color:var(--text);">「Never silently invent filler content for a gap — a deck that looks complete but contains fabricated facts is a failed deck.」</p>
+            <div class="mono" style="font-size:.68rem;color:var(--text-muted);margin-top:.7rem;letter-spacing:.06em;">— imtoken-html-slides / SKILL.md</div>
+        </div>
+    </div>
+    <button class="replay">↻ replay</button>
+</section>
+
+<!-- ===================== S8 ===================== -->
+<section class="slide" data-section="habit-1" data-label="习惯一：给项目一个大脑"
+         data-group="Part 1 · AI 在场方法论" data-thumb="split" data-thumb-color="blue"
+         data-speaker-notes="重音落在「第一天」。不写这个文件，后面两个习惯都没有地基。右边那三行原话可以念一行就好 —— 让大家看到它是拿人话写的，不是配置文件。约 2 分钟。">
+    <div class="stage">
+        <div class="kicker">HABIT 01 · DAY ONE</div>
+        <h2>给项目一个大脑</h2>
+        <p class="subtitle" style="margin-bottom:2rem;">项目开工第一天，写一个文件。不是写给 AI 的技术文档 —— 是写给三个月后的自己。</p>
+        <div style="display:grid;grid-template-columns:1.02fr 1fr;gap:1.6rem;align-items:start;">
+            <div style="border:1.5px solid var(--border);border-radius:var(--radius);background:var(--surface);box-shadow:var(--shadow-sm);padding:1.1rem 1.25rem;">
+                <div style="display:flex;align-items:center;gap:.5rem;border-bottom:1px solid var(--border-light);padding-bottom:.65rem;margin-bottom:.85rem;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/></svg>
+                    <span class="mono" style="font-size:.76rem;font-weight:700;color:var(--text);">CLAUDE.md</span>
+                    <span class="label label-gray" style="margin-left:auto;font-size:.63rem;padding:3px 9px;">PROJECT BRAIN</span>
+                </div>
+                <div class="stack" style="gap:.6rem;">
+                    <div style="display:grid;grid-template-columns:26px 1fr;gap:.7rem;align-items:center;">
+                        <div class="flow-dot" style="width:24px;height:24px;font-size:.7rem;">1</div>
+                        <div class="row wrap" style="gap:.35rem;"><span class="chip">我是谁</span><span class="chip">项目是什么</span><span class="chip">目录结构</span></div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:26px 1fr;gap:.7rem;align-items:center;">
+                        <div class="flow-dot purple" style="width:24px;height:24px;font-size:.7rem;">2</div>
+                        <div class="row wrap" style="gap:.35rem;"><span class="chip purple">关键决策</span><span class="chip purple">时间线</span></div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:26px 1fr;gap:.7rem;align-items:center;">
+                        <div class="flow-dot green" style="width:24px;height:24px;font-size:.7rem;">3</div>
+                        <div class="row wrap" style="gap:.35rem;"><span class="chip green">团队名单</span><span class="chip green">术语表</span></div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:26px 1fr;gap:.7rem;align-items:center;">
+                        <div class="flow-dot amber" style="width:24px;height:24px;font-size:.7rem;">4</div>
+                        <div class="row wrap" style="gap:.35rem;"><span class="chip amber">工作偏好</span></div>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <div class="stack" style="gap:.75rem;">
+                    <div style="display:grid;grid-template-columns:26px 1fr;gap:.7rem;align-items:start;">
+                        <div class="flow-dot" style="width:24px;height:24px;font-size:.7rem;">1</div>
+                        <p style="margin:0;font-size:.88rem;line-height:1.6;">新开一个对话，不用再自我介绍一遍。</p>
+                    </div>
+                    <div style="display:grid;grid-template-columns:26px 1fr;gap:.7rem;align-items:start;">
+                        <div class="flow-dot purple" style="width:24px;height:24px;font-size:.7rem;">2</div>
+                        <p style="margin:0;font-size:.88rem;line-height:1.6;">问「上次为什么这么定」，它能直接答，而不是猜。</p>
+                    </div>
+                    <div style="display:grid;grid-template-columns:26px 1fr;gap:.7rem;align-items:start;">
+                        <div class="flow-dot green" style="width:24px;height:24px;font-size:.7rem;">3</div>
+                        <p style="margin:0;font-size:.88rem;line-height:1.6;">写纪要、写 slide 时，人名和术语都是对的。</p>
+                    </div>
+                    <div style="display:grid;grid-template-columns:26px 1fr;gap:.7rem;align-items:start;">
+                        <div class="flow-dot amber" style="width:24px;height:24px;font-size:.7rem;">4</div>
+                        <p style="margin:0;font-size:.88rem;line-height:1.6;">输出风格不用每次重新交代。</p>
+                    </div>
+                </div>
+                <div style="margin-top:1.1rem;padding-top:.9rem;border-top:1px solid var(--border-light);">
+                    <div class="mono" style="font-size:.65rem;letter-spacing:.13em;color:var(--text-muted);margin-bottom:.55rem;">WRITTEN IN IT, VERBATIM</div>
+                    <div class="mono" style="font-size:.72rem;line-height:1.75;color:var(--text-secondary);">Wilson may provide instructions in Chinese. Always respond in the same language as the instruction.</div>
+                    <div class="mono" style="font-size:.72rem;line-height:1.75;color:var(--text-secondary);margin-top:.4rem;">Keep outputs concise and visually polished — Wilson values clarity over verbosity.</div>
+                    <div class="mono" style="font-size:.72rem;line-height:1.75;color:var(--text-secondary);margin-top:.4rem;">Always edit files in-place, never create copies</div>
+                </div>
+            </div>
+        </div>
+        <div class="spill" style="margin-top:1.5rem;align-self:flex-start;"><span class="dot"></span>任何 AI 都读得懂 —— CLAUDE.md / AGENTS.md / README-for-AI.md，换个名字而已</div>
+    </div>
+</section>
+
+<!-- ===================== S9 ===================== -->
+<section class="slide center" data-section="habit-1-stats" data-label="证据：31 KB 里装了什么"
+         data-group="Part 1 · AI 在场方法论" data-thumb="stat" data-thumb-color="blue"
+         data-speaker-notes="主动承认它没有自动同步 —— 这一句会让整场的可信度上一个台阶。数字快速带过，重点念那句「读它的不只是人」和黄色卡里的坦白。约 90 秒。">
+    <div class="stage">
+        <div class="kicker">EVIDENCE</div>
+        <h2>一个 31 KB 的纯文本文件</h2>
+        <div class="stat-row" style="justify-content:center;margin-top:2.2rem;">
+            <div class="stat"><div class="num">495</div><div class="cap">行</div></div>
+            <div class="stat"><div class="num">39</div><div class="cap">位同事的角色与邮箱</div></div>
+            <div class="stat"><div class="num">28</div><div class="cap">条项目术语</div></div>
+            <div class="stat"><div class="num">33</div><div class="cap">个章节</div></div>
+            <div class="stat"><div class="num">6</div><div class="cap">条 CEO 定的设计原则</div></div>
+        </div>
+        <p style="font-size:1.15rem;color:var(--text-secondary);margin-top:2rem;">它大概是我这台电脑上被读得最勤的一个文件 —— 因为读它的不只是人。</p>
+        <div class="row wrap" style="justify-content:center;gap:.45rem;margin-top:1.4rem;">
+            <span class="mono" style="font-size:.65rem;letter-spacing:.13em;color:var(--text-muted);">MEMORY · 常用记忆</span>
+            <span class="chip">memory/glossary.md</span>
+            <span class="chip">memory/people/ · 5 份人物档案</span>
+            <span class="chip">memory/projects/ · 2 份项目档案</span>
+            <span class="chip">memory/context/company.md</span>
+        </div>
+        <div class="card amber-left" style="margin-top:1.6rem;text-align:left;max-width:82ch;">
+            <p style="margin:0;font-size:.95rem;line-height:1.75;">CLAUDE.md 不会自动同步。它的上半部分还停在 4 月，常用记忆那部分却更新到了 6 月 —— <strong>它需要定期更新</strong>。但即便只更新了一半，它依然是最快的上下文入口。</p>
+        </div>
+    </div>
+</section>
+
+<!-- ===================== S10 ===================== -->
+<section class="slide" data-section="feishu" data-label="一张术语表能省下多少事"
+         data-group="Part 1 · AI 在场方法论" data-thumb="table" data-thumb-color="amber"
+         data-speaker-notes="念到「Better」的时候停顿两秒。这是全场最容易笑出声的一页，也是最有说服力的一页 —— 因为它太具体了。笑完再收尾那句「一次，永久」。约 2 分钟。">
+    <div class="stage">
+        <div class="kicker amber">THE SWEET SPOT</div>
+        <h2>会议转写把我们的合作伙伴，听成了一个形容词</h2>
+        <p class="subtitle" style="margin-bottom:2rem;max-width:80ch;">语音转写会犯错，而且每次都犯同样的错。<br>所以我把纠正写进了术语表 —— 写一次，一劳永逸。</p>
+        <div class="card" style="padding:.5rem 1.4rem;">
+            <table class="comparison">
+                <thead>
+                    <tr><th style="width:20%;">术语</th><th style="width:32%;">转写听成了</th><th>它其实是</th></tr>
+                </thead>
+                <tbody>
+                    <tr data-step="1">
+                        <td class="mono" style="font-weight:700;color:var(--text);">Solver</td>
+                        <td class="from-cell">索罗 / SOVER</td>
+                        <td class="to-cell">第三方跨链路由执行服务商</td>
+                    </tr>
+                    <tr data-step="2">
+                        <td class="mono" style="font-weight:700;color:var(--text);">Tokenlon</td>
+                        <td class="from-cell">托克龙</td>
+                        <td class="to-cell">imToken 旗下去中心化交易协议</td>
+                    </tr>
+                    <tr data-step="3">
+                        <td class="mono" style="font-weight:700;color:var(--text);">VETA</td>
+                        <td class="from-cell"><span class="chip red" style="font-style:normal;font-weight:700;color:var(--red);font-size:.9rem;">Better</span></td>
+                        <td class="to-cell">Agent Trading 第三方合作伙伴</td>
+                    </tr>
+                    <tr data-step="4">
+                        <td class="mono" style="font-weight:700;color:var(--text);">Nostr</td>
+                        <td class="from-cell">publicnotread / north tron</td>
+                        <td class="to-cell">去中心化通信协议</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="spill amber" style="margin-top:1.4rem;align-self:flex-start;"><span class="dot"></span>一个合作伙伴的公司名，被转写成了一个英文形容词</div>
+        <p style="font-size:1rem;line-height:1.75;color:var(--text-secondary);margin-top:1.1rem;max-width:74ch;">只要 AI 读到了这张术语表，「索罗」就会被还原成 Solver、「Better」还原成 VETA。写一次，往后每一份纪要都少犯一次同样的错。</p>
+    </div>
+    <button class="replay">↻ replay</button>
+</section>
+
+<!-- ===================== S11 ===================== -->
+<section class="slide wide" data-section="habit-2" data-label="习惯二：每个节点都让 AI 记录"
+         data-group="Part 1 · AI 在场方法论" data-thumb="timeline" data-thumb-color="purple"
+         data-speaker-notes="手沿着时间轴从左划到右。重点不是「我做了很多」，是「每一站都留下了结构化的文件」。下面三张卡一句话带过。约 2 分钟。">
+    <div class="stage">
+        <div class="kicker purple">HABIT 02 · ALONG THE WAY</div>
+        <h2>每个节点，让 AI 参与思考、留下产出</h2>
+        <p class="subtitle" style="margin-bottom:2rem;">上下文不是最后一刻收集的，是一路沉淀下来的。</p>
+        <div style="position:relative;padding:2.2rem 0 .5rem;">
+            <div style="position:absolute;left:0;right:0;top:4rem;height:2px;background:linear-gradient(90deg,var(--brand),var(--purple),var(--green));opacity:.35;"></div>
+            <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:.5rem;position:relative;">
+                <div style="text-align:center;" data-step="1">
+                    <div class="mono" style="font-size:.62rem;color:var(--brand);font-weight:700;letter-spacing:.08em;margin-bottom:.5rem;">MAR 04</div>
+                    <div style="width:11px;height:11px;border-radius:50%;background:var(--brand);margin:0 auto .6rem;border:2.5px solid var(--bg);box-shadow:0 0 0 2px rgba(var(--brand-rgb),.3);"></div>
+                    <div style="font-size:.82rem;font-weight:650;color:var(--text);">Workshop 1</div>
+                    <div class="gloss" style="margin-top:.25rem;">HMW 综合页</div>
+                </div>
+                <div style="text-align:center;" data-step="1">
+                    <div class="mono" style="font-size:.62rem;color:var(--brand);font-weight:700;letter-spacing:.08em;margin-bottom:.5rem;">MAR 26</div>
+                    <div style="width:11px;height:11px;border-radius:50%;background:var(--brand);margin:0 auto .6rem;border:2.5px solid var(--bg);box-shadow:0 0 0 2px rgba(var(--brand-rgb),.3);"></div>
+                    <div style="font-size:.82rem;font-weight:650;color:var(--text);">Design Proposal</div>
+                    <div class="gloss" style="margin-top:.25rem;">34 页提案</div>
+                </div>
+                <div style="text-align:center;" data-step="2">
+                    <div class="mono" style="font-size:.62rem;color:var(--purple);font-weight:700;letter-spacing:.08em;margin-bottom:.5rem;">APR 7–11</div>
+                    <div style="width:11px;height:11px;border-radius:50%;background:var(--purple);margin:0 auto .6rem;border:2.5px solid var(--bg);box-shadow:0 0 0 2px rgba(var(--purple-rgb),.3);"></div>
+                    <div style="font-size:.82rem;font-weight:650;color:var(--text);">Hacking House</div>
+                    <div class="gloss" style="margin-top:.25rem;">杭州 4 天冲刺</div>
+                </div>
+                <div style="text-align:center;" data-step="2">
+                    <div class="mono" style="font-size:.62rem;color:var(--purple);font-weight:700;letter-spacing:.08em;margin-bottom:.5rem;">JUN 12</div>
+                    <div style="width:11px;height:11px;border-radius:50%;background:var(--purple);margin:0 auto .6rem;border:2.5px solid var(--bg);box-shadow:0 0 0 2px rgba(var(--purple-rgb),.3);"></div>
+                    <div style="font-size:.82rem;font-weight:650;color:var(--text);">All Hands</div>
+                    <div class="gloss" style="margin-top:.25rem;">Alpha 汇报</div>
+                </div>
+                <div style="text-align:center;" data-step="3">
+                    <div class="mono" style="font-size:.62rem;color:var(--amber);font-weight:700;letter-spacing:.08em;margin-bottom:.5rem;">JUN 29</div>
+                    <div style="width:11px;height:11px;border-radius:50%;background:var(--amber);margin:0 auto .6rem;border:2.5px solid var(--bg);box-shadow:0 0 0 2px rgba(var(--amber-rgb),.3);"></div>
+                    <div style="font-size:.82rem;font-weight:650;color:var(--text);">Alpha Week</div>
+                    <div class="gloss" style="margin-top:.25rem;">Kick-Off</div>
+                </div>
+                <div style="text-align:center;" data-step="3">
+                    <div class="mono" style="font-size:.62rem;color:var(--green);font-weight:700;letter-spacing:.08em;margin-bottom:.5rem;">AUG 03</div>
+                    <div style="width:11px;height:11px;border-radius:50%;background:var(--green);margin:0 auto .6rem;border:2.5px solid var(--bg);box-shadow:0 0 0 2px rgba(var(--green-rgb),.3);"></div>
+                    <div style="font-size:.82rem;font-weight:650;color:var(--text);">Phase C</div>
+                    <div class="gloss" style="margin-top:.25rem;">Beta Readiness</div>
+                </div>
+            </div>
+        </div>
+        <div class="grid-3" style="margin-top:1.8rem;">
+            <div class="card tight">
+                <div class="row" style="gap:.6rem;margin-bottom:.5rem;"><div class="flow-dot" style="width:24px;height:24px;font-size:.7rem;">1</div><h4 style="margin:0;">会议纪要 → 决策记录</h4></div>
+                <p style="margin:0;font-size:.85rem;line-height:1.65;">开完会顺手生成，并把听错的术语一起修正掉。</p>
+            </div>
+            <div class="card tight">
+                <div class="row" style="gap:.6rem;margin-bottom:.5rem;"><div class="flow-dot purple" style="width:24px;height:24px;font-size:.7rem;">2</div><h4 style="margin:0;">阶段总结 → 下阶段计划</h4></div>
+                <p style="margin:0;font-size:.85rem;line-height:1.65;">每个节点收口时问一次：这一段发生了什么，下一段做什么。</p>
+            </div>
+            <div class="card tight">
+                <div class="row" style="gap:.6rem;margin-bottom:.5rem;"><div class="flow-dot green" style="width:24px;height:24px;font-size:.7rem;">3</div><h4 style="margin:0;">全部沉淀为文件</h4></div>
+                <p style="margin:0;font-size:.85rem;line-height:1.65;">不进收藏夹、不进聊天记录，就放在项目文件夹里。</p>
+            </div>
+        </div>
+    </div>
+    <button class="replay">↻ replay</button>
+</section>
+
+<!-- ===================== S12 ===================== -->
+<section class="slide" data-section="habit-2-stats" data-label="证据：5 个月的产出"
+         data-group="Part 1 · AI 在场方法论" data-thumb="stat" data-thumb-color="purple"
+         data-speaker-notes="这一页是「给数字一个参照」的现场示范 —— 待会 Part 5 会回来指认。别念数字，念下面那两句话。最后那行分支的事一句话带过。约 90 秒。">
+    <div class="stage">
+        <div class="kicker">EVIDENCE</div>
+        <h2>五个月，我几乎没有一次是从空白页开始的</h2>
+        <div class="grid-4" style="margin-top:2rem;">
+            <div class="card tight" style="text-align:center;">
+                <div class="stat"><div class="num">154</div><div class="cap">天 · 3 月 5 日起算</div></div>
+            </div>
+            <div class="card tight" style="text-align:center;">
+                <div class="stat"><div class="num">220</div><div class="cap">份 HTML 产出</div></div>
+            </div>
+            <div class="card tight" style="text-align:center;">
+                <div class="stat"><div class="num">30</div><div class="cap">份对外汇报材料</div></div>
+            </div>
+            <div class="card tight" style="text-align:center;">
+                <div class="stat"><div class="num">75</div><div class="cap">天 · 留下了新文件的日子</div></div>
+            </div>
+        </div>
+        <div class="stack" style="margin-top:1.5rem;">
+            <div class="card accent-left" style="padding:1.2rem 1.6rem;">
+                <p style="margin:0;font-size:1.15rem;line-height:1.65;color:var(--text);">平均每 <strong>5.1 天</strong> 就要站到人前讲一次。你不可能每次都熬夜做 PPT。</p>
+            </div>
+            <div class="card purple-left" style="padding:1.2rem 1.6rem;">
+                <p style="margin:0;font-size:1.15rem;line-height:1.65;color:var(--text);">平均每 <strong>17 小时</strong> 就有一份新文件落地 —— 这里面几乎没有一份是从空白页开始的。</p>
+            </div>
+        </div>
+        <p class="gloss" style="margin-top:1.2rem;line-height:1.7;">39 条 git 分支，其中 36 条叫 <span class="mono">update/xxx</span> —— kickoff-slides 改到 v3，design-proposal 改到 v3，project-summary 改到 v4。每一次「再改一版」都留下了痕迹。</p>
+    </div>
+</section>
+
+<!-- ===================== S13 ===================== -->
+<section class="slide" data-section="habit-3" data-label="习惯三：把品味封装成 Skill"
+         data-group="Part 1 · AI 在场方法论" data-thumb="split" data-thumb-color="purple"
+         data-speaker-notes="「Prompt 是一次性的请求，Skill 是可复用的品味」—— 这是本页唯一要让大家记住的一句，说完停一下。左边的文件树不用逐行念，指两处就行。约 2 分钟。">
+    <div class="stage">
+        <div class="kicker purple">HABIT 03 · AFTER THE THIRD TIME</div>
+        <h2>做过三次之后，把品味封装成 Skill</h2>
+        <p class="subtitle" style="margin-bottom:2rem;">前两个习惯解决「内容对不对」。第三个解决「好不好看、要不要每次重新调」。</p>
+        <div style="display:grid;grid-template-columns:1.05fr 1fr;gap:1.6rem;align-items:start;">
+            <div style="border:1.5px solid rgba(var(--purple-rgb),.18);border-radius:var(--radius);background:rgba(var(--purple-rgb),.05);padding:1.1rem 1.3rem;font-family:var(--font-mono);font-size:.75rem;line-height:1.95;color:var(--text-secondary);">
+                <div style="color:var(--purple);font-weight:700;">imtoken-html-slides/</div>
+                <div>├── SKILL.md <span style="color:var(--text-muted);">← 什么时候提问、用什么模板、自检清单</span></div>
+                <div>├── assets/</div>
+                <div>│&nbsp;&nbsp; ├── template-paged.html <span style="color:var(--text-muted);">← 现场投屏用</span></div>
+                <div>│&nbsp;&nbsp; ├── template-paged-dark.html <span style="color:var(--text-muted);">← 大场合 / 发布会用</span></div>
+                <div>│&nbsp;&nbsp; ├── template-scroll.html <span style="color:var(--text-muted);">← 自己读的长文档用</span></div>
+                <div>│&nbsp;&nbsp; ├── imtoken-logo.svg</div>
+                <div>│&nbsp;&nbsp; └── imtoken-logo-dark.svg</div>
+                <div>└── references/</div>
+                <div>&nbsp;&nbsp;&nbsp; ├── components.md <span style="color:var(--text-muted);">← 组件目录</span></div>
+                <div>&nbsp;&nbsp;&nbsp; ├── motion-interactions.md <span style="color:var(--text-muted);">← 动效质量线</span></div>
+                <div>&nbsp;&nbsp;&nbsp; ├── dark-mode.md</div>
+                <div>&nbsp;&nbsp;&nbsp; └── prototype-embeds.md</div>
+            </div>
+            <div>
+                <div class="mono" style="font-size:.65rem;letter-spacing:.13em;color:var(--text-muted);margin-bottom:.7rem;">RULES IT ENCODES</div>
+                <div class="stack" style="gap:.6rem;">
+                    <div class="card tight" style="padding:.75rem 1rem;"><p style="margin:0;font-size:.9rem;">零 bullet point，一页一个想法</p></div>
+                    <div class="card tight" style="padding:.75rem 1rem;"><p style="margin:0;font-size:.9rem;">数字必须有语境</p></div>
+                    <div class="card tight" style="padding:.75rem 1rem;"><p style="margin:0;font-size:.9rem;">缺内容就标注，禁止编造</p></div>
+                </div>
+                <div class="card highlight" style="margin-top:.9rem;padding:1.1rem 1.3rem;">
+                    <p style="margin:0;font-size:.85rem;line-height:1.7;color:var(--text);">「Every deck produced with it should feel like a sibling of those files: 精美、可读性强、克制而精致的动效、大屏友好。」</p>
+                    <div class="mono" style="font-size:.65rem;color:var(--text-muted);margin-top:.55rem;letter-spacing:.06em;">— imtoken-html-slides / SKILL.md</div>
+                </div>
+            </div>
+        </div>
+        <div class="row wrap" style="margin-top:1.5rem;gap:1rem;">
+            <div class="spill purple"><span class="dot"></span>Prompt 是一次性的请求，Skill 是可复用的品味</div>
+            <span class="gloss">18 个 Skill，文件日期都停在 2026-03-10 —— 那天我一次性把它们沉淀成了文件</span>
+        </div>
+    </div>
+</section>
+
+<!-- ===================== S14 ===================== -->
+<section class="slide center" data-section="habits-sum" data-label="三个习惯合一"
+         data-group="Part 1 · AI 在场方法论" data-thumb="steps" data-thumb-color="blue"
+         data-speaker-notes="这页是 Part 1 的收口。三个习惯各念一句，最后那句「最后十分钟，你只需要说一句话」说完就直接切 Part 2 —— 回来取结果。约 1 分钟。">
+    <div class="stage">
+        <div class="kicker">PUT TOGETHER</div>
+        <h2>三个习惯，一条链</h2>
+        <div class="hflow" style="margin-top:2.4rem;width:100%;text-align:left;">
+            <div class="hstep" data-step="1">
+                <div class="fn">HABIT 01</div>
+                <b>项目大脑</b>
+                <p><strong>静态上下文</strong>：我是谁、项目是什么、谁在做</p>
+            </div>
+            <div class="hstep" data-step="2">
+                <div class="fn" style="color:var(--purple);">HABIT 02</div>
+                <b>节点记录</b>
+                <p><strong>动态上下文</strong>：决定了什么、为什么、下一步</p>
+            </div>
+            <div class="hstep" data-step="3">
+                <div class="fn" style="color:var(--green);">HABIT 03</div>
+                <b>Skill 封装</b>
+                <p><strong>表达标准</strong>：长什么样、怎么排、什么不能编</p>
+            </div>
+        </div>
+        <div style="width:100%;margin-top:1.4rem;">
+            <div data-step="4" style="text-align:center;font-size:1.15rem;color:var(--text-muted);line-height:1;margin-bottom:1.1rem;">▼</div>
+            <div data-step="4" class="scale-in" style="background:linear-gradient(135deg,var(--brand),var(--purple));border-radius:var(--radius);padding:1.8rem 2rem;color:#fff;text-align:center;box-shadow:0 10px 34px rgba(var(--brand-rgb),.24);">
+                <div class="mono" style="font-size:.66rem;letter-spacing:.15em;opacity:.85;">THE LAST TEN MINUTES</div>
+                <div style="font-size:1.9rem;font-weight:800;margin-top:.5rem;letter-spacing:-.02em;">最后十分钟，你只需要说一句话。</div>
+            </div>
+        </div>
+    </div>
+    <button class="replay">↻ replay</button>
+</section>
+<section class="slide center" data-section="part2-divider" data-label="Part 2 · 回来取结果" data-thumb="divider" data-thumb-color="purple" data-speaker-notes="走回电脑前，这个动作本身就是节奏切换。先不说话，让大家看着你把 Cowork 的窗口调出来，再开口。10 分钟。">
+    <div class="cover-bg">
+        <div class="orb" style="width:520px;height:520px;background:var(--purple);top:-14%;left:12%;"></div>
+        <svg class="grid-tex" width="100%" height="100%"><defs><pattern id="gridPart2Div" width="60" height="60" patternUnits="userSpaceOnUse"><path d="M 60 0 L 0 0 0 60" fill="none" stroke="#0F172A" stroke-width="0.5"/></pattern></defs><rect width="100%" height="100%" fill="url(#gridPart2Div)"/></svg>
+    </div>
+    <div class="stage">
+        <div class="mono" style="font-size:clamp(4.5rem,13vw,10rem);font-weight:800;line-height:1;letter-spacing:-0.05em;color:var(--border-light);margin-bottom:.6rem;">02</div>
+        <div class="label label-purple" style="margin-bottom:1.5rem;">PART 02</div>
+        <h1>回来取结果</h1>
+        <p class="subtitle" style="margin:0 auto;">同一个 Skill，两个完全不同的入口 —— 一个在 Cowork，一个在终端。</p>
+        <div class="mono muted" style="margin-top:2.2rem;font-size:.82rem;letter-spacing:.16em;">10 MIN</div>
+    </div>
+</section>
+
+<section class="slide" data-section="demo-cowork" data-label="Demo A · Cowork 收成品" data-group="Part 2 · 双 Demo" data-thumb="placeholder" data-thumb-color="purple" data-speaker-notes="翻 5–6 页就够。每翻一页，指一个具体的事实说「这个是真的，它是从哪读来的」。不要逐页念内容，只指事实来源。5 分钟。">
+    <div class="stage">
+        <div class="kicker purple">DEMO A · COWORK</div>
+        <h2>它自己列了计划，然后自己勾完了</h2>
+        <div class="grid-2" style="grid-template-columns:35rem 1fr;margin-top:1.2rem;align-items:start;">
+            <div class="placeholder has-zoom" style="height:min(41rem, 64vh);padding:0;background:var(--surface);border-style:dashed;">
+                <svg class="ph-icon" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                <div class="ph-title">Cowork 任务列表截图</div>
+                <div class="ph-file">assets/demo-cowork-tasklist.png</div>
+                <div class="ph-desc">竖版截图，把任务勾选状态拍全</div>
+                <img class="zoomable" src="assets/demo-cowork-tasklist.png" alt="Cowork 任务列表" title="点击放大"
+                     style="object-fit:contain;background:var(--surface);border-radius:var(--radius);"
+                     onclick="openLightbox(this.src, this.alt)" onerror="this.remove()">
+                <span class="zoom-hint">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3M11 8v6M8 11h6"/></svg>
+                    点击放大
+                </span>
+            </div>
+            <div class="stack">
+                <div class="card tight">
+                    <div class="row" style="gap:.7rem;align-items:flex-start;">
+                        <span style="width:30px;height:30px;border-radius:var(--radius-sm);background:rgba(var(--purple-rgb),.08);color:var(--purple);display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">
+                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 6h11M10 12h11M10 18h11"/><path d="M3 6.5l1.6 1.6L7.6 5"/><path d="M3 12.5l1.6 1.6L7.6 11"/><path d="M3 18.5l1.6 1.6L7.6 17"/></svg>
+                        </span>
+                        <div>
+                            <h4>它自己拆了任务、自己勾了进度</h4>
+                            <p style="margin:0;font-size:.86rem;">计划不是我写的，是它读完素材之后列的。</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card tight">
+                    <div class="row" style="gap:.7rem;align-items:flex-start;">
+                        <span style="width:30px;height:30px;border-radius:var(--radius-sm);background:rgba(var(--brand-rgb),.08);color:var(--brand);display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">
+                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+                        </span>
+                        <div>
+                            <h4>人名、日期、决策都是对的</h4>
+                            <p style="margin:0;font-size:.86rem;">因为它读了 Sigil on OpenClaw Demo 这个项目文件夹，不是靠猜。</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card tight">
+                    <div class="row" style="gap:.7rem;align-items:flex-start;">
+                        <span style="width:30px;height:30px;border-radius:var(--radius-sm);background:rgba(var(--green-rgb),.09);color:var(--green);display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">
+                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M6.5 6.5l11 11"/></svg>
+                        </span>
+                        <div>
+                            <h4>我全程没有回答过一个问题</h4>
+                            <p style="margin:0;font-size:.86rem;">任务发出后我就上台讲 Part 1 了 —— 这十分钟它一直在跑。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row wrap" style="gap:.7rem;margin-top:1.5rem;">
+            <button class="demo-btn purple" onclick="toggleDesktopModal('assets/sigil-openclaw-progress-slides.html','Sigil on OpenClaw Demo · 生成结果')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="14" rx="2"/><path d="M8 21h8M12 18v3"/></svg>
+                打开生成的 slides
+            </button>
+            <button class="demo-btn ghost" data-url-missing="1" onclick="toggleDesktopModal('REPLACE_ME_URL','Cowork · 任务过程')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 2.6-6.4L3 8"/><path d="M3 3v5h5"/><path d="M12 7.5V12l3 2"/></svg>
+                回看生成过程
+            </button>
+        </div>
+    </div>
+</section>
+
+<section class="slide" data-section="demo-code" data-label="Demo B · Claude Code 终端" data-group="Part 2 · 双 Demo" data-thumb="term" data-thumb-color="blue" data-speaker-notes="这句「接下来在你们的 ChatGPT 里也能用」是转场句，说完直接翻页，不要停下来解释终端。5 分钟，超时就放预生成版。">
+    <div class="stage">
+        <div class="kicker">DEMO B · CLAUDE CODE</div>
+        <h2>换一个入口，同一个 Skill</h2>
+        <div class="term" style="margin-top:1.5rem;">
+            <div class="term-bar">
+                <span class="dot" style="background:#FF5F57;"></span>
+                <span class="dot" style="background:#FEBC2E;"></span>
+                <span class="dot" style="background:#28C840;"></span>
+                <span class="ttl">UI-3.0-2026-Progress — claude</span>
+            </div>
+            <div class="term-body">
+                <div><span class="pr">~/UI-3.0-2026-Progress $</span> <span class="em">claude</span></div>
+                <div><span class="hl">&gt;</span> 阅读 Phase B/Cross-chain Send 下的 PRD、审计报告和最近的进展记录，</div>
+                <div style="padding-left:1.1rem;">用 <span class="em">imtoken-html-slides</span> 做一份 8 页的模块进展汇报（paged、light、中文），</div>
+                <div style="padding-left:1.1rem;">听众是产品与工程负责人。数据必须来自真实文件，缺的内容明确标注，不要编造。</div>
+                <div style="height:.6rem;"></div>
+                <div><span class="ok">●</span> <span class="em">Skill</span>(<span class="hl">imtoken-html-slides</span>)</div>
+                <div style="padding-left:1.1rem;"><span class="cm">⎿&nbsp; Loaded SKILL.md + references/components.md</span></div>
+                <div><span class="ok">●</span> <span class="em">Read</span>(<span class="hl">Phase B/Cross-chain Send/cross-chain-send-prd.html</span>)</div>
+                <div><span class="ok">●</span> <span class="em">Read</span>(<span class="hl">Phase B/Cross-chain Send/cross-send-changelog.md</span>)</div>
+                <div><span class="ok">●</span> <span class="em">Write</span>(<span class="hl">cross-chain-send-progress-slides.html</span>)</div>
+                <div style="padding-left:1.1rem;"><span class="cm">⎿&nbsp; 8 slides · <span class="wr">2 处标注为待补充</span>，未编造</span></div>
+            </div>
+        </div>
+        <div class="card accent-left tight" style="margin-top:1.3rem;">
+            <p style="margin:0;font-size:.95rem;">重点不是终端多酷。重点是：<strong>同一个 Skill 文件夹，在 Cowork 里能用，在终端里能用 —— 接下来，在你们的 ChatGPT 里也能用。</strong></p>
+        </div>
+        <div class="mono muted" style="margin-top:.9rem;font-size:.74rem;line-height:1.6;">这个仓库里 .claude/skills/ 就带着这个 Skill —— clone 下来就有，团队分发最省事的方式。</div>
+        <div style="margin-top:1.1rem;">
+            <button class="demo-btn" data-url-missing="1" onclick="toggleDesktopModal('REPLACE_ME_URL','Cross-chain Send 进展汇报')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="14" rx="2"/><path d="M8 21h8M12 18v3"/></svg>
+                打开生成的 slides
+            </button>
+        </div>
+    </div>
+</section>
+
+<section class="slide" data-section="what-is-skill" data-label="Skill 到底是什么" data-group="Part 2 · 双 Demo" data-thumb="split" data-thumb-color="purple" data-speaker-notes="这一页解除大家的心理门槛 —— 很多人以为 Skill 是什么技术活。念完最后那句「没有魔法」再翻页。2 分钟。">
+    <div class="stage">
+        <div class="kicker purple">THE KEY INSIGHT</div>
+        <h2>Skill 本质上只是一个文件夹</h2>
+        <p class="subtitle" style="margin-bottom:2rem;">一份 Markdown 说明书 + 几个 HTML 模板。任何能读文件的 AI 都能用它 —— 差别只在于是「自动触发」还是「手动指路」。</p>
+        <div class="grid-2" style="align-items:start;">
+            <div style="border:1.5px solid var(--border);border-radius:var(--radius);background:rgba(var(--brand-rgb),.04);padding:1.3rem 1.4rem;">
+                <div class="mono" style="font-size:.72rem;letter-spacing:.1em;color:var(--text-muted);margin-bottom:.95rem;">imtoken-html-slides/</div>
+                <div style="display:flex;flex-direction:column;gap:.8rem;">
+                    <div>
+                        <div class="mono" style="font-size:.88rem;font-weight:700;color:var(--brand);">├─ SKILL.md</div>
+                        <div class="gloss" style="padding-left:1.6rem;">说明书本体：什么时候用、怎么排版、什么不许做（约 18 KB）</div>
+                    </div>
+                    <div>
+                        <div class="mono" style="font-size:.88rem;font-weight:700;color:var(--brand);">├─ assets/</div>
+                        <div class="gloss" style="padding-left:1.6rem;">3 个 HTML 模板 + 2 个 logo SVG —— 品味就固化在这里</div>
+                    </div>
+                    <div>
+                        <div class="mono" style="font-size:.88rem;font-weight:700;color:var(--brand);">└─ references/</div>
+                        <div class="gloss" style="padding-left:1.6rem;">components / motion-interactions / dark-mode / prototype-embeds，用到才读</div>
+                    </div>
+                </div>
+            </div>
+            <div class="stack">
+                <div class="card tight">
+                    <div class="row" style="gap:.6rem;margin-bottom:.4rem;">
+                        <span class="label cn label-green" style="font-size:.74rem;padding:4px 11px;">自动触发</span>
+                    </div>
+                    <h4>Claude 系（Cowork / Claude Code）</h4>
+                    <p style="margin:0;font-size:.86rem;">提一句「做个 slides」，它自己去翻说明书，你不用管它在哪。</p>
+                </div>
+                <div class="card tight">
+                    <div class="row" style="gap:.6rem;margin-bottom:.4rem;">
+                        <span class="label cn label-amber" style="font-size:.74rem;padding:4px 11px;">手动指路</span>
+                    </div>
+                    <h4>其他工具（ChatGPT / Gemini / Kimi / Cursor…）</h4>
+                    <p style="margin:0;font-size:.86rem;">在规则文件里加一行指路，或者干脆把说明书粘进对话 —— 效果一样。</p>
+                </div>
+            </div>
+        </div>
+        <div style="margin-top:1.6rem;">
+            <span class="spill purple" style="font-size:1rem;"><span class="dot"></span>没有魔法。只有一份写得够清楚的说明书。</span>
+        </div>
+    </div>
+</section>
+
+<section class="slide wide" data-section="distribution" data-label="三层分发方案" data-group="Part 2 · 双 Demo" data-thumb="stack" data-thumb-color="blue" data-speaker-notes="指着 L3 说「这一层人最多，所以我给你们准备了零安装的路」。这页直接引出 Part 3，说完就翻。2 分钟。">
+    <div class="stage">
+        <div class="kicker">CROSS-PLATFORM</div>
+        <h2>三层方案，覆盖所有人</h2>
+        <div style="display:flex;flex-direction:column;gap:.85rem;margin-top:1.8rem;">
+            <div data-step="1" style="border:1.5px solid rgba(var(--green-rgb),.3);border-radius:var(--radius);background:rgba(var(--green-rgb),.05);padding:1rem 1.3rem;">
+                <div style="display:flex;align-items:center;gap:.85rem;flex-wrap:wrap;margin-bottom:.65rem;">
+                    <span class="mono" style="font-size:.7rem;font-weight:800;letter-spacing:.14em;color:var(--green);">L1</span>
+                    <div style="font-size:1.15rem;font-weight:700;color:var(--text);">原生自动触发</div>
+                    <span class="label cn label-green" style="margin-left:auto;font-size:.62rem;padding:3px 11px;">装一次，之后自动</span>
+                </div>
+                <div class="row wrap" style="gap:.45rem;">
+                    <span class="chip green">Claude Cowork · 上传 .skill</span>
+                    <span class="chip green">Claude Code · 拷贝到 ~/.claude/skills/</span>
+                    <span class="chip green">或仓库里的 .claude/skills/ · clone 就有</span>
+                </div>
+            </div>
+            <div data-step="2" style="border:1.5px solid rgba(var(--brand-rgb),.3);border-radius:var(--radius);background:rgba(var(--brand-rgb),.05);padding:1rem 1.3rem;">
+                <div style="display:flex;align-items:center;gap:.85rem;flex-wrap:wrap;margin-bottom:.65rem;">
+                    <span class="mono" style="font-size:.7rem;font-weight:800;letter-spacing:.14em;color:var(--brand);">L2</span>
+                    <div style="font-size:1.15rem;font-weight:700;color:var(--text);">一行指路</div>
+                    <span class="label cn label-blue" style="margin-left:auto;font-size:.62rem;padding:3px 11px;">kit 拖进项目 + 规则文件加一行</span>
+                </div>
+                <div class="row wrap" style="gap:.45rem;">
+                    <span class="chip">Cursor</span>
+                    <span class="chip">Codex · AGENTS.md</span>
+                    <span class="chip">Gemini CLI · GEMINI.md</span>
+                    <span class="chip">Kimi CLI</span>
+                </div>
+            </div>
+            <div data-step="3" style="border:1.5px solid rgba(var(--purple-rgb),.3);border-radius:var(--radius);background:rgba(var(--purple-rgb),.05);padding:1rem 1.3rem;">
+                <div style="display:flex;align-items:center;gap:.85rem;flex-wrap:wrap;margin-bottom:.65rem;">
+                    <span class="mono" style="font-size:.7rem;font-weight:800;letter-spacing:.14em;color:var(--purple);">L3</span>
+                    <div style="font-size:1.15rem;font-weight:700;color:var(--text);">网页版对话（覆盖人最多）</div>
+                    <span class="label cn label-purple" style="margin-left:auto;font-size:.62rem;padding:3px 11px;">共享 GPT 零安装，或粘贴 PROMPT-PACK</span>
+                </div>
+                <div class="row wrap" style="gap:.45rem;">
+                    <span class="chip purple">ChatGPT</span>
+                    <span class="chip purple">Gemini</span>
+                    <span class="chip purple">Kimi (K3)</span>
+                </div>
+            </div>
+        </div>
+        <div class="muted" style="margin-top:1.3rem;font-size:.86rem;">三层用的是同一份说明书，只是投递方式不同。</div>
+    </div>
+    <button class="replay">↻ replay</button>
+</section>
+
+<section class="slide center" data-section="part3-divider" data-label="Part 3 · 现在轮到你" data-thumb="divider" data-thumb-color="green" data-speaker-notes="提前把助教叫到位。说完这一页就翻到分流指引，大屏保持下一页不动。15 分钟。">
+    <div class="cover-bg">
+        <div class="orb" style="width:520px;height:520px;background:var(--green);bottom:-12%;right:12%;"></div>
+        <svg class="grid-tex" width="100%" height="100%"><defs><pattern id="gridPart3Div" width="60" height="60" patternUnits="userSpaceOnUse"><path d="M 60 0 L 0 0 0 60" fill="none" stroke="#0F172A" stroke-width="0.5"/></pattern></defs><rect width="100%" height="100%" fill="url(#gridPart3Div)"/></svg>
+    </div>
+    <div class="stage">
+        <div class="mono" style="font-size:clamp(4.5rem,13vw,10rem);font-weight:800;line-height:1;letter-spacing:-0.05em;color:var(--border-light);margin-bottom:.6rem;">03</div>
+        <div class="label label-green" style="margin-bottom:1.5rem;">PART 03</div>
+        <h1>现在轮到你</h1>
+        <p class="subtitle" style="margin:0 auto;">十五分钟，在你自己常用的工具里，跑通一次 Skill 生成。</p>
+        <div class="mono muted" style="margin-top:2.2rem;font-size:.82rem;letter-spacing:.16em;">15 MIN</div>
+    </div>
+</section>
+
+<section class="slide wide" data-section="ws-routing" data-label="分流指引（常驻）" data-group="Part 3 · 现场 Workshop" data-thumb="table" data-thumb-color="green" data-speaker-notes="这一页在实操期间一直挂着，不要翻走。你只处理共性卡点，个别问题交给助教。装不上的一律先引导去点共享 GPT 链接。">
+    <div class="stage">
+        <div class="kicker green">PICK YOUR LANE</div>
+        <h2>你用什么工具？</h2>
+        <div style="display:grid;grid-template-columns:1fr 210px;gap:1.5rem;align-items:start;margin-top:1.6rem;">
+            <table class="schedule" style="font-size:.98rem;">
+                <thead>
+                    <tr><th style="width:22%;">工具</th><th>你要做的事</th><th style="width:14%;">时间</th></tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="mono" style="font-weight:700;color:var(--text);">ChatGPT<span class="muted" style="font-family:var(--font-body);font-weight:400;font-size:.8rem;"> · 多数人</span></td>
+                        <td>点共享 GPT 链接，直接开聊；或粘贴 PROMPT-PACK + 上传 lite 模板</td>
+                        <td><span class="time-tag purple">~1 min</span></td>
+                    </tr>
+                    <tr>
+                        <td class="mono" style="font-weight:700;color:var(--text);">Claude Cowork</td>
+                        <td>设置 → Skills → 上传 <span class="mono" style="font-size:.86rem;">.skill</span> 文件</td>
+                        <td><span class="time-tag green">~2 min</span></td>
+                    </tr>
+                    <tr>
+                        <td class="mono" style="font-weight:700;color:var(--text);">Claude Code<span class="muted" style="font-family:var(--font-body);font-weight:400;font-size:.8rem;"> · 终端</span></td>
+                        <td>拷贝文件夹到 <span class="mono" style="font-size:.86rem;">~/.claude/skills/</span></td>
+                        <td><span class="time-tag green">~1 min</span></td>
+                    </tr>
+                    <tr>
+                        <td class="mono" style="font-weight:700;color:var(--text);">Gemini / Kimi (K3)</td>
+                        <td>粘贴 PROMPT-PACK（可存为 Gem / 常用指令）</td>
+                        <td><span class="time-tag purple">~1 min</span></td>
+                    </tr>
+                    <tr>
+                        <td class="mono" style="font-weight:700;color:var(--text);">Cursor / Codex</td>
+                        <td>kit 拖进项目 + <span class="mono" style="font-size:.86rem;">AGENTS.md</span> 加一行</td>
+                        <td><span class="time-tag">~2 min</span></td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="placeholder" style="min-height:200px;padding:1.2rem .9rem;">
+                <svg class="ph-icon" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM19 19h2v2h-2zM14 19h2v2h-2zM19 14h2v2h-2z"/></svg>
+                <div class="ph-title" style="font-size:.88rem;">资源包二维码</div>
+                <div class="ph-file" style="font-size:.66rem;">assets/ws-resource-qr.png</div>
+                <div class="ph-desc" style="font-size:.72rem;">Confluence 页面链接的二维码，建议 ≥600×600px</div>
+                <img src="assets/ws-resource-qr.png" alt="" onerror="this.remove()">
+            </div>
+        </div>
+        <div class="row wrap" style="gap:1.1rem;margin-top:1.4rem;">
+            <div class="card tight" style="flex:1;min-width:280px;">
+                <h4>没有项目素材？</h4>
+                <p style="margin:0;font-size:.88rem;">用资源包里的「样例素材包」—— 一份脱敏的假项目，保证能跑。</p>
+            </div>
+            <div class="card tight" style="flex:1;min-width:280px;">
+                <h4>生成好了？</h4>
+                <p style="margin:0;font-size:.88rem;">把 HTML 发到<strong>视频会议聊天窗口</strong>，或者直接 Slack 发我。我边收边看。</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="slide" data-section="ws-prompt" data-label="起步 Prompt" data-group="Part 3 · 现场 Workshop" data-thumb="stack" data-thumb-color="blue" data-speaker-notes="「先问再做」这四个字要念出来 —— 这是整个 prompt 里最值钱的部分。第二个 prompt 一句话带过，是给散会后要开新项目的人的。">
+    <div class="stage">
+        <div class="kicker">COPY THIS</div>
+        <h2>不知道从哪开始？用这句</h2>
+        <div class="prompt" style="margin-top:1.5rem;">
+            <div class="p-head">
+                <span class="p-tag">STARTER PROMPT</span>
+                <button class="copy-btn">复制</button>
+            </div>
+            <div class="p-body" style="font-size:.95rem;">我要为 <em>[项目名]</em> 做一份 <em>[N]</em> 页的进展汇报 slides，听众是 <em>[谁]</em>，时长 <em>[X]</em> 分钟。素材在 <em>[附件 / 文件夹 / 粘贴如下]</em>。请先告诉我你缺哪些信息、再开始制作；没有的内容不要编造，用占位符标注。</div>
+        </div>
+        <div class="grid-3" style="margin-top:1.2rem;">
+            <div class="card tight">
+                <h4>说清听众</h4>
+                <p style="margin:0;font-size:.85rem;">决定讲多深、用不用术语。</p>
+            </div>
+            <div class="card tight">
+                <h4>说清长度</h4>
+                <p style="margin:0;font-size:.85rem;">决定每页塞多少信息。</p>
+            </div>
+            <div class="card tight accent-left">
+                <h4>先问再做</h4>
+                <p style="margin:0;font-size:.85rem;">这一句能挡掉绝大部分编造。</p>
+            </div>
+        </div>
+        <div class="prompt" style="margin-top:1.3rem;border-left-color:var(--purple);">
+            <div class="p-head">
+                <span class="p-tag" style="color:var(--purple);">DAY-ONE PROMPT</span>
+                <span class="gloss">给散会后要开新项目的人</span>
+                <button class="copy-btn">复制</button>
+            </div>
+            <div class="p-body" style="font-size:.84rem;">这是一个新项目：<em>[一句话描述]</em>。请为它创建一份 CLAUDE.md，包含：项目背景与目标、我的角色、目录结构约定、关键决策记录（先留空表）、团队成员表、术语表（先留空表）、时间线。以后每次对话产生新的决策、新人名、新术语，都主动提醒我更新这份文件。</div>
+        </div>
+    </div>
+</section>
+
+<section class="slide center" data-section="ws-go" data-label="开始 · 十五分钟" data-group="Part 3 · 现场 Workshop" data-thumb="statement" data-thumb-color="green" data-speaker-notes="说完这句就走下台，去人群里转。不要站在讲台上等。15 分钟：前 3 分钟处理安装卡点，后 12 分钟让他们做东西，到点必须收。">
+    <div class="stage">
+        <div class="kicker green">GO</div>
+        <div class="big-statement">十五分钟。<span class="grad-text">开始。</span></div>
+        <p class="subtitle muted" style="margin-top:1.2rem;font-size:1rem;">前三分钟解决安装，后十二分钟动手做。</p>
+        <div class="row wrap" style="gap:.8rem;justify-content:center;margin-top:2.4rem;">
+            <span class="spill green"><span class="dot"></span>装好了？举个手</span>
+            <span class="spill amber"><span class="dot"></span>卡住了？喊助教</span>
+            <span class="spill purple"><span class="dot"></span>做完了？发我</span>
+        </div>
+        <div class="card highlight tight" style="margin-top:2rem;max-width:62ch;margin-left:auto;margin-right:auto;">
+            <p style="margin:0;font-size:.88rem;">没素材的人用资源包里的「样例素材包」；实在跑不起来的人，先看旁边同事的屏幕 —— 待会点评一样能听懂。</p>
+        </div>
+    </div>
+</section>
+<section class="slide center" data-section="part4-divider" data-label="Part 4 · 内容都对了，为什么还不亮" data-thumb="divider" data-thumb-color="amber" data-speaker-notes="语气要友善。点评的是稿子，不是人。先说「内容我挑不出毛病」再转折。这一页停两秒，让大家从动手切回听讲状态。">
+    <div class="cover-bg">
+        <div class="orb" style="width:520px;height:520px;background:var(--amber);top:-14%;left:16%;"></div>
+        <svg class="grid-tex" width="100%" height="100%"><defs><pattern id="gridPart4Div" width="60" height="60" patternUnits="userSpaceOnUse"><path d="M 60 0 L 0 0 0 60" fill="none" stroke="#0F172A" stroke-width="0.5"/></pattern></defs><rect width="100%" height="100%" fill="url(#gridPart4Div)"/></svg>
+    </div>
+    <div class="stage">
+        <div class="mono" style="font-size:clamp(4.5rem,13vw,10rem);font-weight:800;line-height:1;letter-spacing:-0.05em;color:var(--border-light);margin-bottom:.6rem;">04</div>
+        <div class="label label-amber" style="margin-bottom:1.5rem;">PART 04</div>
+        <h1>内容都对了，<br>为什么还是不亮？</h1>
+        <p class="subtitle" style="margin:0 auto;">现在我们看几份刚出炉的作品 —— 我一句都挑不出毛病，但我要问一个更尖锐的问题。</p>
+        <div class="mono muted" style="margin-top:2.2rem;font-size:.82rem;letter-spacing:.16em;">7 MIN</div>
+    </div>
+</section>
+
+<section class="slide" data-section="live-critique" data-label="现场作品投屏" data-group="Part 4 · 现场点评" data-thumb="placeholder" data-thumb-color="amber" data-speaker-notes="现场直接投屏也可以，占位图只是备份。每份 90 秒。一定要先夸具体的优点再转 —— 指着屏幕说出他做对的那一点，再问下面那句话。">
+    <div class="stage">
+        <div class="kicker amber">LIVE CRITIQUE</div>
+        <h2>如果你明天拿它上台，会发生什么？</h2>
+        <p class="subtitle" style="margin-bottom:2rem;">三份现场作品。我们一份一份看。</p>
+        <div class="grid-3">
+            <div class="placeholder" style="height:min(26rem, 46vh);">
+                <svg class="ph-icon" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                <div class="ph-title">现场作品 1</div>
+                <div class="ph-file">assets/ws-submission-1.png</div>
+                <div class="ph-desc">同事交上来的 slides 截图 / 投屏照片</div>
+                <img src="assets/ws-submission-1.png" alt="" onerror="this.remove()">
+            </div>
+            <div class="placeholder" style="height:min(26rem, 46vh);">
+                <svg class="ph-icon" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                <div class="ph-title">现场作品 2</div>
+                <div class="ph-file">assets/ws-submission-2.png</div>
+                <div class="ph-desc">同上</div>
+                <img src="assets/ws-submission-2.png" alt="" onerror="this.remove()">
+            </div>
+            <div class="placeholder" style="height:min(26rem, 46vh);">
+                <svg class="ph-icon" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                <div class="ph-title">现场作品 3</div>
+                <div class="ph-file">assets/ws-submission-3.png</div>
+                <div class="ph-desc">同上</div>
+                <img src="assets/ws-submission-3.png" alt="" onerror="this.remove()">
+            </div>
+        </div>
+        <div class="card highlight mt-2">
+            <div class="row" style="align-items:flex-start;gap:.9rem;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color:var(--amber);flex-shrink:0;margin-top:.15rem;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                <div>
+                    <div style="font-size:1.15rem;font-weight:700;line-height:1.5;">内容我挑不出毛病 —— 但如果你明天拿它上台，会发生什么？</div>
+                    <div class="gloss" style="margin-top:.4rem;">每一份都用这句开场</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="slide wide" data-section="five-problems" data-label="AI slides 的五个常见问题" data-group="Part 4 · 现场点评" data-thumb="grid4" data-thumb-color="red" data-speaker-notes="每条都用刚才现场的作品举一个具体例子，不要泛泛而谈。这五条我熟，但要看着他们的稿子说。三步放出来，每步之间留一次呼吸。">
+    <div class="stage">
+        <div class="kicker red">THE USUAL FIVE</div>
+        <h2>AI 做的 slides，几乎都会犯这五个错</h2>
+        <p class="subtitle" style="margin-bottom:2rem;">不是 AI 不行，是这五件事本来就不在「做 slides」这个任务里。</p>
+        <div class="grid-5">
+            <div class="card tight" style="position:relative;" data-step="1">
+                <div class="ghost-num">1</div>
+                <h4 style="margin:0 0 .45rem;padding-right:1.8rem;font-size:.95rem;">每页都想说三件事</h4>
+                <p style="margin:0 0 .75rem;font-size:.84rem;color:var(--text-secondary);">于是没有一句被记住。</p>
+                <span class="chip red">缺 Headline</span>
+            </div>
+            <div class="card tight" style="position:relative;" data-step="1">
+                <div class="ghost-num">2</div>
+                <h4 style="margin:0 0 .45rem;padding-right:1.8rem;font-size:.95rem;">数字没有参照</h4>
+                <p style="margin:0 0 .75rem;font-size:.84rem;color:var(--text-secondary);">「完成了 12 个组件」—— 所以呢？多还是少？</p>
+                <span class="chip red">数字没有语境</span>
+            </div>
+            <div class="card tight" style="position:relative;" data-step="2">
+                <div class="ghost-num">3</div>
+                <h4 style="margin:0 0 .45rem;padding-right:1.8rem;font-size:.95rem;">全是「我们做了什么」</h4>
+                <p style="margin:0 0 .75rem;font-size:.84rem;color:var(--text-secondary);">没有一句是「这跟听的人有什么关系」。</p>
+                <span class="chip red">没回答「与我何干」</span>
+            </div>
+            <div class="card tight" style="position:relative;" data-step="2">
+                <div class="ghost-num">4</div>
+                <h4 style="margin:0 0 .45rem;padding-right:1.8rem;font-size:.95rem;">顺序是时间顺序</h4>
+                <p style="margin:0 0 .75rem;font-size:.84rem;color:var(--text-secondary);">不是故事顺序，没有张力。</p>
+                <span class="chip red">没有反派</span>
+            </div>
+            <div class="card tight" style="position:relative;" data-step="3">
+                <div class="ghost-num">5</div>
+                <h4 style="margin:0 0 .45rem;padding-right:1.8rem;font-size:.95rem;">打算照着念</h4>
+                <p style="margin:0 0 .75rem;font-size:.84rem;color:var(--text-secondary);">slides 成了提词器。</p>
+                <span class="chip red">没排练</span>
+            </div>
+        </div>
+    </div>
+    <button class="replay">↻ replay</button>
+</section>
+
+<section class="slide center" data-section="pivot" data-label="转折：90% 与 100%" data-group="Part 4 · 现场点评" data-thumb="statement" data-thumb-color="amber" data-speaker-notes="这是全场的转折点。说完停三秒，让它落地，再翻页。不要抢。手不要动，眼睛扫一遍全场。">
+    <div class="stage">
+        <div class="kicker amber">THE TURN</div>
+        <div class="hairline"></div>
+        <div class="big-statement">AI 把「做 slides」的 <span class="grad-text">90%</span> 做完了。<br>剩下的 10%，<br>恰好是让演讲发光的 <span class="grad-text">100%</span>。</div>
+        <p class="muted" style="margin-top:2.2rem;font-size:1rem;max-width:52ch;margin-left:auto;margin-right:auto;">那 10% 是什么？有个人研究了乔布斯一辈子的发布会，写成了一本书。</p>
+    </div>
+</section>
+
+<section class="slide center" data-section="part5-divider" data-label="Part 5 · 乔布斯的魔力演讲" data-thumb="divider" data-thumb-color="purple" data-speaker-notes="报一下书名和作者，一句话就够。不要变成读书分享会。语速稍微提起来，这里开始是全场的高能段。">
+    <div class="cover-bg">
+        <div class="orb" style="width:540px;height:540px;background:var(--purple);bottom:-12%;right:14%;"></div>
+        <svg class="grid-tex" width="100%" height="100%"><defs><pattern id="gridPart5Div" width="60" height="60" patternUnits="userSpaceOnUse"><path d="M 60 0 L 0 0 0 60" fill="none" stroke="#0F172A" stroke-width="0.5"/></pattern></defs><rect width="100%" height="100%" fill="url(#gridPart5Div)"/></svg>
+    </div>
+    <div class="stage">
+        <div class="mono" style="font-size:clamp(4.5rem,13vw,10rem);font-weight:800;line-height:1;letter-spacing:-0.05em;color:var(--border-light);margin-bottom:.6rem;">05</div>
+        <div class="label label-purple" style="margin-bottom:1.5rem;">PART 05</div>
+        <h1>乔布斯的魔力演讲</h1>
+        <p class="subtitle" style="margin:0 auto;">The Presentation Secrets of Steve Jobs · Carmine Gallo · 2009 —— 一本 2009 年的书，在 AI 时代反而更锋利了。</p>
+        <div class="mono muted" style="margin-top:2.2rem;font-size:.82rem;letter-spacing:.16em;">10 MIN</div>
+    </div>
+</section>
+
+<section class="slide wide" data-section="three-acts" data-label="三幕剧结构总览" data-group="Part 5 · 乔布斯的魔力演讲" data-thumb="grid3" data-thumb-color="purple" data-speaker-notes="用手比划三幕：左边、中间、右边。紫色的 chip 是今天要展开的六招（覆盖 8 个场景 + 幕间），先点出来但不展开。最后那句 spill 是伏笔，Part 5 结尾会兑现。">
+    <div class="stage">
+        <div class="kicker purple">THE STRUCTURE</div>
+        <h2>他把乔布斯的发布会，拆成了一部电影剧本</h2>
+        <p class="subtitle" style="margin-bottom:2rem;">三幕、18 个场景 —— 编剧、表演、排练。今天我只讲其中六招。</p>
+        <div class="grid-3">
+            <div class="card purple-left" data-step="1">
+                <div class="mono" style="font-size:.68rem;font-weight:700;letter-spacing:.16em;color:var(--purple);">ACT I</div>
+                <h4 style="margin:.45rem 0 .1rem;font-size:1.05rem;">创作故事</h4>
+                <div class="gloss">Create the Story</div>
+                <div class="muted" style="font-size:.76rem;margin:.15rem 0 .9rem;">场景 1–7 · 编剧</div>
+                <div class="row wrap" style="gap:.4rem;">
+                    <span class="chip">纸上构思</span>
+                    <span class="chip">回答「与我何干」</span>
+                    <span class="chip">使命感</span>
+                    <span class="chip purple">推特式标题</span>
+                    <span class="chip purple">三的法则</span>
+                    <span class="chip purple">引出反派</span>
+                    <span class="chip purple">揭示英雄</span>
+                </div>
+                <div style="font-size:.78rem;line-height:1.6;margin-top:1rem;padding-top:.75rem;border-top:1px dashed var(--border);color:var(--text-secondary);"><span class="mono" style="color:var(--amber);font-weight:700;letter-spacing:.06em;">幕间</span> · 10 分钟法则 —— 注意力每 10 分钟断崖式下滑一次<span class="gloss">（今晚会讲）</span></div>
+            </div>
+            <div class="card purple-left" data-step="2">
+                <div class="mono" style="font-size:.68rem;font-weight:700;letter-spacing:.16em;color:var(--purple);">ACT II</div>
+                <h4 style="margin:.45rem 0 .1rem;font-size:1.05rem;">呈现体验</h4>
+                <div class="gloss">Deliver the Experience</div>
+                <div class="muted" style="font-size:.76rem;margin:.15rem 0 .9rem;">场景 8–13 · 表演</div>
+                <div class="row wrap" style="gap:.4rem;">
+                    <span class="chip purple">禅意极简</span>
+                    <span class="chip purple">给数字一个参照</span>
+                    <span class="chip">有画面感的词</span>
+                    <span class="chip">分享舞台</span>
+                    <span class="chip">道具与 Demo</span>
+                    <span class="chip">制造难忘瞬间</span>
+                </div>
+            </div>
+            <div class="card purple-left" data-step="3">
+                <div class="mono" style="font-size:.68rem;font-weight:700;letter-spacing:.16em;color:var(--purple);">ACT III</div>
+                <h4 style="margin:.45rem 0 .1rem;font-size:1.05rem;">精炼与排练</h4>
+                <div class="gloss">Refine and Rehearse</div>
+                <div class="muted" style="font-size:.76rem;margin:.15rem 0 .9rem;">场景 14–18 · 排练</div>
+                <div class="row wrap" style="gap:.4rem;">
+                    <span class="chip">舞台风范</span>
+                    <span class="chip purple">毫不费力</span>
+                    <span class="chip">合适的着装</span>
+                    <span class="chip purple">扔掉讲稿</span>
+                    <span class="chip">乐在其中</span>
+                </div>
+            </div>
+        </div>
+        <div class="mt-2" style="text-align:center;">
+            <span class="spill amber"><span class="dot"></span>第一幕和第二幕，AI 现在能帮你做掉大半。第三幕，一个字都帮不了。</span>
+        </div>
+    </div>
+    <button class="replay">↻ replay</button>
+</section>
+<section class="slide" data-section="move-1" data-label="推特式标题" data-group="Part 5 · 乔布斯的魔力演讲" data-thumb="grid2" data-thumb-color="blue" data-speaker-notes="第一招，90 秒。先念乔布斯那句 1,000 songs in your pocket，停半拍。改写示例念慢一点，让大家听出差别。最后回指今晚的那句话，说完停两秒 —— 这里全场应该会笑。数到三是真的，第四遍留给结尾。">
+    <div class="stage">
+        <div class="kicker">MOVE 01 · SCENE 04</div>
+        <h2>推特式标题</h2>
+        <p class="subtitle" style="margin-bottom:2rem;">用一句少于 140 字符、具体、含听众利益的话定义你要讲的东西，然后整场反复说它。</p>
+        <div class="grid-2">
+            <div class="card accent-left" data-step="1">
+                <div class="mono" style="font-size:.65rem;letter-spacing:.13em;color:var(--brand);font-weight:700;margin-bottom:.75rem;">STEVE JOBS</div>
+                <p style="margin:0 0 .6rem;font-size:.88rem;">发布 iPod 时他没说「5GB 硬盘」，他说 ——</p>
+                <div style="font-size:1.15rem;font-weight:700;color:var(--text);line-height:1.4;margin-bottom:.85rem;">1,000 songs in your pocket</div>
+                <p style="margin:0 0 .6rem;font-size:.88rem;">发布 iPhone 时的第一句话是 ——</p>
+                <div style="font-size:1.15rem;font-weight:700;color:var(--text);line-height:1.4;">Today, Apple reinvents the phone.</div>
+            </div>
+            <div class="card purple-left" data-step="2">
+                <div class="mono" style="font-size:.65rem;letter-spacing:.13em;color:var(--purple);font-weight:700;margin-bottom:.75rem;">IMTOKEN</div>
+                <div style="display:flex;gap:.6rem;align-items:flex-start;margin-bottom:1rem;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:17px;height:17px;flex-shrink:0;margin-top:.2rem;"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg>
+                    <div style="font-size:.92rem;color:var(--text-muted);font-style:italic;line-height:1.6;">「跨链发送功能迭代汇报」</div>
+                </div>
+                <div style="display:flex;gap:.6rem;align-items:flex-start;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:17px;height:17px;flex-shrink:0;margin-top:.3rem;"><path d="M20 6L9 17l-5-5"/></svg>
+                    <div style="font-size:1.15rem;font-weight:700;color:var(--text);line-height:1.45;">「用户再也不用知道『链』是什么」</div>
+                </div>
+            </div>
+        </div>
+        <div class="card highlight" style="margin-top:1.1rem;border-left:3px solid var(--purple);">
+            <div style="display:flex;gap:.9rem;align-items:flex-start;">
+                <span class="mono" style="font-size:.65rem;letter-spacing:.13em;color:var(--purple);font-weight:700;padding-top:.32rem;flex-shrink:0;">CALLBACK</span>
+                <div style="font-size:.95rem;line-height:1.7;color:var(--text-secondary);">我今晚已经对你们用过这一招 —— 今晚的那句话是<strong>「让 AI 从项目第一天就在场，最后十分钟只是收获」</strong>，我已经说了三遍 —— 等一下结尾还有第四遍。</div>
+            </div>
+        </div>
+    </div>
+    <button class="replay">↻ replay</button>
+</section>
+
+<section class="slide" data-section="move-2" data-label="三的法则" data-group="Part 5 · 乔布斯的魔力演讲" data-thumb="grid3" data-thumb-color="blue" data-speaker-notes="第二招，90 秒。讲 iPhone 那段时用手指比三下，重复三遍再说「它们是同一台设备」。回指时直接说「翻回第 4 页你们就看到过」，不用真翻。">
+    <div class="stage">
+        <div class="kicker">MOVE 02 · SCENE 05</div>
+        <h2>三的法则</h2>
+        <p class="subtitle" style="margin-bottom:2rem;">人一次只记得住三件事。开场就把路线图给出来，然后逐一展开。</p>
+        <div class="grid-2">
+            <div class="card accent-left" data-step="1">
+                <div class="mono" style="font-size:.65rem;letter-spacing:.13em;color:var(--brand);font-weight:700;margin-bottom:.75rem;">STEVE JOBS</div>
+                <p style="margin:0 0 .75rem;font-size:.88rem;">iPhone 发布会上，他把这三样东西反复念了好几遍 ——</p>
+                <div class="row wrap" style="gap:.45rem;margin-bottom:.85rem;">
+                    <span class="chip">一台 iPod</span>
+                    <span class="chip">一部电话</span>
+                    <span class="chip">一个互联网通信设备</span>
+                </div>
+                <div style="font-size:1.15rem;font-weight:700;color:var(--text);line-height:1.45;">然后他说：它们是同一台设备。</div>
+            </div>
+            <div class="card purple-left" data-step="2">
+                <div class="mono" style="font-size:.65rem;letter-spacing:.13em;color:var(--purple);font-weight:700;margin-bottom:.75rem;">IMTOKEN</div>
+                <div style="display:flex;gap:.6rem;align-items:flex-start;margin-bottom:1rem;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:17px;height:17px;flex-shrink:0;margin-top:.2rem;"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg>
+                    <div style="font-size:.92rem;color:var(--text-muted);font-style:italic;line-height:1.6;">进展汇报列了 11 个模块</div>
+                </div>
+                <div style="display:flex;gap:.6rem;align-items:flex-start;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:17px;height:17px;flex-shrink:0;margin-top:.3rem;"><path d="M20 6L9 17l-5-5"/></svg>
+                    <div>
+                        <div style="font-size:1.05rem;font-weight:700;color:var(--text);line-height:1.45;margin-bottom:.5rem;">收敛成三条主线</div>
+                        <div class="row wrap" style="gap:.45rem;">
+                            <span class="chip purple">地基稳了</span>
+                            <span class="chip purple">主流程通了</span>
+                            <span class="chip purple">下一步要什么支持</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card highlight" style="margin-top:1.1rem;border-left:3px solid var(--purple);">
+            <div style="display:flex;gap:.9rem;align-items:flex-start;">
+                <span class="mono" style="font-size:.65rem;letter-spacing:.13em;color:var(--purple);font-weight:700;padding-top:.32rem;flex-shrink:0;">CALLBACK</span>
+                <div style="font-size:.95rem;line-height:1.7;color:var(--text-secondary);">我今晚已经对你们用过这一招 —— 今天的三样东西是<strong>一个习惯、一个工具、一个真相</strong>，开场第 4 页就给你们了。</div>
+            </div>
+        </div>
+    </div>
+    <button class="replay">↻ replay</button>
+</section>
+
+<section class="slide" data-section="move-3" data-label="反派与英雄" data-group="Part 5 · 乔布斯的魔力演讲" data-thumb="split" data-thumb-color="red" data-speaker-notes="第三招，90 秒，全场情绪最高的一招。先指着那条直线说「这是大部分汇报」，再指下沉的那条说「这是能被记住的」。回指时提醒他们：今晚的反派第 2 页就登场了，而且有帮凶。">
+    <div class="stage">
+        <div class="kicker red">MOVE 03 · SCENE 06–07</div>
+        <h2>反派与英雄</h2>
+        <p class="subtitle" style="margin-bottom:2rem;">先立一个敌人，让听众恨它；再让你的方案作为英雄登场。没有反派的演讲没有张力。</p>
+        <div class="grid-2" style="gap:1.1rem;margin-bottom:1.1rem;">
+            <div style="border:1.5px solid var(--border);border-radius:var(--radius);padding:.9rem 1.1rem;background:var(--border-light);">
+                <div class="mono" style="font-size:.64rem;letter-spacing:.12em;color:var(--text-muted);font-weight:700;margin-bottom:.4rem;">FLAT · 平铺直叙</div>
+                <svg viewBox="0 0 260 54" width="100%" height="54" fill="none" preserveAspectRatio="none"><polyline points="6,30 66,30 126,30 186,30 254,30" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <div class="gloss" style="margin-top:.2rem;">信息都在，没人记得住</div>
+            </div>
+            <div class="card tight" style="border-left:3px solid var(--red);padding:.9rem 1.1rem;">
+                <div class="mono" style="font-size:.64rem;letter-spacing:.12em;color:var(--red);font-weight:700;margin-bottom:.4rem;">TENSION · 有反派</div>
+                <svg viewBox="0 0 260 54" width="100%" height="54" fill="none" preserveAspectRatio="none"><polyline points="6,26 66,44 126,48 186,20 254,8" stroke="var(--brand)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="126" cy="48" r="4" fill="var(--red)"/><circle cx="254" cy="8" r="4" fill="var(--brand)"/></svg>
+                <div class="gloss" style="margin-top:.2rem;">先下沉（反派），再上扬（英雄）</div>
+            </div>
+        </div>
+        <div class="grid-2">
+            <div class="card accent-left" data-step="1">
+                <div class="mono" style="font-size:.65rem;letter-spacing:.13em;color:var(--brand);font-weight:700;margin-bottom:.7rem;">STEVE JOBS</div>
+                <p style="margin:0 0 .5rem;font-size:.88rem;">1984 年广告里的反派是 IBM「老大哥」。</p>
+                <p style="margin:0;font-size:.88rem;">2007 年 iPhone 的反派是<strong>难用的现有智能手机</strong> —— 他用了好几分钟细数它们的问题，然后才掏出 iPhone。</p>
+            </div>
+            <div class="card purple-left" data-step="2">
+                <div class="mono" style="font-size:.65rem;letter-spacing:.13em;color:var(--purple);font-weight:700;margin-bottom:.7rem;">IMTOKEN</div>
+                <div style="display:flex;gap:.6rem;align-items:flex-start;margin-bottom:.75rem;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:17px;height:17px;flex-shrink:0;margin-top:.15rem;"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg>
+                    <div style="font-size:.92rem;color:var(--text-muted);font-style:italic;line-height:1.6;">反派不是竞品</div>
+                </div>
+                <div style="display:flex;gap:.6rem;align-items:flex-start;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:17px;height:17px;flex-shrink:0;margin-top:.25rem;"><path d="M20 6L9 17l-5-5"/></svg>
+                    <div>
+                        <div style="font-size:1.05rem;font-weight:700;color:var(--text);line-height:1.45;margin-bottom:.5rem;">反派是用户的痛</div>
+                        <div class="row wrap" style="gap:.45rem;">
+                            <span class="chip red">助记词恐惧</span>
+                            <span class="chip red">Gas 困惑</span>
+                            <span class="chip red">我这笔钱到底在哪条链上</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card highlight" style="margin-top:1.1rem;border-left:3px solid var(--purple);">
+            <div style="display:flex;gap:.9rem;align-items:flex-start;">
+                <span class="mono" style="font-size:.65rem;letter-spacing:.13em;color:var(--purple);font-weight:700;padding-top:.32rem;flex-shrink:0;">CALLBACK</span>
+                <div style="font-size:.95rem;line-height:1.7;color:var(--text-secondary);">我今晚已经对你们用过这一招 —— 今晚的反派是<strong>「会前恐慌」</strong>，第 2 页就登场了，而且我给它加了一个帮凶：<strong>没有上下文的 AI</strong>。</div>
+            </div>
+        </div>
+    </div>
+    <button class="replay">↻ replay</button>
+</section>
+
+<section class="slide" data-section="move-4" data-label="10 分钟法则" data-group="Part 5 · 乔布斯的魔力演讲" data-thumb="timeline" data-thumb-color="amber" data-speaker-notes="第四招，90 秒。讲到色带时用手横着划一遍全场节奏。特别点名：你们刚才动手那 15 分钟，是我给自己安排的换气。提醒他们 Skill 只管一页一个想法，节奏得自己排。">
+    <div class="stage">
+        <div class="kicker amber">MOVE 04 · SCENE 08 + INTERLUDE</div>
+        <h2>10 分钟法则 + 一页一个想法</h2>
+        <p class="subtitle" style="margin-bottom:2rem;">注意力大约每 10 分钟断崖式下滑一次 —— 每 10 分钟必须换一种刺激形态。而每一页 slide 只讲一件事，零 bullet point。</p>
+        <div class="grid-2" style="margin-bottom:1.2rem;">
+            <div class="card accent-left" data-step="1">
+                <div class="mono" style="font-size:.65rem;letter-spacing:.13em;color:var(--brand);font-weight:700;margin-bottom:.7rem;">STEVE JOBS</div>
+                <p style="margin:0;font-size:.88rem;">他的发布会上每 10 分钟必有一次 Demo、一段视频，或一位嘉宾上台。他的 slide 常常只有<strong>一个词或一张图</strong>。</p>
+            </div>
+            <div class="card purple-left" data-step="2">
+                <div class="mono" style="font-size:.65rem;letter-spacing:.13em;color:var(--purple);font-weight:700;margin-bottom:.7rem;">IMTOKEN</div>
+                <div style="display:flex;gap:.6rem;align-items:flex-start;margin-bottom:.6rem;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:17px;height:17px;flex-shrink:0;margin-top:.15rem;"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg>
+                    <div style="font-size:.92rem;color:var(--text-muted);font-style:italic;line-height:1.6;">一页 8 条 bullet，讲 12 分钟</div>
+                </div>
+                <div style="display:flex;gap:.6rem;align-items:flex-start;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:17px;height:17px;flex-shrink:0;margin-top:.2rem;"><path d="M20 6L9 17l-5-5"/></svg>
+                    <div style="font-size:1rem;font-weight:700;color:var(--text);line-height:1.5;">一页一个想法，每 10 分钟换一次形态</div>
+                </div>
+            </div>
+        </div>
+        <div>
+            <div style="display:flex;gap:.4rem;align-items:stretch;">
+                <div style="flex:3;min-width:82px;background:rgba(var(--brand-rgb),.08);border:1px solid rgba(var(--brand-rgb),.22);border-radius:10px;padding:.85rem .3rem .8rem;text-align:center;">
+                    <div class="mono" style="font-size:1.15rem;font-weight:800;line-height:1;color:var(--brand);">3<span style="font-size:.72rem;font-weight:600;">′</span></div>
+                    <div style="font-size:.85rem;font-weight:650;color:var(--text);margin-top:.4rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">讲述</div>
+                    <div class="mono" style="font-size:.66rem;letter-spacing:.1em;color:var(--text-secondary);margin-top:.25rem;">NARRATE</div>
+                </div>
+                <div style="flex:2;min-width:82px;background:rgba(var(--green-rgb),.08);border:1px solid rgba(var(--green-rgb),.22);border-radius:10px;padding:.85rem .3rem .8rem;text-align:center;">
+                    <div class="mono" style="font-size:1.15rem;font-weight:800;line-height:1;color:var(--green);">2<span style="font-size:.72rem;font-weight:600;">′</span></div>
+                    <div style="font-size:.85rem;font-weight:650;color:var(--text);margin-top:.4rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Live</div>
+                    <div class="mono" style="font-size:.66rem;letter-spacing:.1em;color:var(--text-secondary);margin-top:.25rem;">LIVE</div>
+                </div>
+                <div style="flex:10;min-width:82px;background:rgba(var(--brand-rgb),.08);border:1px solid rgba(var(--brand-rgb),.22);border-radius:10px;padding:.85rem .3rem .8rem;text-align:center;">
+                    <div class="mono" style="font-size:1.15rem;font-weight:800;line-height:1;color:var(--brand);">10<span style="font-size:.72rem;font-weight:600;">′</span></div>
+                    <div style="font-size:.85rem;font-weight:650;color:var(--text);margin-top:.4rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">讲解</div>
+                    <div class="mono" style="font-size:.66rem;letter-spacing:.1em;color:var(--text-secondary);margin-top:.25rem;">TEACH</div>
+                </div>
+                <div style="flex:10;min-width:82px;background:rgba(var(--purple-rgb),.08);border:1px solid rgba(var(--purple-rgb),.22);border-radius:10px;padding:.85rem .3rem .8rem;text-align:center;">
+                    <div class="mono" style="font-size:1.15rem;font-weight:800;line-height:1;color:var(--purple);">10<span style="font-size:.72rem;font-weight:600;">′</span></div>
+                    <div style="font-size:.85rem;font-weight:650;color:var(--text);margin-top:.4rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Demo</div>
+                    <div class="mono" style="font-size:.66rem;letter-spacing:.1em;color:var(--text-secondary);margin-top:.25rem;">DEMO</div>
+                </div>
+                <div style="flex:15;min-width:82px;background:rgba(var(--amber-rgb),.08);border:1px solid rgba(var(--amber-rgb),.22);border-radius:10px;padding:.85rem .3rem .8rem;text-align:center;">
+                    <div class="mono" style="font-size:1.15rem;font-weight:800;line-height:1;color:var(--amber);">15<span style="font-size:.72rem;font-weight:600;">′</span></div>
+                    <div style="font-size:.85rem;font-weight:650;color:var(--text);margin-top:.4rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">动手</div>
+                    <div class="mono" style="font-size:.66rem;letter-spacing:.1em;color:var(--text-secondary);margin-top:.25rem;">HANDS-ON</div>
+                </div>
+                <div style="flex:7;min-width:82px;background:var(--cyan-light);border:1px solid var(--cyan);border-radius:10px;padding:.85rem .3rem .8rem;text-align:center;">
+                    <div class="mono" style="font-size:1.15rem;font-weight:800;line-height:1;color:var(--cyan);">7<span style="font-size:.72rem;font-weight:600;">′</span></div>
+                    <div style="font-size:.85rem;font-weight:650;color:var(--text);margin-top:.4rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">点评</div>
+                    <div class="mono" style="font-size:.66rem;letter-spacing:.1em;color:var(--text-secondary);margin-top:.25rem;">CRITIQUE</div>
+                </div>
+                <div style="flex:10;min-width:82px;background:rgba(var(--brand-rgb),.08);border:1px solid rgba(var(--brand-rgb),.22);border-radius:10px;padding:.85rem .3rem .8rem;text-align:center;">
+                    <div class="mono" style="font-size:1.15rem;font-weight:800;line-height:1;color:var(--brand);">10<span style="font-size:.72rem;font-weight:600;">′</span></div>
+                    <div style="font-size:.85rem;font-weight:650;color:var(--text);margin-top:.4rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">讲解</div>
+                    <div class="mono" style="font-size:.66rem;letter-spacing:.1em;color:var(--text-secondary);margin-top:.25rem;">TEACH</div>
+                </div>
+                <div style="flex:3;min-width:82px;background:var(--border-light);border:1px solid var(--border);border-radius:10px;padding:.85rem .3rem .8rem;text-align:center;">
+                    <div class="mono" style="font-size:1.15rem;font-weight:800;line-height:1;color:var(--text-secondary);">3<span style="font-size:.72rem;font-weight:600;">′</span></div>
+                    <div style="font-size:.85rem;font-weight:650;color:var(--text);margin-top:.4rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">收尾</div>
+                    <div class="mono" style="font-size:.66rem;letter-spacing:.1em;color:var(--text-secondary);margin-top:.25rem;">CLOSE</div>
+                </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:.8rem;margin-top:.7rem;">
+                <div style="flex:1;height:1px;border-top:1px dashed var(--border);"></div>
+                <span class="mono" style="font-size:.66rem;letter-spacing:.1em;color:var(--text-muted);white-space:nowrap;">今晚八个环节 · 没有任何一段纯讲解超过 10′</span>
+            </div>
+        </div>
+        <div class="card highlight" style="margin-top:1.1rem;border-left:3px solid var(--purple);">
+            <div style="display:flex;gap:.9rem;align-items:flex-start;">
+                <span class="mono" style="font-size:.65rem;letter-spacing:.13em;color:var(--purple);font-weight:700;padding-top:.32rem;flex-shrink:0;">CALLBACK</span>
+                <div style="font-size:.95rem;line-height:1.7;color:var(--text-secondary);">我今晚已经对你们用过这一招 —— 讲述 → Live 操作 → 讲解 → Demo → 你们动手 → 互动点评 → 讲解 → 收尾。<strong>你们刚才动手那 15 分钟，就是我给自己安排的换气。</strong>这份 deck 的 Skill 已经替你守住「一页一个想法、零 bullet」—— 但节奏只能靠你自己排。</div>
+            </div>
+        </div>
+    </div>
+    <button class="replay">↻ replay</button>
+</section>
+
+<section class="slide" data-section="move-5" data-label="给数字一个参照" data-group="Part 5 · 乔布斯的魔力演讲" data-thumb="stat" data-thumb-color="green" data-speaker-notes="第五招，90 秒。念对比表时先念左边孤零零的数字，停一拍，再念右边。回指那两个大数字要念得慢：平均每 17 小时，平均每 5 天 —— 这两个数就是我自己给自己穿的衣服。">
+    <div class="stage">
+        <div class="kicker green">MOVE 05 · SCENE 09</div>
+        <h2>给数字一个参照</h2>
+        <p class="subtitle" style="margin-bottom:2rem;">孤零零的数字没有意义。必须换算成听众有概念的尺度。</p>
+        <div class="grid-2">
+            <div class="card accent-left" data-step="1">
+                <div class="mono" style="font-size:.65rem;letter-spacing:.13em;color:var(--brand);font-weight:700;margin-bottom:.75rem;">STEVE JOBS</div>
+                <p style="margin:0 0 .7rem;font-size:.88rem;">不说总销量，说 <strong>平均每天卖出 2 万台</strong>。</p>
+                <p style="margin:0;font-size:.88rem;">不说「30GB」，说 <strong>7,500 首歌、25,000 张照片</strong>。</p>
+            </div>
+            <div class="card purple-left" data-step="2">
+                <div class="mono" style="font-size:.65rem;letter-spacing:.13em;color:var(--purple);font-weight:700;margin-bottom:.5rem;">IMTOKEN</div>
+                <table class="comparison" style="font-size:.88rem;">
+                    <tr>
+                        <td style="width:1px;white-space:nowrap;padding-left:0;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:17px;height:17px;display:block;"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg>
+                        </td>
+                        <td class="from-cell">「39 条 git 分支」</td>
+                    </tr>
+                    <tr>
+                        <td style="width:1px;white-space:nowrap;padding-left:0;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:17px;height:17px;display:block;"><path d="M20 6L9 17l-5-5"/></svg>
+                        </td>
+                        <td class="to-cell" style="font-size:1.05rem;">「同一份材料，平均改到第 3 版才敢发出去」</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <div class="card highlight" style="margin-top:1.1rem;border-left:3px solid var(--purple);">
+            <div style="display:flex;gap:.9rem;align-items:flex-start;margin-bottom:1rem;">
+                <span class="mono" style="font-size:.65rem;letter-spacing:.13em;color:var(--purple);font-weight:700;padding-top:.32rem;flex-shrink:0;">CALLBACK</span>
+                <div style="font-size:.95rem;line-height:1.7;color:var(--text-secondary);">我今晚已经对你们用过这一招 —— 第 12 页那两个数字，220 和 30，我都给了它们参照。</div>
+            </div>
+            <div class="stat-row" style="justify-content:center;gap:3.5rem;">
+                <div class="stat">
+                    <div class="num">17</div>
+                    <div class="cap">平均每 17 小时就有一份新文件落地</div>
+                </div>
+                <div class="stat">
+                    <div class="num">5</div>
+                    <div class="cap">平均每 5.1 天就要站到人前讲一次</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <button class="replay">↻ replay</button>
+</section>
+
+<section class="slide" data-section="move-6" data-label="毫不费力的背后" data-group="Part 5 · 乔布斯的魔力演讲" data-thumb="steps" data-thumb-color="purple" data-speaker-notes="第六招，90 秒，也是最诚实的一招。念 90 小时的时候停一下。五步脱稿法快速带过，重点落在最后一句：你们看到的流畅，我昨晚排练过。说完直接进思想落点页。">
+    <div class="stage">
+        <div class="kicker purple">MOVE 06 · SCENE 15 + 17</div>
+        <h2>毫不费力的背后</h2>
+        <p class="subtitle" style="margin-bottom:2rem;">「看起来毫不费力」是排练出来的，不是天赋。</p>
+        <div class="grid-2">
+            <div class="card accent-left" data-step="1">
+                <div class="mono" style="font-size:.65rem;letter-spacing:.13em;color:var(--brand);font-weight:700;margin-bottom:.7rem;">STEVE JOBS</div>
+                <div style="display:flex;align-items:baseline;gap:.5rem;margin-bottom:.6rem;">
+                    <span style="font-family:var(--font-mono);font-size:1.7rem;font-weight:800;color:var(--brand);line-height:1;">90 小时</span>
+                    <span style="font-size:.84rem;color:var(--text-secondary);">准备一场 1 小时的发布会演讲</span>
+                </div>
+                <p style="margin:0 0 .9rem;font-size:.84rem;">Q&amp;A <strong>提前归类</strong>：预判问题 → 归成最多 7 类 → 每类备一个最佳答案 → 现场听到关键词就调取。</p>
+                <div class="mono" style="font-size:.64rem;letter-spacing:.12em;color:var(--text-muted);font-weight:700;margin-bottom:.55rem;">五步脱稿法 · 走完这五步，你已经过了好几遍</div>
+                <div class="stack" style="gap:.42rem;">
+                    <div class="flow-step" style="gap:.7rem;align-items:center;"><div class="flow-dot" style="width:22px;height:22px;font-size:.7rem;">1</div><div style="font-size:.82rem;color:var(--text-secondary);">写全稿</div></div>
+                    <div class="flow-step" style="gap:.7rem;align-items:center;"><div class="flow-dot" style="width:22px;height:22px;font-size:.7rem;">2</div><div style="font-size:.82rem;color:var(--text-secondary);">每句划一个关键词</div></div>
+                    <div class="flow-step" style="gap:.7rem;align-items:center;"><div class="flow-dot" style="width:22px;height:22px;font-size:.7rem;">3</div><div style="font-size:.82rem;color:var(--text-secondary);">删到只剩关键词</div></div>
+                    <div class="flow-step" style="gap:.7rem;align-items:center;"><div class="flow-dot" style="width:22px;height:22px;font-size:.7rem;">4</div><div style="font-size:.82rem;color:var(--text-secondary);">每页 slide 只记一个核心思想</div></div>
+                    <div class="flow-step" style="gap:.7rem;align-items:center;"><div class="flow-dot purple" style="width:22px;height:22px;font-size:.7rem;">5</div><div style="font-size:.82rem;color:var(--text-secondary);">只看 slide 练习</div></div>
+                </div>
+            </div>
+            <div class="card purple-left" data-step="2">
+                <div class="mono" style="font-size:.65rem;letter-spacing:.13em;color:var(--purple);font-weight:700;margin-bottom:.7rem;">IMTOKEN</div>
+                <div style="display:flex;gap:.6rem;align-items:flex-start;margin-bottom:1.1rem;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:17px;height:17px;flex-shrink:0;margin-top:.15rem;"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg>
+                    <div style="font-size:.92rem;color:var(--text-muted);font-style:italic;line-height:1.6;">上台前十分钟还在改字</div>
+                </div>
+                <div style="display:flex;gap:.6rem;align-items:flex-start;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:17px;height:17px;flex-shrink:0;margin-top:.3rem;"><path d="M20 6L9 17l-5-5"/></svg>
+                    <div style="font-size:1.15rem;font-weight:700;color:var(--text);line-height:1.5;">上台前十分钟，录一遍自己的开场五分钟，回听</div>
+                </div>
+            </div>
+        </div>
+        <div class="card highlight" style="margin-top:1.1rem;border-left:3px solid var(--purple);">
+            <div style="display:flex;gap:.9rem;align-items:flex-start;margin-bottom:.8rem;">
+                <span class="mono" style="font-size:.65rem;letter-spacing:.13em;color:var(--purple);font-weight:700;padding-top:.32rem;flex-shrink:0;">CALLBACK</span>
+                <div style="font-size:.95rem;line-height:1.7;color:var(--text-secondary);">我今晚已经对你们用过这一招 —— 我的 Q&amp;A 准备了五类答案，等一下你们提问，我大概率能对上其中一个。而且 —— <strong>你们看到的「流畅」，我昨晚排练过。</strong></div>
+            </div>
+            <div style="display:flex;gap:.9rem;align-items:flex-start;margin-top:.2rem;"><span style="flex-shrink:0;width:4.6rem;"></span><div style="flex:1;"><div class="gloss" style="margin-bottom:.45rem;">我今晚准备的五类：</div><div class="row wrap" style="gap:.45rem;">
+                <span class="chip purple">安全</span>
+                <span class="chip purple">门槛</span>
+                <span class="chip purple">质量</span>
+                <span class="chip purple">工具</span>
+                <span class="chip purple">成本</span>
+            </div></div></div>
+        </div>
+    </div>
+    <button class="replay">↻ replay</button>
+</section>
+
+<section class="slide center" data-section="thesis" data-label="思想落点" data-group="Part 5 · 乔布斯的魔力演讲" data-thumb="statement" data-thumb-color="purple" data-speaker-notes="这是整场的思想落点。说完停三秒。全场应该是安静的。不要补充任何解释，直接翻到套娃揭晓。">
+    <div class="stage">
+        <div class="kicker">THE POINT</div>
+        <div class="hairline"></div>
+        <div class="big-statement">AI 拉平了<span class="grad-text">制作</span>，<br>放大了<span class="grad-text">表达</span>。</div>
+        <p class="subtitle muted" style="margin-top:2.2rem;">当每个人都能用 AI 做出漂亮的 slides，「做得好看」不再是差异。</p>
+        <p class="subtitle muted" style="margin-top:.4rem;">把 AI 省下来的时间，全部还给排练 —— 乔布斯为一场 1 小时的发布会演讲，准备 90 小时。</p>
+    </div>
+</section>
+
+<section class="slide center" data-section="reveal" data-label="它其实是睡前做的" data-group="Closing" data-thumb="statement" data-thumb-color="amber" data-speaker-notes="翻回封面再翻回来，制造「啊」的一声。念 prompt 的时候只念高亮的三句，其余让他们自己看。念到最后一句「我给你十分钟，看有什么问题需要问我」时停两秒 —— 这句是全场最好的一个回旋，因为它正是 Part 3 教他们的那句话。约 60 秒。">
+    <div class="stage">
+        <div class="kicker amber">ONE MORE THING</div>
+        <h2>最后告诉你们一件事</h2>
+        <div class="big-statement" style="font-size:clamp(1.75rem,3.3vw,2.75rem);margin-bottom:1.6rem;">你们现在看的这份 slides ——<br>是我<span class="grad-text">睡前发出去的一个 prompt</span> 做的。</div>
+        <div class="prompt" style="text-align:left;max-width:64rem;border-left-color:var(--amber);">
+            <div class="p-head">
+                <span class="p-tag" style="color:var(--amber);">THE ACTUAL PROMPT · 昨晚</span>
+            </div>
+            <div class="p-body" style="font-size:.88rem;">
+                「……你需要<em style="background:var(--amber-light);color:var(--amber);">理解我过往产出 Slide Html 的高标准</em>，并且<em style="background:var(--amber-light);color:var(--amber);">充分利用我们已经做出来的 Skill</em>。<br>
+                我希望你<em style="background:var(--amber-light);color:var(--amber);">建立一个 workflow，用多个 agents 去做，从探索，到收敛，再到执行，audit，再 refine</em>，直到产出高质量的 Slides。<br>
+                我要去睡觉了，<strong>六个小时后见</strong>，我需要你一路执行到底。<br>
+                <strong>我给你十分钟，看有什么问题需要问我。</strong>」
+            </div>
+        </div>
+        <div class="row" style="justify-content:center;gap:.7rem;margin-top:1.4rem;flex-wrap:wrap;">
+            <span class="chip amber">它问了我四个问题</span>
+            <span class="chip gray">我答完就去睡了</span>
+            <span class="chip green">早上起来，deck 在那儿</span>
+        </div>
+    </div>
+</section>
+
+<section class="slide" data-section="last-two-points" data-label="AI 给到 8 分，剩下 2 分" data-group="Closing" data-thumb="split" data-thumb-color="purple" data-speaker-notes="这一页是全场论点的收口，别急。先说「早上拿到的是七八分」——诚实，不吹。然后指着右边说：我这一天做的不是改字，是每一次说「这里不对」。最后那句「AI 拉平了制作，放大了判断」说完停三秒，直接翻资源包页。约 75 秒。">
+    <div class="stage">
+        <div class="kicker purple">THE LAST TWO POINTS</div>
+        <h2>早上拿到的，是一份七八分的 slides</h2>
+        <p class="subtitle" style="margin-bottom:1.8rem;">剩下那两分，是我今天一整天补的 —— 但我补的不是字，是判断。</p>
+        <div class="grid-2" style="grid-template-columns:.85fr 1.15fr;gap:1.4rem;align-items:start;">
+            <div class="card accent-left" data-step="1">
+                <div class="mono" style="font-size:.65rem;letter-spacing:.13em;color:var(--brand);font-weight:700;margin-bottom:.75rem;">AI 做完了</div>
+                <div class="stack" style="gap:.5rem;">
+                    <div style="font-size:.9rem;color:var(--text-secondary);">通读项目文件夹，把五个月的事实核对了一遍</div>
+                    <div style="font-size:.9rem;color:var(--text-secondary);">按 Skill 的规矩排完 39 页版式与动效</div>
+                    <div style="font-size:.9rem;color:var(--text-secondary);">写完每一页的讲者备注</div>
+                    <div style="font-size:.9rem;color:var(--text-secondary);">自己跑了两轮审计，改掉六十多处</div>
+                </div>
+            </div>
+            <div class="card purple-left" data-step="2">
+                <div class="mono" style="font-size:.65rem;letter-spacing:.13em;color:var(--purple);font-weight:700;margin-bottom:.75rem;">我做的只有这些</div>
+                <div class="stack" style="gap:.62rem;">
+                    <div><strong style="color:var(--text);">「洗衣机是什么意思？」</strong><span class="gloss"> —— 它造了个比喻，我看不懂，全场也不会懂</span></div>
+                    <div><strong style="color:var(--text);">「大电视上留白太多了」</strong><span class="gloss"> —— 内容钉在屏幕中间，后排看不清</span></div>
+                    <div><strong style="color:var(--text);">「侧边栏引导性不够」</strong><span class="gloss"> —— 只有缩略图，得能看见编号和标题</span></div>
+                    <div><strong style="color:var(--text);">「我们用的是 Slack，不是飞书」</strong><span class="gloss"> —— 它不知道我们公司用什么</span></div>
+                </div>
+                <div style="border-top:1px solid var(--border);margin-top:.9rem;padding-top:.75rem;font-size:.88rem;color:var(--text-secondary);">
+                    每一次「这里不对」，都是人喊出来的。
+                </div>
+            </div>
+        </div>
+        <div class="card highlight" style="margin-top:1.2rem;border-left:3px solid var(--purple);" data-step="3">
+            <div style="display:flex;gap:.9rem;align-items:flex-start;">
+                <span class="mono" style="font-size:.65rem;letter-spacing:.13em;color:var(--purple);font-weight:700;padding-top:.3rem;flex-shrink:0;">CALLBACK</span>
+                <div style="font-size:.95rem;line-height:1.7;color:var(--text-secondary);">第 5 页那招「先把任务发出去」，这就是它的最大号版本 —— 不是十分钟，是<strong>六个小时</strong>。而那句「<strong>我给你十分钟，看有什么问题需要问我</strong>」，正是 Part 3 我让你们抄下来的那句「先问再做，不要编造」。</div>
+            </div>
+        </div>
+    </div>
+    <button class="replay">↻ replay</button>
+</section>
+
+<section class="slide" data-section="resources" data-label="资源包" data-group="Closing" data-thumb="grid2" data-thumb-color="green" data-speaker-notes="二维码留在屏幕上，别急着翻。等大家扫完。最后那句行动指令要看着人说：今天下午，回工位，第一件事。">
+    <div class="stage">
+        <div class="kicker green">TAKE IT HOME</div>
+        <h2>回工位就能用的东西</h2>
+        <div class="grid-2" style="grid-template-columns:260px 1fr;gap:1.6rem;align-items:center;margin-top:.5rem;">
+            <div class="placeholder" style="min-height:220px;">
+                <svg class="ph-icon" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM19 19h2v2h-2zM14 19h2v2h-2zM19 14h2v2h-2z"/></svg>
+                <div class="ph-title">资源包二维码</div>
+                <div class="ph-file">assets/close-resource-qr.png</div>
+                <div class="ph-desc">Confluence 页面链接，建议 ≥600×600px</div>
+                <img src="assets/close-resource-qr.png" alt="" onerror="this.remove()">
+            </div>
+            <div>
+                <div class="mono" style="font-size:.65rem;letter-spacing:.13em;color:var(--text-muted);font-weight:700;margin-bottom:.8rem;">WHAT&apos;S INSIDE</div>
+                <div class="row wrap" style="gap:.55rem;">
+                    <span class="chip">Skill Kit · 含 5 条安装路径</span>
+                    <span class="chip purple">PROMPT-PACK · 网页版 AI 直接粘贴</span>
+                    <span class="chip green">共享 Custom GPT · 零安装</span>
+                    <span class="chip amber">样例素材包 · 脱敏假项目</span>
+                    <span class="chip">lite 模板 · 适配 ChatGPT 输出长度的精简版</span>
+                    <span class="chip purple">乔布斯六招速查卡</span>
+                </div>
+                <button class="demo-btn" style="margin-top:1.1rem;" onclick="toggleDesktopModal('https://drive.google.com/file/d/1-300szZtQ6SX5LccYm6SGCjmbYw4qty0/view?usp=drive_link','Confu EP01 资源包 · Google Drive')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="14" rx="2"/><path d="M8 21h8M12 18v3"/></svg>
+                    打开资源包
+                </button>
+            </div>
+        </div>
+        <div class="card accent-left" style="margin-top:1.4rem;">
+            <div class="mono" style="font-size:.64rem;letter-spacing:.14em;color:var(--brand);font-weight:700;margin-bottom:.45rem;">ONE ACTION TODAY</div>
+            <div style="font-size:1.25rem;font-weight:700;color:var(--text);line-height:1.55;">今天下午回工位，第一件事：给你手上的项目建一个 CLAUDE.md。就三十行也行。</div>
+        </div>
+    </div>
+</section>
+
+<section class="slide center" data-section="closing" data-label="Closing" data-thumb="cover" data-thumb-color="blue" data-speaker-notes="回到那句话。说完就不要再补充了 —— 最后一句话之后的任何话都是减分。谢幕，开 Q&amp;A。">
+    <div class="cover-bg">
+        <div class="orb" style="width:560px;height:560px;background:var(--brand);top:50%;left:50%;transform:translate(-50%,-50%);opacity:.10;"></div>
+        <div class="orb" style="width:420px;height:420px;background:var(--purple);top:50%;left:50%;transform:translate(-50%,-50%);opacity:.09;animation-delay:-6s;"></div>
+        <div class="orb" style="width:300px;height:300px;background:var(--green);top:50%;left:50%;transform:translate(-50%,-50%);opacity:.07;animation-delay:-3s;"></div>
+        <svg class="grid-tex" width="100%" height="100%"><defs><pattern id="gridClose" width="60" height="60" patternUnits="userSpaceOnUse"><path d="M 60 0 L 0 0 0 60" fill="none" stroke="#0F172A" stroke-width="0.5"/></pattern></defs><rect width="100%" height="100%" fill="url(#gridClose)"/></svg>
+    </div>
+    <div class="stage">
+        <svg width="120" height="120" viewBox="0 0 120 120" fill="none" style="margin-bottom:1.4rem;">
+            <g>
+                <animateTransform attributeName="transform" type="rotate" from="0 60 60" to="360 60 60" dur="26s" repeatCount="indefinite"/>
+                <circle cx="60" cy="60" r="46" stroke="var(--brand)" stroke-width="1.2" stroke-dasharray="5 8" opacity=".45"/>
+                <circle cx="60" cy="14" r="5" fill="var(--brand)"/>
+                <circle cx="99.8" cy="83" r="5" fill="var(--purple)"/>
+                <circle cx="20.2" cy="83" r="5" fill="var(--green)"/>
+            </g>
+            <g>
+                <animateTransform attributeName="transform" type="rotate" from="360 60 60" to="0 60 60" dur="18s" repeatCount="indefinite"/>
+                <circle cx="60" cy="60" r="31" stroke="var(--purple)" stroke-width="1.2" stroke-dasharray="4 7" opacity=".4"/>
+            </g>
+            <circle cx="60" cy="60" r="13" fill="var(--brand)"/>
+        </svg>
+        <h1>让 AI 从项目<span class="grad-text">第一天</span>就在场，<br>最后十分钟只是<span class="grad-text">收获</span>。</h1>
+        <div class="hairline"></div>
+        <p class="subtitle muted" style="margin-bottom:2rem;">而最亮的那部分 —— 标题、反派、排练、你站在台上的样子 —— 永远是你自己的。</p>
+        <div class="spill purple"><span class="dot"></span>设计师 AI 工具箱 EP02 · 敬请期待</div>
+        <div class="mono muted" style="margin-top:2.4rem;font-size:.72rem;letter-spacing:.1em;">Confu · 设计师 AI 工具箱 EP01 · Wilson Wang · imToken UXD</div>
+    </div>
+</section>
+</div><!-- /deck -->
+
+<!-- Fixed footer: label · logo · counter -->
+<div class="foot">
+    <span class="foot-label" id="footLabel">Confu EP01 · 设计师 AI 工具箱</span>
+    <span class="footer-logo" id="footLogo"></span>
+    <span class="foot-num" id="footNum">01 / 01</span>
+</div>
+<div class="rail-hotzone" id="railHotzone"></div>
+<div class="kbd-hint" id="kbdHint">← → · Space 翻页 &nbsp;·&nbsp; N 讲者备注 &nbsp;·&nbsp; 点击左右半屏</div>
+
+<!-- ===== Speaker notes panel (N) ===== -->
+<div class="notes-panel" id="notesPanel">
+    <div class="n-head">
+        <span>Speaker Notes</span>
+        <span id="notesMeta" style="color:#64748B;letter-spacing:.06em;"></span>
+        <span class="n-close" onclick="toggleNotes()">按 N 关闭 ✕</span>
+    </div>
+    <div class="n-body" id="notesBody">（这一页没有讲者备注）</div>
+</div>
+
+<!-- ===== Mobile prototype panel (slide-in from right) ===== -->
+<div class="demo-panel" id="demoPanel">
+    <div class="demo-panel-header">
+        <span>LIVE PROTOTYPE · 393 × 852</span>
+        <button class="overlay-close" onclick="toggleDemoPanel()" aria-label="Close">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+    </div>
+    <div class="demo-phone-frame"><iframe id="demoIframe" src="about:blank"></iframe></div>
+</div>
+
+<!-- ===== Desktop / URL modal (fade-in center) — with dual-safety fallback ===== -->
+<div class="desktop-modal-backdrop" id="desktopBackdrop" onclick="if(event.target===this)toggleDesktopModal()">
+    <div class="desktop-modal">
+        <div class="desktop-modal-bar">
+            <span class="dot" style="background:#FF5F57;"></span><span class="dot" style="background:#FEBC2E;"></span><span class="dot" style="background:#28C840;"></span>
+            <span class="url" id="desktopUrl">about:blank</span>
+            <a class="ext" id="desktopExt" href="#" target="_blank" rel="noopener">新标签打开 ↗</a>
+            <button class="overlay-close" onclick="toggleDesktopModal()" aria-label="Close" style="width:28px;height:28px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
+        </div>
+        <div class="frame-wrap">
+            <iframe id="desktopIframe" src="about:blank"></iframe>
+            <div class="frame-fallback" id="frameFallback">
+                <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" style="opacity:.55;"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 9h20M7 14h6"/></svg>
+                <div class="ff-title">看不到内容？</div>
+                <div class="ff-desc">Confluence、Figma、ChatGPT 这类站点会拒绝被嵌入。点右边在新标签打开 —— 讲完切回来，这一页还在。</div>
+                <div class="ff-url" id="ffUrl"></div>
+                <a class="demo-btn solid" id="ffOpen" href="#" target="_blank" rel="noopener" style="text-decoration:none;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                    在新标签打开
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== Image lightbox ===== -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+    <img id="lightboxImg" src="" alt="">
+    <button class="overlay-close lb-close" onclick="closeLightbox()" aria-label="Close">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text)" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+    <div class="lb-hint">点击任意处 或按 Esc 关闭</div>
+</div>
+
+<!-- Inline imToken logo — OFFICIAL (token.im/img/imTokenLogo.svg) -->
+<template id="imtokenLogoTpl">
+<svg width="111" height="20" viewBox="0 0 111 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_2033_385)">
+<path d="M25.1855 2.3707C25.9965 13.3565 18.9356 18.549 12.6057 19.1027C6.72078 19.6174 1.18138 16.0009 0.695418 10.4444C0.294547 5.85387 3.1314 3.89953 5.36028 3.70471C7.65276 3.50374 9.57916 5.08486 9.74628 6.99921C9.90726 8.83978 8.75898 9.67748 7.96031 9.74722C7.32874 9.80257 6.5342 9.41907 6.46242 8.59571C6.40094 7.88823 6.66955 7.79181 6.60389 7.04023C6.48706 5.70214 5.32031 5.54627 4.68158 5.60164C3.90854 5.66934 2.506 6.57165 2.70285 8.81927C2.90072 11.0864 5.07425 12.8776 7.92342 12.6285C10.9981 12.3598 13.1389 9.9656 13.2998 6.60754C13.2983 6.42965 13.3358 6.25361 13.4095 6.09177L13.4105 6.08769C13.4436 6.01733 13.4824 5.94977 13.5264 5.88568C13.592 5.78722 13.6761 5.67855 13.7848 5.5596C13.7857 5.55653 13.7857 5.55653 13.7878 5.55653C13.8667 5.46732 13.9621 5.37093 14.0697 5.26737C15.4128 4.00001 20.2499 1.01107 24.8246 1.95748C24.9212 1.97821 25.0086 2.02965 25.0737 2.10412C25.1387 2.1786 25.1779 2.27211 25.1855 2.3707Z" fill="url(#paint0_linear_2033_385)"/>
+<path d="M36.5366 7.08005V17.9294C36.5366 17.9443 36.5306 17.9587 36.5201 17.9692C36.5095 17.9798 36.4952 17.9858 36.4802 17.9858H34.1692C34.1544 17.9858 34.1399 17.9798 34.1294 17.9692C34.1188 17.9587 34.1128 17.9443 34.1128 17.9294V7.08005C34.1128 7.06661 34.1183 7.0537 34.1277 7.0442C34.1372 7.03466 34.1502 7.0293 34.1636 7.0293H36.4858C36.4994 7.0293 36.5121 7.03466 36.5218 7.0442C36.5312 7.0537 36.5366 7.06661 36.5366 7.08005Z" fill="#111D4A"/>
+<path d="M54.6594 3.16064C54.6475 3.16064 54.6361 3.16541 54.6276 3.17386C54.619 3.18232 54.6143 3.1938 54.6143 3.20577V5.1512C54.6143 5.16465 54.6195 5.17756 54.629 5.18708C54.6385 5.1966 54.6518 5.20194 54.6651 5.20194H59.2982V17.929C59.2982 17.944 59.3043 17.9583 59.3148 17.9689C59.3252 17.9795 59.3395 17.9854 59.3547 17.9854H61.7612C61.7764 17.9854 61.7906 17.9795 61.8011 17.9689C61.8115 17.9583 61.8177 17.944 61.8177 17.929V5.20194H66.079C66.0952 5.20194 66.1113 5.19542 66.1227 5.18377C66.1346 5.17214 66.1412 5.15637 66.1412 5.13991V3.20577C66.1412 3.1938 66.136 3.18232 66.1275 3.17386C66.1194 3.16541 66.1075 3.16064 66.0957 3.16064H54.6594Z" fill="#111D4A"/>
+<path d="M55.5025 17.9238C55.5025 17.9403 55.4964 17.9561 55.4845 17.9677C55.4731 17.9793 55.457 17.9859 55.4408 17.9859H53.1862C53.1696 17.9859 53.1539 17.9793 53.1421 17.9677C53.1307 17.9561 53.124 17.9403 53.124 17.9238V11.6026C53.1221 11.2949 53.0975 10.9876 53.0509 10.6835C52.8928 9.59515 52.4869 8.86209 51.0332 8.86209H50.971C50.5295 8.87823 50.0984 9.0001 49.7139 9.21734C49.213 9.48111 48.7877 9.86951 48.4795 10.3451C48.5251 10.6967 48.5474 11.0508 48.5474 11.4052V18.0648C48.5474 18.0798 48.5413 18.0941 48.5308 18.1047C48.5204 18.1152 48.5061 18.1212 48.4909 18.1212H46.2702C46.2537 18.1212 46.2379 18.1147 46.2264 18.103C46.2148 18.0914 46.2082 18.0756 46.2082 18.0592V12.2511C46.2082 11.2191 46.2702 10.1139 45.7574 9.4993C45.5446 9.26909 45.2806 9.09248 44.9868 8.98367C44.6928 8.87495 44.3776 8.83711 44.0663 8.87334C43.6339 8.89252 43.2099 9 42.8206 9.18914C42.5567 9.29947 42.316 9.45823 42.1104 9.65715C41.8676 9.88745 41.6889 10.177 41.5919 10.4974V17.9238C41.5919 17.9403 41.5853 17.9561 41.5738 17.9677C41.5622 17.9793 41.5464 17.9859 41.5298 17.9859H39.2752C39.2589 17.9859 39.2431 17.9793 39.2314 17.9677C39.2198 17.9561 39.2134 17.9403 39.2134 17.9238V7.15345C39.2134 7.1385 39.2192 7.12416 39.2298 7.11357C39.2403 7.10303 39.2548 7.0971 39.2696 7.0971H40.2335C40.4214 7.09644 40.6046 7.15568 40.7566 7.26621C40.9086 7.37673 41.0216 7.53273 41.079 7.71171C41.1241 7.86962 41.1804 8.00497 41.2029 8.07262C42.1567 7.24347 43.3836 6.79748 44.6469 6.82079C45.1341 6.78685 45.6229 6.85735 46.0807 7.0275C46.5385 7.19765 46.9549 7.46361 47.3017 7.80757C47.464 8.00136 47.6092 8.20892 47.7356 8.42788C48.2175 7.91609 48.8019 7.51232 49.4509 7.24309C50.0999 6.97385 50.7987 6.84529 51.5009 6.8659C52.6958 6.8659 55.4745 7.2719 55.4745 11.0443L55.5025 17.9238Z" fill="#111D4A"/>
+<path d="M88.5546 18.0137H86.0802C86.0684 18.0143 86.0565 18.0121 86.0461 18.0072C86.0351 18.0023 86.0256 17.9948 86.0185 17.9855C85.5001 17.2637 84.3949 15.5382 84.2767 15.4085L84.2259 15.3239C83.837 14.8108 82.9184 13.6322 81.6893 13.3672L80.7592 14.3315V17.9404C80.7592 17.9463 80.7583 17.9521 80.7559 17.9576C80.754 17.9631 80.7502 17.9681 80.7464 17.9723C80.7421 17.9765 80.7369 17.9798 80.7317 17.982C80.726 17.9843 80.7203 17.9855 80.7146 17.9855H78.4149C78.3992 17.9841 78.385 17.9769 78.3745 17.9654C78.3641 17.954 78.3584 17.9389 78.3584 17.9234V2.96899C78.3584 2.95403 78.3641 2.93969 78.375 2.92912C78.3855 2.91854 78.3997 2.9126 78.4149 2.9126H80.7592C80.7716 2.9126 80.783 2.91735 80.7915 2.92581C80.8 2.93427 80.8048 2.94575 80.8048 2.95772V11.4161L85.314 6.7922H85.3529H87.9289C88.0025 6.7922 88.0362 6.7922 88.0642 6.84295C88.0927 6.89371 88.0642 6.93881 88.0642 6.98956L83.3186 11.8108C84.3726 12.3725 85.2789 13.1764 85.962 14.1566L86.0128 14.2243C86.1704 14.4273 87.9403 16.9536 88.6111 17.8953C88.6268 17.9027 88.6392 17.9161 88.6448 17.9325C88.6505 17.9489 88.6496 17.967 88.642 17.9827C88.6344 17.9983 88.6211 18.0104 88.605 18.0162C88.5884 18.0221 88.5703 18.0211 88.5546 18.0137Z" fill="#111D4A"/>
+<path d="M36.7733 4.11377C36.7789 4.4024 36.6987 4.68617 36.5426 4.92898C36.3864 5.17178 36.1617 5.36262 35.8968 5.47723C35.6318 5.59184 35.339 5.62503 35.0552 5.57257C34.7715 5.52011 34.5098 5.38439 34.3032 5.18266C34.0969 4.98093 33.9551 4.72234 33.896 4.43975C33.8369 4.15719 33.8633 3.8634 33.9716 3.59583C34.08 3.32825 34.2654 3.09897 34.5043 2.93714C34.7433 2.77533 35.0249 2.6883 35.3136 2.68711C35.503 2.68488 35.6911 2.72 35.8671 2.79051C36.043 2.86099 36.2033 2.96546 36.3388 3.09793C36.4744 3.23042 36.5826 3.38831 36.6571 3.56261C36.7317 3.7369 36.7712 3.9242 36.7733 4.11377Z" fill="#111D4A"/>
+<path d="M70.9317 6.56689C67.6118 6.56689 65.5547 8.77174 65.5547 12.3243C65.5547 15.8768 67.6118 18.0816 70.9317 18.0816C74.2517 18.0816 76.3429 15.8711 76.3429 12.3186C76.3429 8.76609 74.2517 6.56689 70.9317 6.56689ZM73.0795 15.3016C72.7909 15.5672 72.4524 15.7724 72.0835 15.9051C71.7151 16.0378 71.3234 16.0953 70.9317 16.0741C68.3899 16.0741 67.8658 13.9652 67.8658 12.2058C67.8658 9.75291 68.8632 8.55743 70.9317 8.55743C73.0002 8.55743 73.9868 9.81491 73.9868 12.3074C73.9981 13.6663 73.6881 14.6757 73.0795 15.296V15.3016Z" fill="#111D4A"/>
+<path d="M98.958 14.5853C98.9072 14.5232 98.7999 14.5853 98.7496 14.5853L96.7594 14.8841C96.7257 14.8848 96.693 14.8952 96.665 14.9143C96.637 14.9333 96.6147 14.96 96.6018 14.9913C96.3853 15.349 96.0848 15.6484 95.7259 15.8636C95.3675 16.0788 94.962 16.2033 94.5443 16.2262C94.0026 16.3028 93.4495 16.228 92.9477 16.01C92.4449 15.7921 92.0129 15.4395 91.6981 14.9913C91.3478 14.5388 91.1289 13.9982 91.0667 13.4293V13.3898L96.8102 12.6004C97.1649 12.5591 97.5048 12.4357 97.8034 12.2399C98.1016 12.0441 98.3503 11.7814 98.5293 11.4726C98.696 11.1539 98.7852 10.8006 98.79 10.4412C98.7947 10.0817 98.7154 9.72613 98.5578 9.40307C98.0232 8.24334 97.0623 7.33448 95.875 6.86556C95.038 6.54663 94.135 6.44399 93.2482 6.56723C92.3613 6.69043 91.5201 7.03548 90.8018 7.57043C90.1447 8.09493 89.6154 8.76177 89.2531 9.52071C88.8909 10.2796 88.7053 11.1109 88.7105 11.9519C88.683 12.4986 88.7134 13.0468 88.8012 13.5871C89.2014 15.8991 90.8863 18.2336 93.834 18.2336C97.3515 18.2336 98.6988 16.0683 98.9466 14.7713C98.9803 14.7319 99.0197 14.6304 98.958 14.5853ZM91.6307 9.66247C91.897 9.33095 92.2284 9.0574 92.6049 8.85862C92.9809 8.65984 93.3935 8.54001 93.8174 8.5065C94.2077 8.42992 94.6102 8.44839 94.9919 8.56024C95.3736 8.67214 95.7226 8.87414 96.0098 9.14931C96.2358 9.3619 96.4262 9.60944 96.5738 9.88238C96.6161 9.9703 96.6384 10.0667 96.6384 10.1643C96.6384 10.262 96.6161 10.3584 96.5738 10.4463C96.5354 10.5365 96.4741 10.6152 96.3958 10.6746C96.3179 10.7339 96.2254 10.7718 96.1285 10.7846L90.8806 11.5177C90.9618 10.8397 91.2291 10.1974 91.653 9.66247H91.6307Z" fill="#111D4A"/>
+<path d="M110.325 11.2078V17.9238C110.325 17.9403 110.319 17.9561 110.307 17.9677C110.296 17.9793 110.279 17.9859 110.263 17.9859H108.008C107.993 17.9859 107.979 17.9799 107.968 17.9694C107.958 17.9588 107.952 17.9444 107.952 17.9295V12.3413C107.952 12.3413 107.952 11.4165 107.907 10.5763C107.899 10.2948 107.835 10.0177 107.719 9.76123C107.603 9.50472 107.437 9.2738 107.231 9.082C107.017 8.91341 106.771 8.79164 106.508 8.7246C106.245 8.65757 105.971 8.64679 105.703 8.69289C104.637 8.83033 103.664 9.3687 102.981 10.1985V17.9238C102.981 17.9403 102.974 17.9561 102.963 17.9677C102.951 17.9793 102.935 17.9859 102.919 17.9859H100.664C100.648 17.9859 100.632 17.9793 100.621 17.9677C100.609 17.9561 100.602 17.9403 100.602 17.9238V6.95046C100.602 6.93403 100.609 6.91822 100.621 6.90659C100.632 6.89496 100.648 6.88845 100.664 6.88845H102.552C102.569 6.88845 102.585 6.89496 102.596 6.90659C102.608 6.91822 102.615 6.93403 102.615 6.95046V8.02188C103.567 7.15783 104.796 6.65853 106.081 6.6121C107.163 6.54445 110.325 6.60645 110.325 11.2078Z" fill="#111D4A"/>
+</g>
+<defs>
+<linearGradient id="paint0_linear_2033_385" x1="22.7129" y1="5.92105" x2="4.29862" y2="16.3638" gradientUnits="userSpaceOnUse">
+<stop stop-color="#0CC5FF"/>
+<stop offset="1" stop-color="#007FFF"/>
+</linearGradient>
+<clipPath id="clip0_2033_385">
+<rect width="110" height="19" fill="white" transform="translate(0.5 0.913574)"/>
+</clipPath>
+</defs>
+</svg>
+</template>
+
+<script>
+/* ============================================================
+   Confu EP01 deck engine
+   Thumbnails are derived from each slide's data-thumb attribute —
+   no manual registration map to drift out of sync.
+   ============================================================ */
+
+const slides   = [...document.querySelectorAll('.slide')];
+const sidebar  = document.getElementById('sidebarNav');
+const prog     = document.getElementById('prog');
+const footNum  = document.getElementById('footNum');
+const footLabel= document.getElementById('footLabel');
+const DECK_CONTEXT = footLabel.textContent;
+let cur = 0;
+
+/* ---------- thumbnail builder ---------- */
+function buildThumbContent(cfg) {
+    const inner = document.createElement('div');
+    inner.className = 'thumb-inner';
+    inner.style.background = cfg.bg;
+    const c = cfg.color || '#94A3B8', muted = '#E2E8F0';
+    const line = (w, col, o) => { const l = document.createElement('div'); l.className='thumb-line'; l.style.cssText=`width:${w};background:${col};opacity:${o};`; return l; };
+    const t = cfg.type;
+    if (t === 'cover') {
+        inner.classList.add('cover-type');
+        const d = document.createElement('div'); d.style.cssText = `width:6px;height:6px;border-radius:50%;background:${c};margin-bottom:2px;`; inner.appendChild(d);
+        ['60%','40%'].forEach(w => inner.appendChild(line(w, c, 0.5)));
+    } else if (t === 'statement') {
+        inner.classList.add('cover-type');
+        inner.appendChild(line('74%', c, 0.65)); inner.appendChild(line('52%', c, 0.4));
+    } else if (t === 'divider') {
+        inner.classList.add('cover-type');
+        const n = document.createElement('div'); n.style.cssText = `width:12px;height:8px;border-radius:2px;background:${c};opacity:.7;margin-bottom:2px;`; inner.appendChild(n);
+        inner.appendChild(line('46%', c, 0.35));
+    } else if (t === 'grid2' || t === 'grid3' || t === 'grid4') {
+        inner.appendChild(line('50%', c, 0.6));
+        const row = document.createElement('div'); row.className='thumb-row'; row.style.flex='1';
+        const n = t === 'grid2' ? 2 : (t === 'grid3' ? 3 : 4);
+        for (let i=0;i<n;i++){ const col=document.createElement('div'); col.className='thumb-block'; col.style.cssText=`flex:1;background:${muted};`; row.appendChild(col); }
+        inner.appendChild(row);
+    } else if (t === 'split') {
+        const row = document.createElement('div'); row.className='thumb-row'; row.style.cssText='flex:1;align-items:stretch;';
+        const left = document.createElement('div'); left.style.cssText='flex:1;display:flex;flex-direction:column;gap:1px;justify-content:center;';
+        for (let i=0;i<3;i++) left.appendChild(line(`${70-i*15}%`, i===0?c:muted, i===0?0.7:1));
+        const right = document.createElement('div'); right.className='thumb-block'; right.style.cssText=`flex:1;background:${c};opacity:0.12;margin-left:1px;`;
+        row.appendChild(left); row.appendChild(right); inner.appendChild(row);
+    } else if (t === 'stack') {
+        inner.appendChild(line('55%', c, 0.6));
+        const colors = ['#E5F2FF','#EDE9FE','#FEF3C7','#D1FAE5'];
+        for (let i=0;i<(cfg.rows||3);i++){ const bar=document.createElement('div'); bar.className='thumb-block'; bar.style.cssText=`width:100%;flex:1;background:${colors[i]||muted};${i===0?'border-left:2px solid '+c:''};`; inner.appendChild(bar); }
+    } else if (t === 'table') {
+        inner.appendChild(line('62%', c, 0.6));
+        for (let i=0;i<4;i++){ const r=document.createElement('div'); r.style.cssText=`width:100%;height:2px;background:${i===0?c:muted};opacity:${i===0?0.35:1};`; inner.appendChild(r); }
+    } else if (t === 'timeline') {
+        inner.appendChild(line('48%', c, 0.55));
+        const row = document.createElement('div'); row.className='thumb-row'; row.style.cssText='flex:1;align-items:center;gap:2px;';
+        for (let i=0;i<5;i++){ const d=document.createElement('div'); d.style.cssText=`width:3px;height:3px;border-radius:50%;background:${c};opacity:${0.35+i*0.13};flex-shrink:0;`; row.appendChild(d);
+            if(i<4){ const l=document.createElement('div'); l.style.cssText=`flex:1;height:1px;background:${muted};`; row.appendChild(l);} }
+        inner.appendChild(row);
+    } else if (t === 'steps') {
+        inner.style.justifyContent='center'; inner.style.alignItems='flex-start'; inner.style.paddingLeft='7px';
+        for (let i=0;i<4;i++){ const d=document.createElement('div'); d.style.cssText=`width:3px;height:3px;border-radius:50%;background:${c};opacity:${0.4+i*0.15};`; inner.appendChild(d);
+            if(i<3){ const l=document.createElement('div'); l.style.cssText=`width:1px;height:2px;background:${muted};margin-left:1px;`; inner.appendChild(l);} }
+    } else if (t === 'term') {
+        inner.style.background = '#0B1120'; inner.style.justifyContent='center'; inner.style.gap='2px'; inner.style.paddingLeft='5px';
+        ['52%','36%','60%','28%'].forEach((w,i)=>inner.appendChild(line(w, i%2?'#7FB6FF':'#34D399', 0.75)));
+    } else if (t === 'stat') {
+        inner.classList.add('cover-type'); inner.style.flexDirection='row'; inner.style.gap='3px';
+        for (let i=0;i<3;i++){ const b=document.createElement('div'); b.style.cssText=`width:8px;height:${8+i*3}px;border-radius:1px;background:${c};opacity:${0.4+i*0.2};`; inner.appendChild(b); }
+    } else if (t === 'placeholder') {
+        inner.classList.add('cover-type');
+        const b=document.createElement('div'); b.style.cssText=`width:78%;height:58%;border:1.5px dashed ${c};border-radius:2px;opacity:.45;`; inner.appendChild(b);
+    } else { /* fallback: grid2 */
+        inner.appendChild(line('50%', c, 0.6));
+        const row=document.createElement('div'); row.className='thumb-row'; row.style.flex='1';
+        for(let i=0;i<2;i++){ const col=document.createElement('div'); col.className='thumb-block'; col.style.cssText=`flex:1;background:${muted};`; row.appendChild(col);} inner.appendChild(row);
+    }
+    return inner;
+}
+
+const THUMB_COLORS = { blue:'#007FFF', purple:'#7C3AED', green:'#059669', amber:'#D97706', red:'#DC2626', gray:'#94A3B8' };
+const COVERISH = ['cover','statement','divider'];
+
+/* ---------- outline numbering ----------
+   编号从 data-group / data-thumb 自动推导，不需要手工维护：
+   · 分隔页            → PART N，并重置小节计数
+   · 归属某个 Part 的页 → N.M
+   · Opening / Closing → 0.M / END.M
+   · 封面与结尾封底     → —                                            */
+function buildOutline() {
+    const st = { part: null, sub: 0 };
+    return slides.map((slide, k) => {
+        const thumb = slide.dataset.thumb || '';
+        const group = slide.dataset.group || '';
+        let label = slide.dataset.label || slide.dataset.section || ('Slide ' + (k + 1));
+        if (thumb === 'divider') {
+            const m = label.match(/Part\s*(\d+)/i);
+            st.part = m ? +m[1] : (typeof st.part === 'number' ? st.part + 1 : 1);
+            st.sub = 0;
+            return { num: 'PART ' + st.part, title: label.replace(/^Part\s*\d+\s*[·:.-]\s*/i, ''), partStart: true };
+        }
+        if (thumb === 'cover') { return { num: '—', title: label, partStart: false }; }
+        const gm = group.match(/Part\s*(\d+)/i);
+        let key;
+        if (gm) key = +gm[1];
+        else if (/Closing|结尾|收尾/i.test(group)) key = 'END';
+        else key = 0;                       // Opening 及其它
+        if (st.part !== key) { st.part = key; st.sub = 0; }
+        st.sub++;
+        return { num: st.part + '.' + st.sub, title: label, partStart: false };
+    });
+}
+const OUTLINE = buildOutline();
+
+slides.forEach((slide, k) => {
+    const row = document.createElement('div');
+    row.className = 'nav-thumb' + (OUTLINE[k].partStart ? ' part-start' : '');
+    const type  = slide.dataset.thumb || 'grid2';
+    const color = THUMB_COLORS[slide.dataset.thumbColor] || THUMB_COLORS.blue;
+    const bg    = COVERISH.includes(type) ? 'linear-gradient(135deg,#E5F2FF,#EDE9FE)' : '#fff';
+    const frame = document.createElement('div');
+    frame.className = 'thumb-frame';
+    frame.appendChild(buildThumbContent({ type, bg, color }));
+    row.appendChild(frame);
+    const meta = document.createElement('div');
+    meta.className = 'nav-meta';
+    const num = document.createElement('div');
+    num.className = 'nav-num';
+    num.textContent = OUTLINE[k].num;
+    const ttl = document.createElement('div');
+    ttl.className = 'nav-title';
+    ttl.textContent = OUTLINE[k].title;
+    meta.appendChild(num); meta.appendChild(ttl);
+    row.appendChild(meta);
+    row.title = OUTLINE[k].num + '  ' + OUTLINE[k].title;
+    row.addEventListener('click', () => go(k));
+    sidebar.appendChild(row);
+});
+const thumbs = [...sidebar.children];
+
+/* ---------- stepped reveal, scoped per slide ---------- */
+const REDUCE = matchMedia('(prefers-reduced-motion:reduce)').matches;
+const stepTimers = [];
+function clearStepTimers(){ while(stepTimers.length) clearTimeout(stepTimers.pop()); }
+function playSteps(slide) {
+    if (!slide) return;
+    const steps = [...slide.querySelectorAll('[data-step]')];
+    const replay = slide.querySelector('.replay');
+    if (!steps.length) { if (replay) replay.classList.remove('show'); return; }
+    const MAX = steps.reduce((m,e)=>Math.max(m, +e.dataset.step||0), 0);
+    let curStep = 0;
+    const render = () => {
+        steps.forEach(e => e.classList.toggle('on', (+e.dataset.step||0) <= curStep));
+        if (replay) replay.classList.toggle('show', curStep >= MAX);
+    };
+    clearStepTimers(); curStep = 0; render();
+    const start = REDUCE ? 0 : 420, gap = REDUCE ? 0 : 950;
+    for (let s = 1; s <= MAX; s++) {
+        stepTimers.push(setTimeout(() => { curStep = s; render(); }, start + (s-1)*gap));
+    }
+}
+document.addEventListener('click', (e) => {
+    const r = e.target.closest('.replay');
+    if (r) { e.stopPropagation(); playSteps(r.closest('.slide')); }
+}, true);
+
+/* ---------- paging ---------- */
+function go(n) {
+    cur = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach((s, k) => s.classList.toggle('active', k === cur));
+    thumbs.forEach((t, k) => t.classList.toggle('active', k === cur));
+    prog.style.width = ((cur + 1) / slides.length * 100) + '%';
+    const pad = x => String(x).padStart(2, '0');
+    footNum.textContent = pad(cur + 1) + ' / ' + pad(slides.length);
+    footLabel.textContent = slides[cur].dataset.group || DECK_CONTEXT;
+    if (thumbs[cur]) thumbs[cur].scrollIntoView({ block: 'nearest' });
+    slides[cur].scrollTop = 0;
+    playSteps(slides[cur]);
+    renderNotes();
+    slides[cur].querySelectorAll('iframe[data-autoplay]').forEach(f => {
+        if (f.contentWindow) { try { f.contentWindow.postMessage({ type: 'deck-play' }, '*'); } catch(_){} }
+    });
+    /* 深链接。沙箱 iframe（about:srcdoc / 跨源预览）里 replaceState 会抛
+       SecurityError，且每翻一页抛一次 —— 包起来，失败就安静跳过。 */
+    try { if (history.replaceState) history.replaceState(null, '', '#/' + (cur + 1)); } catch (_) {}
+}
+
+/* ---------- auto-hide rail ---------- */
+const railEl = document.querySelector('.sidebar-nav');
+const hotzone = document.getElementById('railHotzone');
+let railTimer = null;
+function railPeek(on) {
+    clearTimeout(railTimer);
+    if (on) railEl.classList.add('peek');
+    else railTimer = setTimeout(() => railEl.classList.remove('peek'), 260);
+}
+[hotzone, railEl].forEach(el => {
+    el.addEventListener('mouseenter', () => railPeek(true));
+    el.addEventListener('mouseleave', () => railPeek(false));
+});
+
+/* ---------- click / tap paging ---------- */
+const INTERACTIVE_SEL = 'a[href], button, input, select, textarea, summary, label, iframe, video, audio, [onclick], [role="button"], .demo-btn, .replay, .copy-btn, .sidebar-nav, .nav-thumb, .demo-panel, .desktop-modal, .notes-panel, .lightbox, [contenteditable]';
+/* 落在文字上的点击要给「双击选词」让路，所以延迟 180ms 再翻页；
+   落在空白处的点击立即翻页，演讲时的手感不受影响。 */
+const TEXTISH_SEL = 'p, h1, h2, h3, h4, h5, h6, li, td, th, dt, dd, code, pre, blockquote, figcaption, .lead, .quote, .label, .mono, .note, .kicker, .card, .callout, .p-body, .stat, .comparison';
+const DRAG_TOLERANCE = 8;   /* px：超过这个距离就当作一次选择，不是一次翻页 */
+const DBLCLICK_GRACE = 180; /* ms */
+
+const deckEl = document.querySelector('.deck');
+let pressPt = null, pendingTurn = null;
+function cancelPendingTurn() { clearTimeout(pendingTurn); pendingTurn = null; }
+
+deckEl.addEventListener('pointerdown', (e) => {
+    pressPt = { x: e.clientX, y: e.clientY };
+    cancelPendingTurn();
+});
+deckEl.addEventListener('dblclick', cancelPendingTurn);
+
+deckEl.addEventListener('click', (e) => {
+    if (e.target.closest(INTERACTIVE_SEL)) return;
+    if (overlayOpen()) return;
+
+    /* 1. 拖动过 —— 这是一次划选，不翻页 */
+    if (pressPt && Math.hypot(e.clientX - pressPt.x, e.clientY - pressPt.y) > DRAG_TOLERANCE) return;
+
+    /* 2. 当前已有选区 —— 这一下用来取消选择，不翻页
+          （双击选词、三击选段的第二/第三下都会走这里） */
+    const sel = window.getSelection && window.getSelection();
+    if (sel && !sel.isCollapsed && String(sel).trim()) return;
+
+    const dir = (e.clientX / window.innerWidth) < 0.5 ? -1 : 1;
+
+    /* 3. 点在文字上 —— 缓一拍，等着看是不是双击 */
+    if (e.target.closest(TEXTISH_SEL)) {
+        pendingTurn = setTimeout(() => { pendingTurn = null; go(cur + dir); }, DBLCLICK_GRACE);
+    } else {
+        go(cur + dir);
+    }
+});
+
+/* ---------- keyboard hint ---------- */
+const kbdHint = document.getElementById('kbdHint');
+setTimeout(() => kbdHint.classList.add('show'), 500);
+setTimeout(() => kbdHint.classList.remove('show'), 4200);
+
+/* ---------- speaker notes ---------- */
+const notesPanel = document.getElementById('notesPanel');
+const notesBody  = document.getElementById('notesBody');
+const notesMeta  = document.getElementById('notesMeta');
+function renderNotes() {
+    const s = slides[cur];
+    const n = s.dataset.speakerNotes;
+    notesBody.textContent = n && n.trim() ? n.trim() : '（这一页没有讲者备注）';
+    const pad = x => String(x).padStart(2, '0');
+    notesMeta.textContent = pad(cur + 1) + ' / ' + pad(slides.length) + '  ·  ' + (s.dataset.label || '');
+}
+function toggleNotes(force) {
+    const open = typeof force === 'boolean' ? force : !notesPanel.classList.contains('open');
+    notesPanel.classList.toggle('open', open);
+}
+
+/* ---------- keyboard ---------- */
+document.addEventListener('keydown', (e) => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) return;
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    if (e.key === 'Escape') { if (overlayOpen()) { closeAllOverlays(); } else { toggleNotes(false); } return; }
+    if (overlayOpen()) return;
+    if (['ArrowRight','ArrowDown','PageDown',' '].includes(e.key)) { e.preventDefault(); go(cur + 1); }
+    else if (['ArrowLeft','ArrowUp','PageUp'].includes(e.key)) { e.preventDefault(); go(cur - 1); }
+    else if (e.key === 'Home') { e.preventDefault(); go(0); }
+    else if (e.key === 'End') { e.preventDefault(); go(slides.length - 1); }
+    else if (e.key === 'r' || e.key === 'R') { e.preventDefault(); playSteps(slides[cur]); }
+    else if (e.key === 'n' || e.key === 'N') { e.preventDefault(); toggleNotes(); }
+    else if (/^[1-9]$/.test(e.key)) { e.preventDefault(); go(parseInt(e.key, 10) - 1); }
+});
+
+/* ---------- footer logo ---------- */
+document.getElementById('footLogo').innerHTML = document.getElementById('imtokenLogoTpl').innerHTML;
+
+/* ---------- prototype / URL overlays (dual safety) ---------- */
+function overlayOpen() {
+    return document.getElementById('demoPanel').classList.contains('open')
+        || document.getElementById('desktopBackdrop').classList.contains('open')
+        || document.getElementById('lightbox').classList.contains('open');
+}
+/* 图片放大。关闭后回到原来那一页 —— 不翻页、不重播、不丢分步状态。 */
+function openLightbox(src, alt) {
+    if (!src) return;
+    const lb = document.getElementById('lightbox'), im = document.getElementById('lightboxImg');
+    im.src = src; im.alt = alt || '';
+    lb.classList.add('open');
+}
+function closeLightbox() {
+    const lb = document.getElementById('lightbox');
+    if (!lb.classList.contains('open')) return;
+    lb.classList.remove('open');
+    setTimeout(() => { document.getElementById('lightboxImg').src = ''; }, 320);
+}
+function toggleDemoPanel(url) {
+    const panel = document.getElementById('demoPanel');
+    const iframe = document.getElementById('demoIframe');
+    const isOpen = panel.classList.contains('open');
+    if (isOpen && url && iframe.getAttribute('src') !== url) { iframe.src = url; return; }
+    if (isOpen) {
+        panel.classList.remove('open'); document.body.classList.remove('demo-open');
+        setTimeout(() => { iframe.src = 'about:blank'; }, 400);
+    } else if (url) {
+        iframe.src = url; panel.classList.add('open'); document.body.classList.add('demo-open');
+    }
+}
+let frameProbe = null;
+function toggleDesktopModal(url, title) {
+    const backdrop = document.getElementById('desktopBackdrop');
+    const iframe   = document.getElementById('desktopIframe');
+    const fallback = document.getElementById('frameFallback');
+    const isOpen   = backdrop.classList.contains('open');
+    clearTimeout(frameProbe);
+    if (isOpen && url && iframe.getAttribute('src') !== url) { /* swap */ }
+    else if (isOpen) {
+        backdrop.classList.remove('open');
+        setTimeout(() => { iframe.src = 'about:blank'; fallback.classList.remove('show','hint'); }, 350);
+        return;
+    }
+    if (!url) return;
+    fallback.classList.remove('show','hint');
+    document.getElementById('desktopUrl').textContent = title || url;
+    document.getElementById('desktopExt').href = url;
+    document.getElementById('ffUrl').textContent = url;
+    document.getElementById('ffOpen').href = url;
+    iframe.src = url;
+    backdrop.classList.add('open');
+    /* Dual safety. Chrome fires `load` even for frames the site REFUSED to serve,
+       so onload is not a usable signal. The only trustworthy test is whether we can
+       actually see painted content (same-origin). Cross-origin => unverifiable =>
+       show the new-tab card rather than a blank white rectangle in front of a room. */
+    frameProbe = setTimeout(() => {
+        /* Three states, because "did this frame actually paint?" is not always knowable:
+             ok      – same-origin and we can see content   -> do nothing
+             empty   – same-origin and the body is empty    -> full cover (bad/missing URL)
+             unknown – cross-origin, cannot inspect at all  -> non-blocking escape strip,
+                       so a site that DID embed is never covered by a false alarm. */
+        let verdict = 'unknown';
+        /* 相对路径 = 跟 deck 一起发布的同目录文件，一定能嵌。
+           （Chrome 把 file:// 的 iframe 也当跨源，contentDocument 会抛，
+           不特判的话每次开本地原型都会误弹逃生条。） */
+        const isRelative = !/^([a-z][a-z0-9+.-]*:)?\/\//i.test(url) && !/^data:/i.test(url);
+        /* 相对路径在「双击本地文件放映」时一定能嵌；但 deck 被塞进预览面板的
+           srcdoc iframe 时没有 base URL，相对路径必然解析失败 —— 那种情况下
+           退回逃生条，讲者仍可一键新标签打开。 */
+        let inSandbox; try { inSandbox = window.self !== window.top; } catch (_) { inSandbox = true; }
+        if (isRelative && !inSandbox) verdict = 'ok';
+        else if (isRelative) verdict = 'unknown';
+        else {
+            try {
+                const d = iframe.contentDocument;
+                if (d && d.body) verdict = d.body.childElementCount > 0 ? 'ok' : 'empty';
+            } catch (_) { verdict = 'unknown'; }
+        }
+        if (verdict === 'empty') fallback.classList.add('show');
+        else if (verdict === 'unknown') fallback.classList.add('hint');
+    }, 2200);
+}
+function closeAllOverlays() {
+    closeLightbox();
+    if (document.getElementById('demoPanel').classList.contains('open')) toggleDemoPanel();
+    if (document.getElementById('desktopBackdrop').classList.contains('open')) toggleDesktopModal();
+}
+
+/* ---------- copy buttons on prompt blocks ---------- */
+document.addEventListener('click', (e) => {
+    const b = e.target.closest('.copy-btn');
+    if (!b) return;
+    e.stopPropagation();
+    const box = b.closest('.prompt');
+    const txt = box ? (box.querySelector('.p-body')?.innerText || '') : '';
+    const done = () => { const o = b.textContent; b.textContent = '已复制 ✓'; b.classList.add('done'); setTimeout(() => { b.textContent = o; b.classList.remove('done'); }, 1600); };
+    const legacy = () => { const ta = document.createElement('textarea'); ta.value = txt; ta.style.cssText='position:fixed;opacity:0;'; document.body.appendChild(ta); ta.select(); try{document.execCommand('copy');done();}catch(_){} ta.remove(); };
+    if (navigator.clipboard && window.isSecureContext) { navigator.clipboard.writeText(txt).then(done).catch(legacy); }
+    else { const ta = document.createElement('textarea'); ta.value = txt; ta.style.cssText='position:fixed;opacity:0;'; document.body.appendChild(ta); ta.select(); try{document.execCommand('copy');done();}catch(_){} ta.remove(); }
+}, true);
+
+/* ---------- boot ---------- */
+let hashIdx = NaN;
+try { hashIdx = parseInt((location.hash.match(/^#\/(\d+)$/) || [])[1], 10); } catch (_) {}
+go(Number.isFinite(hashIdx) ? hashIdx - 1 : 0);
+</script>
+</body>
+</html>

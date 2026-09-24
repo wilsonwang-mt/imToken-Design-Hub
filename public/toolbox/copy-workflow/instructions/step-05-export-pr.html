@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Step 05 — 导出 → 转换 → 提交 GitHub PR</title>
+<style>
+:root{--bg:#0f1117;--s:#1a1d27;--s2:#232733;--bd:#2e3345;--tx:#e4e6ef;--dm:#8b90a5;--ac:#a29bfe;--pk:#fd79a8;--gn:#00b894;--yl:#fdcb6e;--bl:#74b9ff}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--tx);line-height:1.75}
+.top-bar{padding:14px 28px;background:var(--s);border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:12px}
+.top-bar a{color:var(--ac);text-decoration:none;font-size:.9em}
+.top-bar a:hover{text-decoration:underline}
+.top-bar .sep{color:var(--bd)}
+.top-bar .current{color:var(--tx);font-weight:600;font-size:.9em}
+.hero-sm{padding:48px 28px 36px;border-bottom:1px solid var(--bd);background:linear-gradient(160deg,var(--s),#00b89410)}
+.hero-sm .step-badge{display:inline-block;padding:4px 14px;border-radius:20px;font-size:.78em;font-weight:600;background:#00b89422;color:var(--gn);margin-bottom:10px}
+.hero-sm h1{font-size:1.8em;font-weight:700;margin-bottom:6px}
+.hero-sm p{color:var(--dm);max-width:640px}
+.container{max-width:820px;margin:0 auto;padding:40px 28px 60px}
+.role-bar{display:flex;gap:8px;margin-bottom:32px}
+.role-chip{padding:5px 14px;border-radius:20px;font-size:.82em;font-weight:500}
+.r-des{background:#fd79a822;color:var(--pk)}
+h2{font-size:1.25em;margin:36px 0 16px;padding-bottom:8px;border-bottom:1px solid var(--bd)}
+.phase{background:var(--s);border:1px solid var(--bd);border-radius:14px;padding:28px;margin-bottom:24px}
+.phase-badge{display:inline-block;font-size:.72em;padding:3px 12px;border-radius:10px;font-weight:600;margin-bottom:12px}
+.pb-a{background:#fd79a822;color:var(--pk)}
+.pb-b{background:#a29bfe22;color:var(--ac)}
+.pb-c{background:#00b89422;color:var(--gn)}
+.phase h3{font-size:1.1em;margin-bottom:12px}
+.step-line{display:flex;gap:14px;margin-bottom:16px;align-items:flex-start}
+.step-line .sn{width:26px;height:26px;border-radius:50%;background:var(--gn);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.78em;font-weight:700;flex-shrink:0;margin-top:2px}
+.step-line .sc{flex:1}
+.step-line h4{font-size:.95em;margin-bottom:3px}
+.step-line p{color:var(--dm);font-size:.88em}
+.mock{background:var(--s2);border:1px solid var(--bd);border-radius:10px;overflow:hidden;margin:16px 0}
+.mock-header{padding:10px 16px;background:var(--s);border-bottom:1px solid var(--bd);font-size:.8em;color:var(--dm);display:flex;align-items:center;gap:8px}
+.mock-body{padding:20px}
+.mock-body pre{font-size:.8em;color:var(--tx);white-space:pre-wrap;font-family:'SF Mono',Monaco,Consolas,monospace;line-height:1.5}
+.k{color:#e06c75}.v{color:#98c379}.p{color:#c678dd}.c{color:#5c6370;font-style:italic}
+.tip{background:#fdcb6e15;border-left:3px solid var(--yl);border-radius:0 8px 8px 0;padding:14px 18px;margin:16px 0;font-size:.9em}
+.tip strong{color:var(--yl)}
+.arrow-down{text-align:center;color:var(--bd);font-size:1.5em;margin:12px 0}
+.figma-ui{background:#2c2c2c;border:1px solid #444;border-radius:10px;overflow:hidden;margin:16px 0}
+.figma-ui .fu-header{padding:8px 14px;background:#1e1e1e;border-bottom:1px solid #444;font-size:.78em;color:#999;display:flex;justify-content:space-between}
+.figma-ui .fu-body{padding:16px}
+.file-list{list-style:none;padding:0}
+.file-list li{display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--s2);border:1px solid var(--bd);border-radius:8px;margin-bottom:6px;font-size:.88em}
+.file-list .f-icon{width:24px;height:24px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:.7em;font-weight:700;flex-shrink:0}
+.f-json{background:#98c37922;color:#98c379}
+.f-md{background:#74b9ff22;color:var(--bl)}
+.file-list .f-name{flex:1}
+.file-list .f-size{color:var(--dm);font-size:.82em}
+.github-ui{background:#161b22;border:1px solid #30363d;border-radius:10px;overflow:hidden;margin:16px 0}
+.gh-header{padding:12px 16px;background:#0d1117;border-bottom:1px solid #30363d;display:flex;align-items:center;gap:10px}
+.gh-header .gh-icon{width:20px;height:20px;border-radius:50%;background:#238636;display:flex;align-items:center;justify-content:center}
+.gh-header .gh-icon svg{width:12px;height:12px}
+.gh-header .gh-title{font-size:.92em;color:#c9d1d9;font-weight:600}
+.gh-body{padding:16px}
+.gh-field{margin-bottom:12px}
+.gh-field label{display:block;font-size:.78em;color:#8b949e;margin-bottom:4px}
+.gh-field .gh-input{width:100%;padding:8px 12px;background:#0d1117;border:1px solid #30363d;border-radius:6px;color:#c9d1d9;font-size:.88em}
+.gh-field textarea.gh-input{height:80px;resize:none;font-family:monospace;font-size:.82em;line-height:1.5}
+.gh-btn{display:inline-block;padding:8px 18px;background:#238636;color:#fff;border-radius:6px;font-size:.85em;font-weight:600;cursor:default;margin-top:8px}
+.output-box{background:var(--s);border:1px solid var(--gn);border-radius:12px;padding:20px;margin-top:24px}
+.output-box h4{color:var(--gn);margin-bottom:8px}
+.output-box p{color:var(--dm);font-size:.9em}
+.footer-nav{display:flex;justify-content:space-between;margin-top:48px;padding-top:24px;border-top:1px solid var(--bd)}
+.footer-nav a{color:var(--ac);text-decoration:none;font-size:.92em}
+.footer-nav a:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <a href="../copy-workflow-final.html">Workflow</a>
+  <span class="sep">/</span>
+  <span class="current">Step 05</span>
+</div>
+
+<div class="hero-sm">
+  <span class="step-badge">STEP 05 — 核心步骤</span>
+  <h1>导出 → 转换 → 提交 GitHub PR</h1>
+  <p>从 Figma 导出定稿文案，转换为开发可用的 i18n 格式，通过 PR 提交到代码仓库</p>
+</div>
+
+<div class="container">
+  <div class="role-bar">
+    <span class="role-chip r-des">Designer — 负责执行</span>
+  </div>
+
+  <!-- ═══ Phase A: Export ═══ -->
+  <div class="phase">
+    <span class="phase-badge pb-a">Phase A — Figma 导出</span>
+    <h3>从 Figma 导出 Variable Collection</h3>
+
+    <div class="step-line">
+      <div class="sn">1</div>
+      <div class="sc">
+        <h4>打开 Variable Importer/Exporter 插件</h4>
+        <p>Figma → Plugins → Variable Importer/Exporter → 选择 <strong>Export</strong> 模式。</p>
+      </div>
+    </div>
+
+    <div class="step-line">
+      <div class="sn">2</div>
+      <div class="sc">
+        <h4>选择 "Copy" Collection → 逐个导出每个 Mode</h4>
+        <p>选中 Copy Collection，分别导出 EN、ZH-Hans、ZH-Hant 三个 Mode 的 JSON 文件。导出格式为 DTCG（Design Tokens Community Group）标准。</p>
+      </div>
+    </div>
+
+    <div class="figma-ui">
+      <div class="fu-header">
+        <span>Variable Importer/Exporter — Export Mode</span>
+      </div>
+      <div class="fu-body">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+          <span style="font-size:.82em;color:#999">Collection:</span>
+          <span style="font-size:.85em;padding:4px 12px;background:#a259ff22;color:#a259ff;border-radius:6px">Copy</span>
+        </div>
+        <div style="font-size:.78em;color:#999;margin-bottom:8px">Select mode to export:</div>
+        <div style="display:flex;gap:6px;margin-bottom:12px">
+          <span style="padding:4px 12px;background:#238636;color:#fff;border-radius:6px;font-size:.78em;cursor:default">EN</span>
+          <span style="padding:4px 12px;background:#333;color:#999;border-radius:6px;font-size:.78em;cursor:default">ZH-Hans</span>
+          <span style="padding:4px 12px;background:#333;color:#999;border-radius:6px;font-size:.78em;cursor:default">ZH-Hant</span>
+        </div>
+        <div style="padding:6px 14px;background:#238636;color:#fff;border-radius:6px;font-size:.82em;display:inline-block;cursor:default">Export to JSON</div>
+      </div>
+    </div>
+
+    <div class="step-line">
+      <div class="sn">3</div>
+      <div class="sc">
+        <h4>得到三个 DTCG 格式的 JSON 文件</h4>
+        <p>导出后你会得到：<code>EN.tokens.json</code>、<code>ZH-Hans.tokens.json</code>、<code>ZH-Hant.tokens.json</code></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow-down">&#8595;</div>
+
+  <!-- ═══ Phase B: Convert ═══ -->
+  <div class="phase">
+    <span class="phase-badge pb-b">Phase B — 格式转换</span>
+    <h3>运行 figma2i18n 脚本生成 dev-ready 文件</h3>
+
+    <div class="step-line">
+      <div class="sn">1</div>
+      <div class="sc">
+        <h4>运行转换脚本</h4>
+        <p>将三个 Figma 导出文件放在同一文件夹，运行转换脚本。脚本会自动完成 DTCG → i18n 格式转换，并与原有 i18n 文件合并（保留 code-managed 的长文本 key），生成 Changelog。</p>
+      </div>
+    </div>
+
+    <div class="mock">
+      <div class="mock-header">
+        <span style="color:var(--gn)">&#9679;</span> Terminal — 运行转换脚本
+      </div>
+      <div class="mock-body"><pre><span class="c"># 将 Figma 导出文件放在 exports/ 目录下</span>
+$ ls exports/
+EN.tokens.json    ZH-Hans.tokens.json    ZH-Hant.tokens.json
+
+<span class="c"># 运行转换脚本（需要指定原有 i18n 文件路径用于合并）</span>
+$ python3 figma2i18n.py \
+    --exports exports/ \
+    --baseline src/locales/en.json \
+    --output dist/
+
+<span class="v">&#10003; Parsed 104 variables × 3 languages</span>
+<span class="v">&#10003; Merged with 36 code-managed keys</span>
+<span class="v">&#10003; Generated en.json (140 keys)</span>
+<span class="v">&#10003; Generated zh-Hans.json (104 keys)</span>
+<span class="v">&#10003; Generated zh-Hant.json (104 keys)</span>
+<span class="v">&#10003; Generated CHANGELOG-copy-update.md</span>
+<span class="p">  → 14 keys affected (EN: 11, ZH-Hans: 12, ZH-Hant: 12)</span></pre></div>
+    </div>
+
+    <div class="step-line">
+      <div class="sn">2</div>
+      <div class="sc">
+        <h4>检查生成的文件</h4>
+        <p>脚本输出 4 个文件：</p>
+      </div>
+    </div>
+
+    <ul class="file-list">
+      <li><div class="f-icon f-json">{ }</div><span class="f-name">en.json</span><span class="f-size">140 keys &middot; Figma + code-managed merged</span></li>
+      <li><div class="f-icon f-json">{ }</div><span class="f-name">zh-Hans.json</span><span class="f-size">104 keys &middot; Figma only</span></li>
+      <li><div class="f-icon f-json">{ }</div><span class="f-name">zh-Hant.json</span><span class="f-size">104 keys &middot; Figma only</span></li>
+      <li><div class="f-icon f-md">MD</div><span class="f-name">CHANGELOG-copy-update.md</span><span class="f-size">三语 diff 报告</span></li>
+    </ul>
+
+    <div class="step-line">
+      <div class="sn">3</div>
+      <div class="sc">
+        <h4>Review Changelog 确认变更正确</h4>
+        <p>打开 CHANGELOG 文件，逐条检查变更项。确认所有修改都符合 Step 04 的审查结论。</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow-down">&#8595;</div>
+
+  <!-- ═══ Phase C: PR ═══ -->
+  <div class="phase">
+    <span class="phase-badge pb-c">Phase C — 提交 GitHub PR</span>
+    <h3>通过 GitHub Web UI 创建 Pull Request</h3>
+
+    <div class="step-line">
+      <div class="sn">1</div>
+      <div class="sc">
+        <h4>在 GitHub 仓库中创建新 Branch</h4>
+        <p>进入项目仓库 → 点击 branch 下拉 → 输入新分支名称（如 <code>copy/golden-season-update-0227</code>）→ Create branch。</p>
+      </div>
+    </div>
+
+    <div class="step-line">
+      <div class="sn">2</div>
+      <div class="sc">
+        <h4>上传 i18n 文件覆盖原文件</h4>
+        <p>在新分支上导航到 i18n 文件目录（如 <code>src/locales/</code>），点击 "Add file" → "Upload files"，将三个 JSON 文件拖入上传，替换原有文件。</p>
+      </div>
+    </div>
+
+    <div class="step-line">
+      <div class="sn">3</div>
+      <div class="sc">
+        <h4>创建 Pull Request</h4>
+        <p>上传完成后，GitHub 会提示创建 PR。点击 "Compare & pull request"。</p>
+      </div>
+    </div>
+
+    <div class="github-ui">
+      <div class="gh-header">
+        <div class="gh-icon"><svg viewBox="0 0 12 12" fill="#fff"><path d="M6 0L1 4l5 4V6c3 0 5 2 5 5 0-6-3-9-5-9V0z"/></svg></div>
+        <span class="gh-title">Open a pull request</span>
+      </div>
+      <div class="gh-body">
+        <div class="gh-field">
+          <label>Title</label>
+          <div class="gh-input">copy: update Golden Season i18n (2026-02-27)</div>
+        </div>
+        <div class="gh-field">
+          <label>Description</label>
+          <textarea class="gh-input">## Copy Update from Figma
+
+**Source:** Figma Variable Collection (reviewed & approved)
+**Keys affected:** 14 (EN: 11, ZH-Hans: 12, ZH-Hant: 12)
+
+### Key changes:
+- Unified "premium box" → "mystery box"
+- Updated cardModalDesc to product description
+- Refined ZH-Hans/ZH-Hant translations
+
+See CHANGELOG-copy-update.md for full diff.</textarea>
+        </div>
+        <div class="gh-btn">Create pull request</div>
+      </div>
+    </div>
+
+    <div class="tip">
+      <strong>PR 规范：</strong>标题格式建议 <code>copy: [描述] (日期)</code>，便于开发在 commit history 中快速识别文案变更。正文中引用 Changelog 关键信息，让 Reviewer 无需打开文件就能了解变更范围。
+    </div>
+  </div>
+
+  <div class="output-box">
+    <h4>&#10148; 本步骤产出物</h4>
+    <p>一个包含 3 个 i18n JSON 文件 + 1 个 Changelog 的 GitHub Pull Request，等待开发 Review。</p>
+  </div>
+
+  <div class="footer-nav">
+    <a href="step-04-team-review.html">&#8592; Step 04</a>
+    <a href="step-06-code-review.html">Step 06: Code Review &#8594;</a>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,1811 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- ============================================================
+     imToken Slides — PAGED DECK TEMPLATE (light)  ·  v2.3
+     舞台演示用：固定分页、键盘优先、大屏等比放大。
+
+     内置能力（不要移除，替换 sample slides 即可）：
+       · 大纲式侧边栏 —— 缩略图 + 编号 + 标题，编号自动推导
+       · 讲者备注面板 —— 每页 data-speaker-notes，按 N 开关
+       · 分步揭示 —— [data-step] + .replay，按 R 重播
+       · 图片灯箱 —— .zoomable + openLightbox()
+       · 原型浮层 —— 手机侧滑 / 桌面居中，三态兜底
+       · 大屏 responsive —— 根字号随视口缩放，1920 为基准
+     ============================================================ -->
+<title>Claude Design 设计探索 · Confu EP02</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+SC:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+    /* ===== BRAND (official imToken azure — matches the logo gradient) ===== */
+    --brand: #007FFF;        --brand-rgb: 0,127,255;
+    --brand-dark: #0066D6;   --brand-light: #E5F2FF;
+    --purple: #7C3AED;       --purple-rgb: 124,58,237;   --purple-light: #EDE9FE;
+    --ai: #A78BFA;                                        /* AI / Agent content ONLY */
+    --green: #059669;        --green-rgb: 5,150,105;      --green-light: #D1FAE5;
+    --amber: #D97706;        --amber-rgb: 217,119,6;      --amber-light: #FEF3C7;
+    --red: #DC2626;          --red-rgb: 220,38,38;        --red-light: #FEE2E2;
+    --teal: #0D9488;         --cyan: #0891B2;             --cyan-light: #CFFAFE;
+
+    --bg: #FAFCFF; --bg-alt: #F0F6FF; --bg-dark: #0B1120; --surface: #FFFFFF;
+    --text: #0F172A; --text-secondary: #475569; --text-muted: #94A3B8;
+    --border: #E2E8F0; --border-light: #F1F5F9;
+
+    --font-display: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    --font-body:    'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    --font-mono:    'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+
+    --shadow-sm: 0 1px 2px rgba(15,23,42,0.04);
+    --shadow-md: 0 4px 12px rgba(15,23,42,0.06);
+    --shadow-lg: 0 8px 32px rgba(15,23,42,0.08);
+    --shadow-xl: 0 16px 48px rgba(15,23,42,0.12);
+    --radius: 16px; --radius-sm: 8px; --radius-xs: 4px; --radius-lg: 24px;
+    --nav-width: 18rem;
+}
+/* ── 大屏缩放锚点 ──────────────────────────────────────────────
+   deck 的字号、间距、卡片、最大宽度全部以 rem 表达，所以只要根字号
+   随视口放大，整套构图就等比放大。
+   · 同时受宽高约束（min(vw,vh)）：超宽屏不会因为够宽就把内容顶出屏幕；
+   · 1920×1080 恰好落在 16px —— 现有构图分毫不变；
+   · 2560×1440 → 21px，3840×2160 → 30px（封顶）；
+   · 低于 1920 时下限锁 16px，不会缩小。                    */
+html { font-size: clamp(16px, min(0.834vw, 1.482vh), 30px); }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: var(--font-body); background: var(--bg); color: var(--text); line-height: 1.6; -webkit-font-smoothing: antialiased; overflow: hidden; }
+
+/* ===== SELECTION ===== */
+/* 界面外壳不可选中，正文可选中 */
+.sidebar-nav, .kbd-hint, .progress, .rail-hotzone, .slide-footer, .page-indicator,
+.replay, .copy-btn, .demo-btn { user-select: none; -webkit-user-select: none; }
+.slide .stage { user-select: text; -webkit-user-select: text; }
+::selection { background: rgba(0,127,255,0.22); }
+
+/* ===== PROGRESS BAR ===== */
+.progress { position: fixed; top: 0; left: 0; height: 3px; width: 0; background: linear-gradient(90deg, var(--brand), var(--purple)); z-index: 300; transition: width 0.4s ease; }
+
+/* ===== LEFT SIDEBAR — auto-hide interactive rail ===== */
+.sidebar-nav {
+    position: fixed; top: 0; left: 0; bottom: 0; width: var(--nav-width);
+    background: rgba(255,255,255,0.97); backdrop-filter: blur(20px);
+    border-right: 1px solid var(--border); z-index: 101;
+    display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start;
+    padding: 0.9rem 0.55rem; overflow-y: auto; scrollbar-width: none;
+    transform: translateX(-100%);
+    transition: transform 240ms cubic-bezier(.3,.7,.4,1);
+    box-shadow: 8px 0 32px rgba(15,23,42,0.08);
+}
+.sidebar-nav.peek { transform: translateX(0); }
+.rail-hotzone { position: fixed; left: 0; top: 0; bottom: 0; width: 24px; z-index: 100; background: transparent; }
+.sidebar-nav::-webkit-scrollbar { display: none; }
+
+/* 目录行：缩略图 + 编号 + 标题 */
+.nav-thumb {
+    display: flex; align-items: center; gap: 0.6rem; flex-shrink: 0;
+    padding: 0.3rem 0.45rem; margin: 0.06rem 0; border-radius: 0.5rem;
+    cursor: pointer; position: relative; background: transparent;
+    border-left: 2px solid transparent;
+    transition: background 0.18s ease, border-color 0.18s ease;
+}
+.nav-thumb:hover { background: var(--bg-alt); }
+.nav-thumb.active { background: rgba(var(--brand-rgb),0.08); border-left-color: var(--brand); }
+.nav-thumb .thumb-frame {
+    width: 3rem; height: 2rem; border-radius: 0.25rem; background: #fff;
+    border: 1px solid var(--border); overflow: hidden; flex-shrink: 0;
+    display: flex; align-items: stretch; transition: border-color 0.18s ease;
+}
+.nav-thumb:hover .thumb-frame { border-color: var(--text-muted); }
+.nav-thumb.active .thumb-frame { border-color: var(--brand); }
+.nav-meta { min-width: 0; flex: 1; }
+.nav-num {
+    font-family: var(--font-mono); font-size: 0.6rem; font-weight: 700; letter-spacing: 0.09em;
+    color: var(--text-muted); line-height: 1.1; transition: color 0.18s ease;
+}
+.nav-thumb.active .nav-num { color: var(--brand); }
+.nav-title {
+    font-size: 0.74rem; line-height: 1.32; color: var(--text-secondary); margin-top: 0.13rem;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    transition: color 0.18s ease;
+}
+.nav-thumb.active .nav-title { color: var(--text); font-weight: 600; }
+/* 每个 Part 起始处一条分隔线，便于快速定位 */
+.nav-thumb.part-start { margin-top: 0.55rem; padding-top: 0.5rem; border-top: 1px solid var(--border-light); }
+.nav-thumb.part-start .nav-num { color: var(--brand); }
+.thumb-inner { width: 100%; height: 100%; padding: 3px; display: flex; flex-direction: column; gap: 1px; overflow: hidden; }
+.thumb-inner.cover-type { align-items: center; justify-content: center; gap: 2px; }
+.thumb-line { height: 2px; border-radius: 1px; flex-shrink: 0; }
+.thumb-block { border-radius: 1px; flex-shrink: 0; }
+.thumb-row { display: flex; gap: 1px; width: 100%; flex-shrink: 0; }
+
+/* ===== DECK / SLIDES ===== */
+.deck { position: relative; width: 100vw; height: 100vh; }
+.slide {
+    position: absolute; inset: 0; display: none; flex-direction: column;
+    padding: 7vh 5vw 13vh 5vw;
+    opacity: 0; transition: opacity 0.5s ease; overflow: auto;
+}
+.slide.active { display: flex; opacity: 1; }
+.slide .stage { flex: 1; display: flex; flex-direction: column; justify-content: center; max-width: min(90vw, 100rem); width: 100%; margin: 0 auto; }
+.slide.center .stage { align-items: center; text-align: center; }
+.slide.bg-alt { background: var(--bg-alt); }
+.slide.wide .stage { max-width: min(94vw, 112rem); }
+.slide.top .stage { justify-content: flex-start; padding-top: 1vh; }
+
+/* entrance: stagger direct children of .stage */
+.slide.active .stage > * { animation: fadeUp 0.55s cubic-bezier(0.25,1,0.5,1) both; }
+.slide.active .stage > *:nth-child(1) { animation-delay: 0.05s; }
+.slide.active .stage > *:nth-child(2) { animation-delay: 0.13s; }
+.slide.active .stage > *:nth-child(3) { animation-delay: 0.21s; }
+.slide.active .stage > *:nth-child(4) { animation-delay: 0.29s; }
+.slide.active .stage > *:nth-child(5) { animation-delay: 0.37s; }
+.slide.active .stage > *:nth-child(6) { animation-delay: 0.45s; }
+.slide.active .stage > *:nth-child(7) { animation-delay: 0.53s; }
+@keyframes fadeUp   { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeInDown { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: none; } }
+@keyframes float    { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-30px); } }
+@keyframes pulseDot { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: .55; transform: scale(.82); } }
+@keyframes spinSlow { to { transform: rotate(360deg); } }
+@keyframes dashFlow { to { stroke-dashoffset: -28; } }
+
+/* ===== STEPPED REVEAL (motion-interactions.md) ===== */
+[data-step] { opacity: 0; transform: translateY(16px); transition: opacity .55s ease, transform .55s ease; }
+[data-step].on { opacity: 1; transform: none; }
+[data-step].scale-in { transform: scale(.88); }
+[data-step].scale-in.on { transform: scale(1); }
+.replay {
+    position: absolute; top: 6vh; right: 5vw; z-index: 30;
+    font-family: var(--font-mono); font-size: .68rem; letter-spacing: .08em;
+    color: var(--text-muted); background: var(--surface);
+    border: 1px solid var(--border); border-radius: 100px; padding: 5px 13px;
+    cursor: pointer; opacity: 0; pointer-events: none; transition: opacity .4s ease, color .2s, border-color .2s;
+}
+.replay.show { opacity: .75; pointer-events: auto; }
+.replay:hover { color: var(--brand); border-color: var(--brand); opacity: 1; }
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
+}
+
+/* ===== FIXED FOOTER — left label · CENTER LOGO · right counter ===== */
+.foot {
+    position: fixed; bottom: 1.6rem; left: 5vw; right: 5vw;
+    display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
+    font-size: 0.75rem; color: var(--text-muted); font-family: var(--font-mono); z-index: 20;
+    pointer-events: none;
+}
+.foot .foot-label { text-align: left; letter-spacing: 0.04em; }
+.foot .foot-num { text-align: right; }
+.footer-logo { display: flex; align-items: center; justify-content: center; opacity: 0.9; }
+.footer-logo svg { height: 1.15rem; width: auto; display: block; }
+
+/* ===== TYPOGRAPHY ===== */
+.kicker { font-family: var(--font-mono); font-size: 0.75rem; color: var(--brand); text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 1rem; font-weight: 600; }
+.kicker.purple { color: var(--purple); } .kicker.green { color: var(--green); } .kicker.amber { color: var(--amber); } .kicker.red { color: var(--red); }
+h1 { font-family: var(--font-display); font-size: clamp(2.8rem, 6vw, 5rem); font-weight: 800; letter-spacing: -0.035em; line-height: 1.08; margin-bottom: 1.25rem; }
+h2 { font-family: var(--font-display); font-size: clamp(1.9rem, 3.9vw, 3.1rem); font-weight: 700; letter-spacing: -0.028em; line-height: 1.18; margin-bottom: 1rem; }
+h3 { font-family: var(--font-display); font-size: 1.25rem; font-weight: 650; letter-spacing: -0.01em; margin-bottom: 0.5rem; }
+h4 { font-family: var(--font-display); font-size: 1rem; font-weight: 650; letter-spacing: -0.005em; margin-bottom: 0.35rem; }
+.subtitle { font-size: clamp(1.05rem, 1.6vw, 1.35rem); color: var(--text-secondary); line-height: 1.7; max-width: 68ch; }
+.slide.center .subtitle { margin-left: auto; margin-right: auto; }
+p { color: var(--text-secondary); font-size: 1.0rem; line-height: 1.7; }
+strong { color: var(--text); font-weight: 650; }
+.big-statement { font-family: var(--font-display); font-size: clamp(2.4rem, 5.4vw, 4.4rem); font-weight: 800; letter-spacing: -0.038em; line-height: 1.16; }
+.grad-text { background: linear-gradient(135deg, var(--brand), var(--purple)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.hairline { width: 64px; height: 2px; background: linear-gradient(90deg, var(--brand), var(--purple)); border-radius: 2px; margin: 0 0 1.75rem; }
+.slide.center .hairline { margin-left: auto; margin-right: auto; }
+.mono { font-family: var(--font-mono); }
+.muted { color: var(--text-muted); }
+.gloss { font-size: 0.78rem; color: var(--text-secondary); font-weight: 400; }
+
+.label { display: inline-block; font-size: 0.72rem; font-weight: 650; text-transform: uppercase; letter-spacing: 0.1em; padding: 5px 12px; border-radius: 100px; }
+.label-blue { background: var(--brand-light); color: var(--brand); }
+.label-purple { background: var(--purple-light); color: var(--purple); }
+.label-green { background: var(--green-light); color: var(--green); }
+.label-amber { background: var(--amber-light); color: var(--amber); }
+.label-red { background: var(--red-light); color: var(--red); }
+.label-gray { background: var(--border-light); color: var(--text-muted); }
+.label.cn { text-transform: none; letter-spacing: 0.02em; font-size: 0.76rem; }
+
+/* ===== CARDS & GRID ===== */
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.6rem 1.75rem; box-shadow: var(--shadow-sm); }
+.card.accent-left { border-left: 3px solid var(--brand); }
+.card.purple-left { border-left: 3px solid var(--purple); }
+.card.green-left  { border-left: 3px solid var(--green); }
+.card.amber-left  { border-left: 3px solid var(--amber); }
+.card.red-left    { border-left: 3px solid var(--red); }
+.card.highlight   { background: var(--bg-alt); border-color: transparent; }
+.card.tight       { padding: 1.15rem 1.3rem; }
+.card.lift { transition: transform .22s cubic-bezier(0.23,1,0.32,1), box-shadow .22s; }
+.card.lift:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+.card .ghost-num { position: absolute; top: 10px; right: 14px; font-size: 2.1rem; font-weight: 800; color: var(--border-light); line-height: 1; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.1rem; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.1rem; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.9rem; }
+.grid-5 { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 0.85rem; }
+.grid-auto { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.1rem; }
+.stack { display: flex; flex-direction: column; gap: 0.9rem; }
+.row { display: flex; gap: 1rem; align-items: center; }
+.row.wrap { flex-wrap: wrap; }
+.mt-1 { margin-top: 0.75rem; } .mt-2 { margin-top: 1.5rem; } .mt-3 { margin-top: 2.25rem; }
+
+/* ===== BIG STAT ===== */
+.stat { text-align: center; }
+.stat .num { font-family: var(--font-mono); font-size: clamp(2rem, 3.6vw, 3rem); font-weight: 800; line-height: 1; background: linear-gradient(135deg, var(--brand), var(--purple)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.stat .cap { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.45rem; letter-spacing: .02em; }
+.stat-row { display: flex; gap: 2.5rem; flex-wrap: wrap; }
+.slide.center .stat-row { justify-content: center; }
+
+/* ===== STATUS PILL (dot + text) ===== */
+.spill { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.2rem; border-radius: 100px;
+         background: rgba(var(--brand-rgb),0.07); border: 1px solid rgba(var(--brand-rgb),0.16);
+         font-size: 0.82rem; font-weight: 550; color: var(--brand); }
+.spill .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+.spill.live .dot { animation: pulseDot 1.6s ease-in-out infinite; }
+.spill.purple { background: rgba(var(--purple-rgb),0.07); border-color: rgba(var(--purple-rgb),0.16); color: var(--purple); }
+.spill.green  { background: rgba(var(--green-rgb),0.08);  border-color: rgba(var(--green-rgb),0.18);  color: var(--green); }
+.spill.amber  { background: rgba(var(--amber-rgb),0.08);  border-color: rgba(var(--amber-rgb),0.18);  color: var(--amber); }
+.spill.red    { background: rgba(var(--red-rgb),0.07);    border-color: rgba(var(--red-rgb),0.16);    color: var(--red); }
+
+/* ===== CHIPS ===== */
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 0.32rem 0.62rem; border-radius: 8px;
+        font-size: 0.72rem; color: var(--text-secondary); background: rgba(var(--brand-rgb),0.05);
+        border: 1px solid rgba(var(--brand-rgb),0.16); white-space: nowrap; }
+.chip.purple { background: rgba(var(--purple-rgb),0.05); border-color: rgba(var(--purple-rgb),0.16); }
+.chip.green  { background: rgba(var(--green-rgb),0.06);  border-color: rgba(var(--green-rgb),0.18); }
+.chip.amber  { background: rgba(var(--amber-rgb),0.06);  border-color: rgba(var(--amber-rgb),0.18); }
+.chip.red    { background: rgba(var(--red-rgb),0.05);    border-color: rgba(var(--red-rgb),0.16); }
+.chip.gray   { background: var(--border-light); border-color: var(--border); color: var(--text-muted); }
+.chip.dashed { border-style: dashed; }
+.chip svg { width: 13px; height: 13px; flex-shrink: 0; }
+
+/* ===== COMPARISON TABLE ===== */
+.comparison { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+.comparison th { text-align: left; padding: 0.85rem 1rem; font-weight: 650; border-bottom: 2px solid var(--border);
+                 font-size: 0.8rem; letter-spacing: 0.02em; color: var(--text-secondary); font-family: var(--font-body); }
+.comparison td { padding: 0.85rem 1rem; border-bottom: 1px solid var(--border-light); vertical-align: top; color: var(--text-secondary); }
+.comparison tr:last-child td { border-bottom: none; }
+.comparison .from-cell { color: var(--text-muted); font-style: italic; }
+.comparison .to-cell { color: var(--text); font-weight: 600; }
+.comparison td strong { color: var(--text); }
+
+/* ===== SCHEDULE TABLE ===== */
+.schedule { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 0.88rem; }
+.schedule th { padding: 0.65rem 0.9rem; text-align: left; font-weight: 700; font-size: 0.8rem;
+               letter-spacing: 0.02em; background: var(--bg-alt); border-bottom: 2px solid var(--border); color: var(--text-secondary); font-family: var(--font-body); }
+.schedule th:first-child { border-radius: var(--radius-sm) 0 0 0; }
+.schedule th:last-child { border-radius: 0 var(--radius-sm) 0 0; }
+.schedule td { padding: 0.6rem 0.9rem; border-bottom: 1px solid var(--border-light); vertical-align: middle; color: var(--text-secondary); }
+.schedule tr:last-child td { border-bottom: none; }
+.time-tag { font-family: var(--font-mono); font-size: 0.72rem; font-weight: 600; color: var(--brand);
+            background: var(--brand-light); padding: 2px 8px; border-radius: 4px; white-space: nowrap; }
+.time-tag.purple { color: var(--purple); background: var(--purple-light); }
+.time-tag.green  { color: var(--green);  background: var(--green-light); }
+.time-tag.amber  { color: var(--amber);  background: var(--amber-light); }
+
+/* ===== FLOW STEPS (vertical) ===== */
+.flow-step { display: flex; gap: 1rem; align-items: flex-start; }
+.flow-dot { width: 30px; height: 30px; border-radius: 50%; background: var(--brand); color: #fff;
+            display: flex; align-items: center; justify-content: center; font-size: 0.78rem; font-weight: 700;
+            flex-shrink: 0; font-family: var(--font-mono); }
+.flow-dot.purple { background: var(--purple); } .flow-dot.green { background: var(--green); }
+.flow-dot.amber { background: var(--amber); } .flow-dot.red { background: var(--red); }
+.flow-dot.ghost { background: #fff; border: 1.5px solid var(--border); color: var(--text-muted); }
+.flow-line { width: 2px; height: 20px; background: var(--border); margin-left: 14px; }
+
+/* ===== HORIZONTAL FLOW (arrow between steps) ===== */
+.hflow { display: flex; align-items: stretch; gap: 0; }
+.hstep { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 13px; padding: 1rem 1.1rem; position: relative; }
+.hstep + .hstep { margin-left: 32px; }
+.hstep + .hstep::before { content: "→"; position: absolute; left: -25px; top: 50%; transform: translateY(-50%);
+                          color: var(--text-muted); font-size: 17px; }
+.hstep .fn { font-family: var(--font-mono); font-size: 0.62rem; font-weight: 800; color: var(--brand); margin-bottom: 5px; letter-spacing: .08em; text-transform: uppercase; }
+.hstep b { font-size: 0.92rem; display: block; margin-bottom: 4px; color: var(--text); }
+.hstep p { margin: 0; font-size: 0.78rem; line-height: 1.55; }
+
+/* ===== PHASE BLOCK ===== */
+.phase-block { border-radius: var(--radius); padding: 1.4rem 1.6rem; border: 1px solid var(--border); }
+.phase-block.p1 { background: linear-gradient(135deg,#EFF6FF,#F8FAFC); border-left: 4px solid var(--brand); }
+.phase-block.p2 { background: linear-gradient(135deg,#F5F3FF,#F8FAFC); border-left: 4px solid var(--purple); }
+.phase-block.p3 { background: linear-gradient(135deg,#FFFBEB,#F8FAFC); border-left: 4px solid var(--amber); }
+.phase-block.p4 { background: linear-gradient(135deg,#ECFDF5,#F8FAFC); border-left: 4px solid var(--green); }
+
+/* ===== PLACEHOLDER (missing screenshot / asset) ===== */
+.placeholder { background: linear-gradient(135deg, var(--bg-alt), #F8F0FF); border: 2px dashed var(--border);
+               border-radius: var(--radius); padding: 2rem 1.5rem; text-align: center;
+               display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .35rem;
+               position: relative; overflow: hidden; }
+.placeholder .ph-icon { color: var(--text-muted); opacity: .5; margin-bottom: .35rem; }
+.placeholder .ph-title { font-weight: 650; font-size: 0.95rem; color: var(--text); }
+.placeholder .ph-file { font-family: var(--font-mono); font-size: 0.72rem; color: var(--brand); background: var(--brand-light);
+                        padding: 3px 9px; border-radius: 5px; margin-top: .3rem; }
+.placeholder .ph-desc { font-size: 0.78rem; color: var(--text-muted); max-width: 46ch; }
+.placeholder img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+
+/* ===== TERMINAL BLOCK ===== */
+.term { background: #0B1120; border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-lg); border: 1px solid #1E293B; }
+.term-bar { height: 34px; display: flex; align-items: center; gap: 7px; padding: 0 13px; background: #131C2E; border-bottom: 1px solid #1E293B; }
+.term-bar .dot { width: 9px; height: 9px; border-radius: 50%; }
+.term-bar .ttl { flex: 1; text-align: center; font-family: var(--font-mono); font-size: 0.66rem; color: #64748B; }
+.term-body { padding: 1.1rem 1.3rem; font-family: var(--font-mono); font-size: 0.8rem; line-height: 1.85; color: #CBD5E1; overflow-x: auto; }
+.term-body .pr { color: #34D399; } .term-body .cm { color: #64748B; } .term-body .hl { color: #7FB6FF; }
+.term-body .ok { color: #34D399; } .term-body .wr { color: #FBBF24; } .term-body .em { color: #fff; font-weight: 600; }
+
+/* ===== PROMPT BLOCK (copyable) ===== */
+.prompt { background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--brand);
+          border-radius: var(--radius-sm); padding: 1rem 1.2rem; position: relative; }
+.prompt .p-head { display: flex; align-items: center; gap: .6rem; margin-bottom: .55rem; }
+.prompt .p-tag { font-family: var(--font-mono); font-size: 0.62rem; font-weight: 800; letter-spacing: .1em;
+                 color: var(--brand); text-transform: uppercase; }
+.prompt .p-body { font-size: 0.85rem; line-height: 1.75; color: var(--text-secondary); }
+.prompt .p-body em { color: var(--brand); font-style: normal; font-weight: 600; background: var(--brand-light); padding: 1px 5px; border-radius: 4px; }
+.copy-btn { margin-left: auto; font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: .06em; color: var(--text-muted);
+            background: var(--bg-alt); border: 1px solid var(--border); border-radius: 100px; padding: 3px 10px; cursor: pointer; transition: all .2s; }
+.copy-btn:hover { color: var(--brand); border-color: var(--brand); }
+.copy-btn.done { color: var(--green); border-color: var(--green); }
+
+/* ===== COVER ORBS + GRID TEXTURE ===== */
+.cover-bg { position: absolute; inset: 0; overflow: hidden; z-index: 0; pointer-events: none; }
+.cover-bg .orb { position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.15; animation: float 12s ease-in-out infinite; }
+.cover-bg .grid-tex { position: absolute; inset: 0; opacity: .035; }
+.slide .stage { position: relative; z-index: 1; }
+
+/* ===== DEMO / LINK BUTTONS ===== */
+.demo-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 0.62rem 1.15rem; border-radius: 100px; border: 1px solid var(--brand);
+    background: var(--brand-light); color: var(--brand);
+    font-family: var(--font-body); font-size: 0.84rem; font-weight: 650;
+    cursor: pointer; transition: all 0.2s;
+}
+.demo-btn:hover { background: var(--brand); color: #fff; box-shadow: 0 4px 16px rgba(var(--brand-rgb),0.3); }
+.demo-btn svg { width: 15px; height: 15px; flex-shrink: 0; }
+.demo-btn.solid { background: var(--brand); color: #fff; }
+.demo-btn.solid:hover { background: var(--brand-dark); }
+.demo-btn.purple { border-color: var(--purple); background: var(--purple-light); color: var(--purple); }
+.demo-btn.purple:hover { background: var(--purple); color: #fff; box-shadow: 0 4px 16px rgba(var(--purple-rgb),0.3); }
+.demo-btn.ghost { border-color: var(--border); background: var(--surface); color: var(--text-secondary); }
+.demo-btn.ghost:hover { border-color: var(--brand); color: var(--brand); background: var(--brand-light); box-shadow: none; }
+.demo-btn[data-url-missing="1"] { border-style: dashed; opacity: .78; }
+
+/* ===== KEYBOARD HINT ===== */
+.kbd-hint { position: fixed; bottom: 3.9rem; left: 50%; transform: translateX(-50%);
+    font-family: var(--font-mono); font-size: 0.7rem; color: var(--text-muted);
+    background: var(--surface); border: 1px solid var(--border); border-radius: 100px;
+    padding: 6px 15px; z-index: 25; opacity: 0; pointer-events: none;
+    transition: opacity 0.6s ease; box-shadow: var(--shadow-sm); }
+.kbd-hint.show { opacity: 1; }
+kbd { font-family: var(--font-mono); font-size: .92em; background: var(--bg-alt); border: 1px solid var(--border);
+      border-bottom-width: 2px; border-radius: 4px; padding: 1px 5px; color: var(--text-secondary); }
+
+/* ===== SPEAKER NOTES PANEL (press N) ===== */
+.notes-panel { position: fixed; left: 0; right: 0; bottom: 0; z-index: 260;
+    background: rgba(11,17,32,.96); backdrop-filter: blur(14px); color: #E2E8F0;
+    padding: 1.1rem 5vw 1.2rem; transform: translateY(101%); transition: transform .35s cubic-bezier(0.23,1,0.32,1);
+    box-shadow: 0 -8px 40px rgba(0,0,0,.25); max-height: 42vh; overflow-y: auto; }
+.notes-panel.open { transform: translateY(0); }
+.notes-panel .n-head { font-family: var(--font-mono); font-size: .62rem; letter-spacing: .14em; text-transform: uppercase;
+    color: #7FB6FF; margin-bottom: .5rem; display: flex; align-items: center; gap: .8rem; }
+.notes-panel .n-body { font-size: .92rem; line-height: 1.75; color: #CBD5E1; white-space: pre-wrap; max-width: 100ch; }
+.notes-panel .n-close { margin-left: auto; cursor: pointer; color: #64748B; font-size: .68rem; }
+.notes-panel .n-close:hover { color: #fff; }
+
+/* ===== MOBILE PROTOTYPE — right slide-in panel ===== */
+.demo-panel {
+    position: fixed; top: 0; right: 0; bottom: 0; width: 440px;
+    background: var(--bg); border-left: 1px solid var(--border);
+    box-shadow: -8px 0 40px rgba(0,0,0,0.1); z-index: 200;
+    transform: translateX(100%); transition: transform 0.4s cubic-bezier(0.23,1,0.32,1);
+    display: flex; flex-direction: column; align-items: center; padding: 16px 20px 20px; overflow-y: auto;
+}
+.demo-panel.open { transform: translateX(0); }
+.demo-panel-header { display: flex; align-items: center; justify-content: space-between; width: 100%; margin-bottom: 12px; flex-shrink: 0; }
+.demo-panel-header span { font-size: 0.78rem; font-weight: 600; color: var(--text-muted); letter-spacing: 0.04em; font-family: var(--font-mono); }
+.overlay-close { width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s; flex-shrink: 0; }
+.overlay-close:hover { background: var(--bg-alt); }
+.demo-phone-frame { width: 393px; height: 852px; border-radius: 40px; overflow: hidden; border: 6px solid #1a1a2e; box-shadow: 0 12px 48px rgba(0,0,0,0.15); flex-shrink: 0; background: #000; position: relative; }
+.demo-phone-frame iframe { width: 100%; height: 100%; border: none; }
+@media (min-width: 1400px) { body.demo-open .slide { padding-right: calc(440px + 3vw); transition: padding 0.4s cubic-bezier(0.23,1,0.32,1); } }
+
+/* ===== DESKTOP PROTOTYPE — center fade-in modal ===== */
+.desktop-modal-backdrop {
+    position: fixed; inset: 0; z-index: 300;
+    background: rgba(11,17,32,0.5); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity 0.35s ease;
+}
+.desktop-modal-backdrop.open { opacity: 1; pointer-events: auto; }
+.desktop-modal {
+    width: min(1320px, 92vw); height: min(820px, 88vh);
+    background: var(--surface); border-radius: 16px; overflow: hidden;
+    box-shadow: var(--shadow-xl); display: flex; flex-direction: column;
+    transform: scale(0.96) translateY(12px); transition: transform 0.35s cubic-bezier(0.23,1,0.32,1);
+}
+.desktop-modal-backdrop.open .desktop-modal { transform: scale(1) translateY(0); }
+.desktop-modal-bar { height: 44px; flex-shrink: 0; display: flex; align-items: center; gap: 8px; padding: 0 14px; background: var(--bg-alt); border-bottom: 1px solid var(--border); }
+.desktop-modal-bar .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.desktop-modal-bar .url { flex: 1; text-align: center; font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 0 .5rem; }
+.desktop-modal-bar .ext { font-family: var(--font-mono); font-size: .64rem; color: var(--text-muted); border: 1px solid var(--border);
+    background: var(--surface); border-radius: 100px; padding: 4px 11px; cursor: pointer; text-decoration: none; transition: all .2s; flex-shrink: 0; }
+.desktop-modal-bar .ext:hover { color: var(--brand); border-color: var(--brand); }
+.desktop-modal .frame-wrap { flex: 1; position: relative; background: var(--bg-alt); }
+.desktop-modal iframe { width: 100%; height: 100%; border: none; display: block; }
+
+/* ===== IMAGE LIGHTBOX — 点击放大，关闭后回到原页 ===== */
+.zoomable { cursor: zoom-in; transition: transform .22s cubic-bezier(.23,1,.32,1); }
+.zoomable:hover { transform: scale(1.015); }
+.zoom-hint {
+    position: absolute; right: .7rem; bottom: .7rem; z-index: 3; pointer-events: none;
+    display: inline-flex; align-items: center; gap: .35rem;
+    font-family: var(--font-mono); font-size: .62rem; letter-spacing: .06em;
+    color: var(--text-secondary); background: rgba(255,255,255,.92);
+    border: 1px solid var(--border); border-radius: 100px; padding: .28rem .6rem;
+    box-shadow: var(--shadow-sm); opacity: 0; transition: opacity .22s ease;
+}
+.has-zoom:hover .zoom-hint { opacity: 1; }
+.lightbox {
+    position: fixed; inset: 0; z-index: 320;
+    background: rgba(11,17,32,.84); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    display: flex; align-items: center; justify-content: center; padding: 4vh 4vw;
+    opacity: 0; pointer-events: none; transition: opacity .3s ease; cursor: zoom-out;
+}
+.lightbox.open { opacity: 1; pointer-events: auto; }
+.lightbox img {
+    /* width/height 100% + contain：既能缩小也能放大，永远填满可用区。
+       用 max-* 会只封顶不放大，在 4K 上点开比页内还小。 */
+    width: 100%; height: 100%; object-fit: contain; background: transparent;
+    border-radius: var(--radius); box-shadow: 0 30px 90px rgba(0,0,0,.5);
+    transform: scale(.97); transition: transform .3s cubic-bezier(.23,1,.32,1);
+}
+.lightbox.open img { transform: scale(1); }
+.lb-close { position: absolute; top: 2rem; right: 2.2rem; background: rgba(255,255,255,.94); border-color: transparent; }
+.lb-hint { position: absolute; bottom: 1.8rem; left: 50%; transform: translateX(-50%);
+    font-family: var(--font-mono); font-size: .74rem; letter-spacing: .06em; color: rgba(255,255,255,.6); }
+
+/* Dual-safety fallback: shown when an external site refuses to be framed */
+.frame-fallback { position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center;
+    gap: .9rem; text-align: center; padding: 2rem; background: linear-gradient(135deg, var(--bg-alt), #F8F0FF); }
+.frame-fallback.show { display: flex; }
+/* Non-blocking variant: we could not verify the frame painted (cross-origin), so we
+   never cover working content — we just offer a visible escape hatch along the bottom. */
+.frame-fallback.hint { display: flex; inset: auto 0 0 0; flex-direction: row; gap: .9rem;
+    padding: .7rem 1.1rem; background: rgba(15,23,42,.92); backdrop-filter: blur(8px);
+    border-top: 1px solid rgba(255,255,255,.12); text-align: left; }
+.frame-fallback.hint .ff-title { color: #fff; font-size: .85rem; }
+.frame-fallback.hint .ff-desc { color: rgba(255,255,255,.62); font-size: .76rem; max-width: none; flex: 1; }
+.frame-fallback.hint .ff-url, .frame-fallback.hint > svg { display: none; }
+.frame-fallback.hint .demo-btn { flex-shrink: 0; }
+.frame-fallback .ff-title { font-size: 1.05rem; font-weight: 650; color: var(--text); }
+.frame-fallback .ff-desc { font-size: .84rem; color: var(--text-muted); max-width: 46ch; line-height: 1.7; }
+.frame-fallback .ff-url { font-family: var(--font-mono); font-size: .76rem; color: var(--brand); background: var(--brand-light);
+    padding: 5px 12px; border-radius: 6px; word-break: break-all; max-width: 70ch; }
+
+/* ===== RESPONSIVE ===== */
+/* Short viewports (e.g. a 1366x768 laptop mirroring to the projector): stop centring,
+   tighten the frame, so tall slides scroll from the top instead of clipping. */
+@media (max-height: 900px) {
+    .slide { padding: 4.5vh 4.5vw 10vh 4.5vw; }
+    .slide .stage { justify-content: flex-start; padding-top: .5vh; }
+    .slide.center .stage { justify-content: center; padding-top: 0; }
+    .foot { bottom: 1.1rem; }
+    .replay { top: 3.5vh; right: 4.5vw; }
+    /* recover vertical budget so the densest slides still fit without scrolling */
+    .card { padding: 1.2rem 1.35rem; }
+    .card.tight { padding: .9rem 1.05rem; }
+    h2 { margin-bottom: .7rem; }
+    .subtitle { font-size: 1.02rem; line-height: 1.6; }
+    .grid-2, .grid-3, .grid-auto { gap: .9rem; }
+    .stack { gap: .7rem; }
+    .hflow .hstep { padding: .8rem .9rem; }
+    .slide[data-section="habits-sum"] .scale-in { padding: 1.15rem 1.5rem !important; }
+    .slide[data-section="move-6"] .flow-step { gap: .55rem !important; }
+    .slide[data-section="move-6"] .stack { gap: .28rem !important; }
+    .slide[data-section="move-6"] .card { padding: 1rem 1.2rem !important; }
+    .slide[data-section="demo-cowork"] .placeholder { height: min(41rem, 56vh) !important; }
+    .slide[data-section="habits-sum"] .scale-in > div:last-child { font-size: 1.5rem !important; }
+}
+@media (max-width: 1100px) {
+    .sidebar-nav, .rail-hotzone { display: none; }
+    .demo-panel { width: 100vw; }
+    .replay { right: 4vw; }
+    .hflow { flex-direction: column; gap: .8rem; }
+    .hstep + .hstep { margin-left: 0; margin-top: 20px; }
+    .hstep + .hstep::before { content: "↓"; left: 50%; top: -22px; transform: translateX(-50%); }
+}
+@media (max-width: 768px) {
+    body { overflow: auto; }
+    .deck { height: auto; }
+    .slide { position: static; display: none; min-height: 100vh; padding: 9vh 1.5rem 14vh; }
+    .slide.active { display: flex; }
+    .grid-2, .grid-3, .grid-4, .grid-5, .grid-auto { grid-template-columns: 1fr; }
+    .foot { font-size: 0.62rem; left: 1.5rem; right: 1.5rem; }
+    .stat-row { gap: 1.4rem; }
+    .notes-panel { padding-left: 1.5rem; padding-right: 1.5rem; }
+    .comparison, .schedule { font-size: .8rem; }
+    .comparison th, .comparison td, .schedule th, .schedule td { padding: .55rem .5rem; }
+}
+
+/* ================= EP02 · Design with AI · deck-specific (on top of template v2.3) ================= */
+.copy-btn.inline { margin-left: 0; font-family: var(--font-body); font-size: .78rem; letter-spacing: 0; color: var(--brand); background: rgba(var(--brand-rgb),.06); border-color: rgba(var(--brand-rgb),.35); padding: .38rem .85rem; font-weight: 600; }
+.copy-btn.inline:hover { background: rgba(var(--brand-rgb),.12); }
+
+/* ---- 答 · 指 · 点 · 选 verb tokens ---- */
+.verbs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+.verb { border-radius: 18px; padding: 1.3rem 1.3rem 1.2rem; border: 1.5px solid var(--border); background: var(--surface); position: relative; }
+.verb .v { font-size: 3.2rem; font-weight: 800; line-height: 1; letter-spacing: -.02em; }
+.verb .v-en { font-family: var(--font-mono); font-size: .62rem; letter-spacing: .14em; color: var(--text-secondary); margin-top: .5rem; }
+.verb .v-d { font-size: .9rem; color: var(--text); margin-top: .7rem; line-height: 1.55; }
+.verb.b { border-color: rgba(var(--brand-rgb),.35); } .verb.b .v { color: var(--brand); }
+.verb.p { border-color: rgba(var(--purple-rgb),.35); } .verb.p .v { color: var(--purple); }
+.verb.g { border-color: rgba(var(--green-rgb),.35); } .verb.g .v { color: var(--green); }
+.verb.a { border-color: rgba(var(--amber-rgb),.45); } .verb.a .v { color: var(--amber); }
+.vtag { display: inline-flex; align-items: center; justify-content: center; min-width: 1.7rem; height: 1.7rem; border-radius: 8px; font-weight: 800; font-size: .95rem; color: #fff; }
+.vtag.b { background: var(--brand); } .vtag.p { background: var(--purple); } .vtag.g { background: var(--green); } .vtag.a { background: var(--amber); }
+
+/* ---- six-step rail ---- */
+.steps6 { display: grid; grid-template-columns: repeat(6, 1fr); gap: .7rem; }
+.s6 { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: .9rem .85rem; position: relative; }
+.s6 .n { font-family: var(--font-mono); font-size: .62rem; letter-spacing: .12em; color: var(--text-secondary); font-weight: 700; }
+.s6 h4 { font-size: .98rem; margin: .3rem 0 .55rem; }
+.s6 .you, .s6 .ai { font-size: .74rem; line-height: 1.45; padding: .35rem .45rem; border-radius: 8px; margin-top: .3rem; }
+.s6 .you { background: rgba(var(--brand-rgb),.06); color: var(--text); }
+.s6 .ai { background: rgba(var(--purple-rgb),.06); color: var(--text-secondary); }
+.s6 .you b, .s6 .ai b { font-family: var(--font-mono); font-size: .58rem; letter-spacing: .1em; display: block; margin-bottom: .1rem; }
+.s6 .you b { color: var(--brand); } .s6 .ai b { color: var(--purple); }
+.s6 + .s6::before { content: "→"; position: absolute; left: -.6rem; top: 1rem; color: var(--text-muted); font-size: .8rem; }
+.s6.here { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(var(--brand-rgb),.12); }
+.s6.dim { background: var(--border-light); }
+
+/* ---- step header strip (on each step slide) ---- */
+.stepbar { display: flex; gap: .35rem; margin-bottom: .9rem; }
+.stepbar span { font-family: var(--font-mono); font-size: .6rem; letter-spacing: .08em; padding: .22rem .55rem; border-radius: 999px; border: 1px solid var(--border); color: var(--text-secondary); background: var(--surface); }
+.stepbar span.on { background: var(--brand); border-color: var(--brand); color: #fff; font-weight: 700; }
+
+/* ---- "you / AI / your check" triad ---- */
+.triad { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+.tri { border-radius: 14px; padding: 1rem 1.1rem; border: 1px solid var(--border); background: var(--surface); }
+.tri .k { font-family: var(--font-mono); font-size: .6rem; letter-spacing: .14em; font-weight: 700; margin-bottom: .45rem; }
+.tri.you { border-color: rgba(var(--brand-rgb),.35); } .tri.you .k { color: var(--brand); }
+.tri.ai { border-color: rgba(var(--purple-rgb),.3); background: rgba(var(--purple-rgb),.03); } .tri.ai .k { color: var(--purple); }
+.tri.chk { border-color: rgba(var(--green-rgb),.35); background: rgba(var(--green-rgb),.03); } .tri.chk .k { color: var(--green); }
+.tri p { margin: 0; font-size: .86rem; line-height: 1.6; }
+
+/* ---- reference cards (real Refero images) ---- */
+.refs { display: grid; gap: .7rem; }
+.ref-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: .4rem; }
+.ref-img { aspect-ratio: 16 / 9; overflow: hidden; border-radius: 8px; background: var(--bg-alt); position: relative; }
+.ref-img.tall { aspect-ratio: 9 / 13; }
+.ref-img img { width: 100%; height: 100%; object-fit: cover; object-position: top; display: block; cursor: zoom-in; }
+.ref-t { font-size: .74rem; font-weight: 700; margin-top: .4rem; color: var(--text); }
+.ref-c { font-size: .66rem; color: var(--text-secondary); line-height: 1.35; margin-top: .05rem; }
+
+/* ---- style menu (atlas) ---- */
+.atlas { display: grid; grid-template-columns: repeat(7, 1fr); gap: .45rem .7rem; }
+.sw-tile { cursor: pointer; border-radius: 12px; padding: .4rem; background: var(--surface); border: 1px solid var(--border); transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease; }
+.sw-tile:hover { transform: translateY(-3px); box-shadow: 0 12px 28px rgba(15,23,42,.1); border-color: var(--brand); }
+.sw-tile .t-img { aspect-ratio: 16 / 9; overflow: hidden; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-alt); }
+.sw-tile .t-img img { width: 100%; height: 100%; object-fit: cover; object-position: top; display: block; }
+.sw-tile .t-name { margin-top: .4rem; font-size: .76rem; font-weight: 700; color: var(--text); line-height: 1.25; }
+.sw-tile .t-name .n { font-family: var(--font-mono); font-size: .6rem; color: var(--text-secondary); margin-right: .3em; }
+.sw-tile .t-en { font-family: var(--font-mono); font-size: .56rem; color: var(--text-secondary); margin-top: .1rem; }
+.sw-tile .t-p { font-size: .8rem; color: var(--text); margin-top: .15rem; line-height: 1.3; }
+.sw-tile.base { border-style: dashed; border-color: rgba(var(--amber-rgb),.6); background: rgba(var(--amber-rgb),.04); }
+.sw-tile.base .t-name { color: var(--amber); }
+.sw-tile.pick { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(var(--brand-rgb),.14); }
+
+/* ---- style modal ---- */
+.style-modal { position: fixed; inset: 0; z-index: 9000; display: none; align-items: center; justify-content: center; background: rgba(15,23,42,.45); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+.style-modal.open { display: flex; }
+.style-modal .sm-box { position: relative; width: min(72rem, 92vw); max-height: 88vh; overflow: auto; background: var(--surface); border-radius: 20px; border: 1px solid var(--border); box-shadow: 0 30px 80px rgba(15,23,42,.3); padding: 1.6rem 1.8rem; display: grid; grid-template-columns: 26rem 1fr; gap: 1.6rem; user-select: text; }
+.style-modal .sm-img { aspect-ratio: 16 / 11; overflow: hidden; border-radius: 12px; border: 1px solid var(--border); }
+.style-modal .sm-img img { width: 100%; height: 100%; object-fit: cover; object-position: top; display: block; }
+.style-modal h3 { font-size: 1.4rem; margin: 0 0 .15rem; }
+.style-modal .sm-en { font-family: var(--font-mono); font-size: .7rem; color: var(--text-secondary); letter-spacing: .06em; margin-bottom: .9rem; }
+.style-modal .sm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem 1.2rem; font-size: .86rem; line-height: 1.6; }
+.style-modal .sm-grid .k { font-family: var(--font-mono); font-size: .6rem; letter-spacing: .1em; color: var(--text-secondary); text-transform: uppercase; margin-bottom: .2rem; }
+.style-modal .sm-close { position: absolute; top: 1rem; right: 1.2rem; font-family: var(--font-mono); font-size: .7rem; color: var(--text-secondary); background: var(--surface); border: 1px solid var(--border); border-radius: 999px; padding: .3rem .7rem; cursor: pointer; }
+.style-modal .prompt { margin-top: 1rem; }
+
+/* ---- division-of-labor table ---- */
+.dol { width: 100%; border-collapse: separate; border-spacing: 0; font-size: .9rem; }
+.dol th { font-family: var(--font-mono); font-size: .62rem; letter-spacing: .12em; text-align: left; padding: .5rem .8rem; color: var(--text-secondary); border-bottom: 1px solid var(--border); }
+.dol td { padding: .62rem .8rem; border-bottom: 1px solid var(--border-light); vertical-align: middle; line-height: 1.45; }
+.dol td.from { color: var(--text-secondary); font-style: italic; }
+.dol td.you { font-weight: 650; color: var(--text); }
+.dol td.ai { color: var(--purple); }
+
+/* ---- before / after moment ---- */
+.ba { display: grid; grid-template-columns: 1fr 1fr; gap: 1.4rem; }
+.ba .col .cap { display: flex; align-items: center; gap: .6rem; margin-bottom: .6rem; }
+.ba .col .cap .mono { font-size: .64rem; letter-spacing: .12em; font-weight: 700; }
+.ba .col .cap p { margin: 0; font-size: .84rem; color: var(--text-secondary); }
+
+/* ---- daymap ---- */
+.daymap { display: grid; grid-template-columns: repeat(4,1fr); gap: 1rem; }
+.daymap .d { border-radius: 16px; padding: 1rem 1.1rem; border: 1px solid var(--border); background: var(--surface); }
+.daymap .d .dn { font-family: var(--font-mono); font-size: .6rem; letter-spacing: .12em; color: var(--text-secondary); }
+.daymap .d h3 { font-size: 1.15rem; margin: .25rem 0 .6rem; }
+.daymap .d ul { margin: 0; padding-left: 1.05rem; font-size: .82rem; color: var(--text); line-height: 1.65; }
+
+/* ---- checklists ---- */
+ul.chk { list-style: none; margin: 0; padding: 0; display: grid; gap: .38rem; }
+ul.chk li { display: flex; gap: .55rem; align-items: flex-start; font-size: .84rem; line-height: 1.45; color: var(--text); }
+ul.chk li::before { content: ""; flex: 0 0 auto; width: .85rem; height: .85rem; margin-top: .2rem; border: 1.5px solid var(--border); border-radius: 4px; background: var(--surface); }
+
+/* ---- rosetta ---- */
+.rosetta { width: 100%; border-collapse: separate; border-spacing: 0; font-size: .78rem; }
+.rosetta th, .rosetta td { padding: .55rem .65rem; border-bottom: 1px solid var(--border); vertical-align: top; line-height: 1.45; }
+.rosetta th { font-family: var(--font-mono); font-size: .6rem; letter-spacing: .08em; text-transform: uppercase; color: var(--text-secondary); text-align: left; }
+.rosetta td:first-child { font-weight: 700; color: var(--text); white-space: nowrap; }
+.rosetta td code { font-family: var(--font-mono); font-size: .68rem; background: var(--bg-alt); border: 1px solid var(--border); border-radius: 4px; padding: 0 .3rem; }
+
+/* ---- tool cards (asset chain) ---- */
+.tools3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+.tool { border: 1px solid var(--border); border-radius: 16px; background: var(--surface); padding: .9rem; display: flex; flex-direction: column; gap: .6rem; }
+.tool .th { display: flex; align-items: baseline; gap: .6rem; }
+.tool .th h3 { margin: 0; font-size: 1.1rem; }
+.tool .th .mono { font-size: .6rem; letter-spacing: .1em; color: var(--text-secondary); }
+.tool .you1 { font-size: .82rem; background: rgba(var(--brand-rgb),.06); border-radius: 8px; padding: .45rem .6rem; }
+.tool .you1 b { color: var(--brand); }
+.tool .row { margin-top: auto; }
+
+@media (max-height: 900px) {
+  .atlas { gap: .4rem .6rem; } .sw-tile .t-en { display: none; }
+  .sw-tile .t-img { aspect-ratio: 16 / 8.1; }  /* 缩略图压 10%，给「像：」那一行腾位置 */
+  .s6 .you, .s6 .ai { font-size: .7rem; }
+}
+
+/* ---- big-screen fill: scale the whole deck ~1.25× on 1920×1080 while 1366×768 stays at 16px ---- */
+html { font-size: clamp(16px, min(1.04vw, 1.85vh), 30px); }
+
+/* Chinese labels read badly in mono uppercase spacing */
+.tri .k, .dol th { font-family: var(--font-body); letter-spacing: .04em; }
+
+/* ═══ Claude Design block (05-claude-design.html) ═══ */
+.cd-strip { display:flex; flex-wrap:wrap; gap:.3rem .35rem; align-items:center; margin:.2rem 0 .9rem; }
+.cd-strip span { font-size:.72rem; padding:.2rem .6rem; border-radius:999px; border:1px solid var(--border); background:var(--surface); color:var(--text-secondary); white-space:nowrap; }
+.cd-strip span.hl { border-color:rgba(var(--brand-rgb),.45); color:var(--brand); background:rgba(var(--brand-rgb),.06); font-weight:650; }
+.cd-strip i { font-style:normal; color:var(--text-muted); font-size:.7rem; }
+.cd-body { display:grid; grid-template-columns:.82fr 1.5fr; gap:1.2rem; align-items:start; }
+.cd-shots { display:flex; flex-direction:column; gap:.7rem; }
+.cd-shot .cap { display:flex; gap:.5rem; align-items:baseline; margin-bottom:.3rem; font-size:.7rem; color:var(--text-secondary); }
+.cd-shot .cap b { font-size:.7rem; letter-spacing:.04em; color:var(--text); }
+.cd-shot .placeholder { height:min(17rem,30vh); padding:0; border-style:solid; border-width:1.5px; }
+.cd-quad { display:grid; grid-template-columns:1fr 1fr; gap:.7rem; }
+.cd-q { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:.75rem .95rem .8rem; min-width:0; }
+.cd-q .qh { display:flex; align-items:center; gap:.45rem; margin-bottom:.4rem; }
+.cd-q .qh .n { font-family:var(--font-mono); font-size:.6rem; letter-spacing:.12em; font-weight:700; }
+.cd-q .qh h4 { margin:0; font-size:.98rem; }
+.cd-q ul { margin:0; padding-left:1.05rem; }
+.cd-q li { font-size:.78rem; line-height:1.5; margin:.12rem 0; color:var(--text); }
+.cd-q li .mono { font-size:.7rem; }
+.cd-q.tools { border-top:3px solid var(--brand); }
+.cd-q.prompt-q { border-top:3px solid var(--purple); }
+.cd-q.out { border-top:3px solid var(--green); }
+.cd-q.warn { border-top:3px solid var(--amber); background:rgba(var(--amber-rgb),.04); }
+.cd-q .prompt { margin:.35rem 0 0; padding:.55rem .75rem; }
+.cd-q .prompt .p-body { font-size:.7rem; line-height:1.5; }
+.cd-demo .stage { text-align:center; }
+.cd-demo .big { font-family:var(--font-display, var(--font-body)); font-weight:800; letter-spacing:-.05em; line-height:.9; font-size:clamp(7rem,21vw,17rem); margin:.4rem 0 1.4rem; }
+.cd-demo .watch { display:flex; justify-content:center; flex-wrap:wrap; gap:.6rem; margin:0 auto; max-width:72rem; }
+.cd-demo .watch div { border:1px solid var(--border); background:var(--surface); border-radius:12px; padding:.6rem .95rem; font-size:.9rem; color:var(--text); text-align:left; max-width:22rem; }
+.cd-demo .watch div b { display:block; font-family:var(--font-mono); font-size:.6rem; letter-spacing:.12em; color:var(--brand); margin-bottom:.15rem; }
+.cd-demo .goto { margin-top:1.6rem; font-family:var(--font-mono); font-size:.74rem; letter-spacing:.04em; color:var(--text-muted); }
+.cd-three { display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; }
+.cd-three .card { padding:1.1rem 1.2rem; display:flex; flex-direction:column; }
+.cd-three .route { display:flex; flex-wrap:wrap; gap:.25rem; align-items:center; margin:.5rem 0 .75rem; }
+.cd-three .route span { font-size:.72rem; font-weight:650; padding:.18rem .5rem; border-radius:6px; background:var(--bg-alt); color:var(--text); white-space:nowrap; }
+.cd-three .route i { font-style:normal; color:var(--text-muted); font-size:.72rem; }
+.cd-three dl { margin:0; display:grid; grid-template-columns:auto 1fr; gap:.4rem .7rem; font-size:.84rem; line-height:1.5; }
+.cd-three dt { font-size:.7rem; font-weight:700; color:var(--text-secondary); letter-spacing:.04em; padding-top:.12rem; white-space:nowrap; }
+.cd-three dd { margin:0; color:var(--text); }
+.cd-seven { display:grid; grid-template-columns:1fr 1fr; gap:.6rem 1rem; }
+.cd-seven .it { display:grid; grid-template-columns:2.1rem 1fr; gap:.7rem; align-items:start; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:.7rem .9rem; }
+.cd-seven .it .num { font-family:var(--font-mono); font-weight:800; font-size:1.25rem; color:var(--brand); line-height:1.2; }
+.cd-seven .it h4 { margin:0 0 .2rem; font-size:1rem; }
+.cd-seven .it p { margin:0; font-size:.8rem; line-height:1.55; color:var(--text-secondary); }
+.cd-seven .it .src { display:inline-block; margin-top:.3rem; font-size:.66rem; font-weight:650; color:var(--purple); background:rgba(var(--purple-rgb),.08); border-radius:5px; padding:.08rem .4rem; }
+@media (max-height: 800px) {
+  .cd-q li { font-size:.72rem; line-height:1.42; }
+  .cd-q { padding:.6rem .8rem .65rem; }
+  .cd-shot .placeholder { height:min(12rem,24vh); }
+  .cd-seven .it p { font-size:.74rem; }
+  .cd-three dl { font-size:.78rem; }
+}
+@media (min-height: 950px) {
+  .cd-three .card { padding:1.4rem 1.5rem; }
+  .cd-three h3 { font-size:1.55rem; }
+  .cd-three dl { font-size:1rem; gap:.55rem .8rem; }
+  .cd-three dt { font-size:.78rem; }
+  .cd-three .route span { font-size:.8rem; }
+  .cd-lim .card { padding:1.5rem 1.6rem !important; }
+  .cd-lim ul { font-size:1.08rem !important; line-height:1.85 !important; }
+  .cd-cmp { font-size:1.08rem !important; }
+  .cd-cmp td, .cd-cmp th { padding-top:1rem; padding-bottom:1rem; }
+}
+@media (min-height: 950px) {
+  .slide[data-section="cd-starter"] .p-body { font-size:.9rem !important; }
+  .slide[data-section="cd-practices"] .cd-seven .it p { font-size:.9rem; }
+}
+
+/* recap pages */
+.cd-seen { display:flex; flex-wrap:wrap; gap:.4rem .6rem; align-items:center; margin:.1rem 0 .9rem; }
+.cd-seen em { font-style:normal; font-size:.7rem; font-weight:700; letter-spacing:.06em; color:var(--text-muted); margin-right:.2rem; }
+.cd-seen span { display:inline-flex; align-items:center; gap:.4rem; font-size:.82rem; color:var(--text); background:var(--surface); border:1px solid var(--border); border-radius:999px; padding:.22rem .75rem .22rem .3rem; }
+.cd-seen span b { display:inline-flex; align-items:center; justify-content:center; width:1.25rem; height:1.25rem; border-radius:50%; background:var(--bg-alt); font-size:.66rem; font-family:var(--font-mono); }
+.cd-rc { display:grid; grid-template-columns:1.35fr 1fr; gap:1rem; align-items:start; }
+.cd-pr { display:flex; flex-direction:column; gap:.6rem; }
+.cd-pr .weak { border:1.5px dashed rgba(var(--red-rgb),.45); background:rgba(var(--red-rgb),.04); border-radius:var(--radius); padding:.55rem .9rem .6rem; }
+.cd-pr .weak .h { display:flex; gap:.6rem; align-items:baseline; margin-bottom:.2rem; }
+.cd-pr .weak .h span { font-size:.72rem; font-weight:700; color:var(--red); letter-spacing:.04em; }
+.cd-pr .weak .h i { font-style:normal; font-size:.7rem; color:var(--text-muted); }
+.cd-pr .weak p { margin:0; font-size:.9rem; color:var(--text); }
+.cd-pr .strong { margin:0; padding:.7rem .9rem .75rem; }
+.cd-pr .strong .ln { display:grid; grid-template-columns:4.6rem 1fr; gap:.55rem; align-items:baseline; padding:.28rem 0; border-top:1px dashed var(--border); font-size:.78rem; line-height:1.5; color:var(--text); }
+.cd-pr .strong .ln:first-of-type { border-top:0; }
+.cd-pr .strong .tg { font-size:.66rem; font-weight:700; color:var(--purple); background:rgba(var(--purple-rgb),.08); border-radius:5px; padding:.1rem .35rem; text-align:center; white-space:nowrap; }
+.cd-side { display:flex; flex-direction:column; gap:.7rem; }
+.cd-side .cd-q h4 { font-size:.95rem; }
+.cd-xcopy { margin-top:.5rem; font-size:.74rem; color:var(--brand); background:var(--brand-light); border:1px solid rgba(var(--brand-rgb),.35); padding:.35rem .8rem; border-radius:999px; font-weight:650; }
+@media (min-height: 950px) {
+  .cd-pr .strong .ln { font-size:.88rem; padding:.36rem 0; }
+  .cd-pr .weak p { font-size:1rem; }
+  .cd-side .cd-q li { font-size:.88rem; line-height:1.6; }
+  .cd-seen span { font-size:.9rem; }
+}
+@media (max-height: 800px) {
+  .cd-pr .strong .ln { font-size:.72rem; padding:.2rem 0; line-height:1.42; }
+  .cd-side .cd-q li { font-size:.72rem; }
+  .cd-seen { margin-bottom:.6rem; }
+}
+/* links page */
+.cd-links { display:grid; grid-template-columns:repeat(3,1fr); gap:.8rem; }
+.cd-links .grp { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:.8rem 1rem .85rem; }
+.cd-links .grp h4 { margin:0 0 .45rem; font-size:.95rem; display:flex; gap:.45rem; align-items:center; }
+.cd-links .grp h4 i { font-style:normal; font-family:var(--font-mono); font-size:.6rem; letter-spacing:.12em; color:var(--text-muted); }
+.cd-links a { display:block; text-decoration:none; color:var(--text); padding:.3rem 0; border-top:1px dashed var(--border); }
+.cd-links a:first-of-type { border-top:0; }
+.cd-links a b { display:block; font-size:.84rem; font-weight:650; }
+.cd-links a span { display:block; font-family:var(--font-mono); font-size:.64rem; color:var(--brand); word-break:break-all; }
+.cd-links a em { font-style:normal; font-size:.7rem; color:var(--text-secondary); }
+.cd-links a:hover b { color:var(--brand); }
+@media (min-height: 950px) { .cd-links a b { font-size:.94rem; } .cd-links a span { font-size:.7rem; } .cd-links .grp { padding:1rem 1.15rem; } }
+@media (max-height: 800px) { .cd-links a { padding:.2rem 0; } .cd-links a b { font-size:.76rem; } .cd-links a em { display:none; } }
+/* links page: masonry columns, 2-line items */
+.cd-links { display:block; columns:3; column-gap:.8rem; }
+.cd-links .grp { break-inside:avoid; margin-bottom:.8rem; padding:.7rem .95rem .7rem; }
+.cd-links a { padding:.26rem 0; }
+.cd-links a b { display:inline; }
+.cd-links a em { margin-left:.45rem; }
+@media (max-height: 800px) { .cd-links .grp { padding:.5rem .8rem; margin-bottom:.55rem; } .cd-links a { padding:.14rem 0; } .cd-links a span { font-size:.6rem; } .cd-links .grp h4 { margin-bottom:.25rem; font-size:.85rem; } }
+
+/* prompt-thinking pages */
+.cd-lead { display:flex; gap:1.2rem; align-items:flex-start; justify-content:space-between; margin:.1rem 0 .8rem; }
+.cd-lead p { margin:0; font-size:.9rem; line-height:1.6; color:var(--text-secondary); max-width:46rem; }
+.cd-lead .sps { display:flex; flex-direction:column; gap:.3rem; flex-shrink:0; }
+.cd-lead .sp { display:flex; gap:.45rem; align-items:center; font-size:.74rem; color:var(--text); white-space:nowrap; }
+.cd-lead .sp b, .cd-steps .mv i { display:inline-flex; align-items:center; justify-content:center; width:1.3rem; height:1.3rem; border-radius:6px; font-style:normal; font-family:var(--font-mono); font-size:.66rem; font-weight:800; color:#fff; background:var(--brand); flex-shrink:0; }
+.cd-lead .sp-B b, .cd-steps .mv i.sp-B { background:var(--purple); }
+.cd-lead .sp-C b, .cd-steps .mv i.sp-C { background:var(--green); }
+.cd-steps { display:flex; flex-direction:column; gap:.45rem; }
+.cd-steps .row { display:grid; grid-template-columns:15rem 1fr; gap:.9rem; align-items:stretch; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:.55rem .85rem; }
+.cd-steps .mv { display:grid; grid-template-columns:1fr auto; grid-template-rows:auto auto; gap:.1rem .5rem; align-content:start; }
+.cd-steps .mv b { font-size:.9rem; line-height:1.35; color:var(--text); }
+.cd-steps .mv span { grid-row:2; font-size:.68rem; color:var(--text-muted); font-family:var(--font-mono); }
+.cd-steps .mv i { grid-column:2; grid-row:1 / span 2; align-self:center; }
+.cd-steps .bd { border-left:2px solid rgba(var(--brand-rgb),.25); padding-left:.85rem; min-width:0; }
+.cd-steps .q { font-size:.8rem; line-height:1.55; color:var(--text); }
+.cd-steps .q.todo { display:flex; gap:.6rem; align-items:center; color:var(--text-muted); border:1.5px dashed var(--border); border-radius:8px; padding:.35rem .6rem; background:var(--bg-alt); }
+.cd-steps .q.todo span { font-size:.66rem; font-weight:700; color:var(--amber); background:rgba(var(--amber-rgb),.1); border-radius:5px; padding:.08rem .4rem; white-space:nowrap; }
+.cd-steps .o { margin-top:.2rem; font-size:.72rem; font-weight:650; color:var(--green); }
+.cd-qcopy { margin-left:.5rem; font-size:.64rem; color:var(--brand); background:var(--brand-light); border:1px solid rgba(var(--brand-rgb),.3); padding:.08rem .5rem; border-radius:999px; font-weight:650; vertical-align:1px; }
+@media (min-height: 950px) {
+  .cd-steps { gap:.6rem; }
+  .cd-steps .row { padding:.75rem 1rem; }
+  .cd-steps .q { font-size:.9rem; }
+  .cd-steps .mv b { font-size:1rem; }
+  .cd-lead p { font-size:1rem; }
+  .cd-lead .sp { font-size:.82rem; }
+}
+@media (max-height: 800px) {
+  .cd-steps { gap:.3rem; }
+  .cd-steps .row { padding:.35rem .7rem; grid-template-columns:12.5rem 1fr; }
+  .cd-steps .q { font-size:.72rem; line-height:1.45; }
+  .cd-steps .mv b { font-size:.8rem; }
+  .cd-lead { margin-bottom:.5rem; }
+  .cd-lead p { font-size:.8rem; }
+  .cd-lead .sp { font-size:.66rem; }
+}
+
+</style>
+</head>
+<body>
+
+<div class="progress" id="prog"></div>
+<div class="sidebar-nav" id="sidebarNav"></div>
+
+<div class="deck">
+
+<!-- ═══ CLAUDE DESIGN · DIVIDER ═══ -->
+<section class="slide center" data-section="cd-divider" data-thumb="divider" data-thumb-color="purple" data-label="Claude Design · 用它做设计探索"
+         data-speaker-notes="【约 20 秒】这一段是独立的一块，讲我自己怎么用 Claude Design 做设计探索。三个项目都是真实做过、已经交付的，用法各不一样。每个项目我先用一页说清楚：用了什么工具、给了什么 Prompt、产出了什么、要注意什么；然后翻到大字 Demo 那一页，我切出去现场操作。每段演示回来，再用一页回顾：同一件事，常见写法和更专业的写法差在哪里，以及在 Claude Design 里怎么用得更顺。三个都讲完，用五页收尾：怎么选用法、七个做法、它做不好什么、起手 Prompt，最后一页是学习链接。时间提醒：每个项目约 10 分钟（介绍 1.5、演示 6、回顾 2），整段约 35 分钟。">
+    <div class="cover-bg">
+        <div class="orb" style="width:560px;height:560px;background:var(--purple);top:-14%;left:12%;"></div>
+        <svg class="grid-tex" width="100%" height="100%"><defs><pattern id="gridCD" width="60" height="60" patternUnits="userSpaceOnUse"><path d="M 60 0 L 0 0 0 60" fill="none" stroke="#0F172A" stroke-width="0.5"/></pattern></defs><rect width="100%" height="100%" fill="url(#gridCD)"/></svg>
+    </div>
+    <div class="stage">
+        <div class="label label-purple" style="margin-bottom:1.5rem;">CLAUDE DESIGN · 3 REAL PROJECTS</div>
+        <h1>用 <span class="grad-text">Claude Design</span><br>做设计探索</h1>
+        <p class="subtitle" style="margin:0 auto;">三个真实项目，对应三种用法。<br>每个项目先讲我是怎么做的，再现场演示，最后回顾 Prompt 怎么写得更好。</p>
+        <div class="mono muted" style="margin-top:2.2rem;font-size:.82rem;letter-spacing:.16em;">3 PROJECTS · 3 LIVE DEMOS · 3 RECAPS · LINKS</div>
+    </div>
+</section>
+
+<!-- ═══ CLAUDE DESIGN · OVERVIEW ═══ -->
+<section class="slide" data-section="cd-overview" data-thumb="grid3" data-thumb-color="purple" data-group="Claude Design · 三个项目" data-label="三个项目，三种用法"
+         data-speaker-notes="【约 90 秒】这一页是这一段的地图。三张卡的区别在第二行那条路线：Claude Design 在整个流程里站在哪个位置。第一个项目，我在 Cowork 里对话，直接调用 /design，产出就是 Claude Design 的画布，从头到尾我一个人主导。第二个项目，设计和工程两条线同时跑，我在 Claude Design 的项目里做前端，最后把整个项目导出来发给工程师，他让自己的 Claude 读懂以后，用 Claude Code 接到后端上。第三个项目反过来，我本来在 Claude Code 里改一个很大的代码库，做到一半发现方向本身没想清楚，就切到 Claude Design 去探索，定下来以后用 Send to Claude Code 送回 repo 实现。每张卡最后一行写的是它适合的场景，大家可以先想一下自己的项目更像哪一种。">
+    <div class="stage">
+        <div class="kicker purple">OVERVIEW</div>
+        <h2>三个项目，Claude Design 站在流程里的位置不一样</h2>
+        <p class="subtitle" style="margin-bottom:1.3rem;">看第二行的路线：它是起点、是交接的中转站，还是开发途中的一次绕行。</p>
+        <div class="cd-three">
+            <div class="card accent-left">
+                <div class="mono" style="font-size:.62rem;letter-spacing:.14em;color:var(--brand);font-weight:700;">PROJECT 01 · 2026.09.10–11</div>
+                <h3 style="margin:.35rem 0 0;">「我是主理人」活动官网</h3>
+                <div class="route"><span>Cowork 对话</span><i>→</i><span>/design</span><i>→</i><span>Claude Design 画布</span><i>→</i><span>HTML 交付包</span></div>
+                <dl>
+                    <dt>起点</dt><dd>Mkt 已经用 AI 做了一个站，但讲的故事和 deck 不一致，视觉也有四套</dd>
+                    <dt>交出去</dt><dd>画布、独立 HTML、DESIGN.md、给 Mkt 那边 AI 的改造 Prompt</dd>
+                    <dt>适合</dt><dd><b>从零设计一个页面，由你一个人主导到底</b></dd>
+                    <dt>演示看</dt><dd>Brief 怎么写、画布上怎么改、交付包里有什么</dd>
+                </dl>
+            </div>
+            <div class="card purple-left">
+                <div class="mono" style="font-size:.62rem;letter-spacing:.14em;color:var(--purple);font-weight:700;">PROJECT 02 · 2026.06</div>
+                <h3 style="margin:.35rem 0 0;">世界杯 HyperAgent</h3>
+                <div class="route"><span>Claude Design 项目</span><i>→</i><span>导出</span><i>→</i><span>工程师的 Claude</span><i>→</i><span>Claude Code</span></div>
+                <dl>
+                    <dt>起点</dt><dd>Ben 已经用 vibe coding 跑通了后端、钱包和一版黑色界面</dd>
+                    <dt>交出去</dt><dd>整个项目导出：React 源码、离线单文件、审计清单、数据接口说明</dd>
+                    <dt>适合</dt><dd><b>设计和工程两条线同时跑，最后要合成一个产品</b></dd>
+                    <dt>演示看</dt><dd>Primer 怎么用、它自己写的审计、导出后工程怎么接</dd>
+                </dl>
+            </div>
+            <div class="card green-left">
+                <div class="mono" style="font-size:.62rem;letter-spacing:.14em;color:var(--green);font-weight:700;">PROJECT 03 · 2026.07</div>
+                <h3 style="margin:.35rem 0 0;">Portfolio D · Token Universe</h3>
+                <div class="route"><span>Claude Code · repo</span><i>→</i><span>Claude Design 探索</span><i>→</i><span>Send to Claude Code</span><i>→</i><span>repo</span></div>
+                <dl>
+                    <dt>起点</dt><dd>我在 Claude Code 里改 alpha.token.im 的代码库，做了三个方向都不满意</dd>
+                    <dt>交出去</dt><dd>repo 里的一份设计参考，Claude Code 照着它在代码库里实现</dd>
+                    <dt>适合</dt><dd><b>代码写到一半，发现得先停下来把设计方向想清楚</b></dd>
+                    <dt>演示看</dt><dd>在两个工具之间来回切，Send to Claude Code 之后 repo 里多了什么</dd>
+                </dl>
+            </div>
+        </div>
+        <div style="display:flex;gap:.4rem;margin-top:1.3rem;">
+            <div style="flex:2;border:1.5px solid rgba(var(--brand-rgb),.35);background:rgba(var(--brand-rgb),.06);border-radius:10px;padding:.65rem .9rem;"><div class="mono" style="font-size:.6rem;letter-spacing:.12em;color:var(--brand);font-weight:700;">≈ 10 MIN</div><p style="font-size:.88rem;margin:.2rem 0 0;">项目 1 · 介绍、Demo、回顾</p></div>
+            <div style="flex:2;border:1.5px solid rgba(var(--purple-rgb),.35);background:rgba(var(--purple-rgb),.06);border-radius:10px;padding:.65rem .9rem;"><div class="mono" style="font-size:.6rem;letter-spacing:.12em;color:var(--purple);font-weight:700;">≈ 10 MIN</div><p style="font-size:.88rem;margin:.2rem 0 0;">项目 2 · 介绍、Demo、回顾</p></div>
+            <div style="flex:2;border:1.5px solid rgba(var(--green-rgb),.35);background:rgba(var(--green-rgb),.06);border-radius:10px;padding:.65rem .9rem;"><div class="mono" style="font-size:.6rem;letter-spacing:.12em;color:var(--green);font-weight:700;">≈ 10 MIN</div><p style="font-size:.88rem;margin:.2rem 0 0;">项目 3 · 介绍、Demo、回顾</p></div>
+            <div style="flex:1.4;border:1.5px solid var(--border);background:var(--surface);border-radius:10px;padding:.65rem .9rem;"><div class="mono" style="font-size:.6rem;letter-spacing:.12em;color:var(--text-muted);font-weight:700;">≈ 6 MIN</div><p style="font-size:.88rem;margin:.2rem 0 0;">总结与学习链接</p></div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ CLAUDE DESIGN · P1 我是主理人 ═══ -->
+<section class="slide" data-section="cd-p1" data-thumb="split" data-thumb-color="blue" data-group="Claude Design · 三个项目" data-label="项目 1 · 我是主理人官网：在 Cowork 里直接产出画布"
+         data-speaker-notes="【约 90 秒】先让大家看左边上下两张图三秒：上面是 Mkt 原来的站，下面是改完的。然后说这一页最重要的一句：右图看起来还不错，原因不是模型画得好，而是生成之前，我已经把这个站要讲什么、按什么规则画、怎么算合格，全都写成了文字。工具只念第一条：在 Cowork 里调用 /design，产出直接就是 Claude Design 的画布，不用另外打开什么。Prompt 这一格说清三层：22 KB 的设计 Brief 是我自己写的，花了 40 分钟，是整个项目的杠杆；委派给 agent 的指令只有 300 字，核心就是三句：先加载 design skill、完整读 Brief、截图自查再发布；给 Mkt 那边 AI 的改造 Prompt 是第三层。产出念三个数：三个画板、一份 240 行的 DESIGN.md、十条验收。注意事项里挑第一条讲：画布文件双击打不开，发给同事之前一定要转成独立 HTML。用时：两个工作日约 8 小时，我自己动手 4 小时。讲完直接翻到 Demo。">
+    <div class="stage">
+        <div class="kicker">PROJECT 01 · COWORK × /DESIGN</div>
+        <h2>「我是主理人」官网：在 Cowork 里直接出画布</h2>
+        <div class="cd-strip"><span class="">吸收上下文</span><i>→</i><span class="">分层诊断</span><i>→</i><span class="hl">写 Brief</span><i>→</i><span class="hl">委派构建</span><i>→</i><span class="">复查截图</span><i>→</i><span class="">转交付物</span><i>→</i><span class="">主视觉回流</span><em style="margin-left:auto;font-style:normal;font-size:.72rem;color:var(--text-secondary);">两个工作日约 8 小时 · 我动手 4h · agent 3h · Figma 1h</em></div>
+        <div class="cd-body">
+            <div class="cd-shots">
+                <div class="cd-shot"><div class="cap"><b>改版前</b><span>bossgame.pages.dev · Mkt 用 AI 生成</span></div>
+                    <div class="placeholder has-zoom" style="">
+                        <div class="ph-title">bossgame.pages.dev 改版前</div><div class="ph-file">assets/case-bossgame-before.png</div><div class="ph-desc">截图待补</div>
+                        <img class="zoomable" src="assets/case-bossgame-before.png" alt="bossgame.pages.dev 改版前" title="点击放大" style="object-fit:cover;object-position:left top;background:var(--surface);border-radius:var(--radius);" onclick="openLightbox(this.src, this.alt)" onerror="this.remove()"><span class="zoom-hint">点击放大</span>
+                    </div></div>
+                <div class="cd-shot"><div class="cap"><b>改版后</b><span>handoff/index.html · 同尺寸首屏</span></div>
+                    <div class="placeholder has-zoom" style="border-color:var(--brand);">
+                        <div class="ph-title">handoff/index.html 改版后</div><div class="ph-file">assets/case-bossgame-after.png</div><div class="ph-desc">截图待补</div>
+                        <img class="zoomable" src="assets/case-bossgame-after.png" alt="handoff/index.html 改版后" title="点击放大" style="object-fit:cover;object-position:left top;background:var(--surface);border-radius:var(--radius);" onclick="openLightbox(this.src, this.alt)" onerror="this.remove()"><span class="zoom-hint">点击放大</span>
+                    </div></div>
+            </div>
+            <div class="cd-quad">
+                <div class="cd-q tools"><div class="qh"><span class="n" style="color:var(--brand);">01</span><h4>用了什么工具</h4></div><ul><li><b>Claude Cowork + /design</b>：在对话里调用，产出直接是 Claude Design 画布</li><li>Google Drive 连接器读 39 页 deck 全文；Chrome 逐个路由走查现站</li><li>general-purpose agent 负责构建，Playwright 截图自查</li><li>Figma MCP 画主视觉，再回写到网站首屏</li></ul></div>
+                <div class="cd-q prompt-q"><div class="qh"><span class="n" style="color:var(--purple);">02</span><h4>给了什么 Prompt</h4></div>
+                    <p style="margin:0;font-size:.78rem;line-height:1.5;">三层：我写的 <b>22 KB 设计 Brief</b>；启动 agent 的 <b>300 字委派指令</b>（下面这段）；给 Mkt 那边 AI 的<b>改造 Prompt</b>。</p>
+                    <div class="prompt"><div class="p-head" style="margin-bottom:.3rem;"><span class="p-tag">模板 B · 委派指令</span><button class="copy-btn" data-copy="你是一位资深产品设计师 + 前端工程师。任务：用 {{工具 / skill}} 产出 {{deliverable}}。&#10;&#10;第一步：加载 {{skill 名}}，严格按它的 workflow 做。&#10;第二步：完整阅读 {{BRIEF 路径}}。内容、信息架构顺序、文案一律以它为准，不要自行增删章节或编造数据。资产在 {{路径}}。&#10;&#10;品质标准：{{3–5 条，来自 Brief 的核心意图}}&#10;自查：{{截图工具}}在 {{视口列表}} 各截图、逐项点交互、console 零报错，修好再发布。不要为了截图安装任何东西。&#10;&#10;完成后用中文回报：链接（必须）、每个部分做了什么、哪些是示例 / 假设、限制或未完成项。如果发布被拒，如实说明并给文件路径。">复制全文</button></div>
+                    <div class="p-body">第一步加载 <em>design skill</em>；第二步完整阅读 <em>BRIEF.md</em>，内容、顺序、文案一律以它为准，<em>不要自行增删或编造数据</em>；在各视口截图、逐项点交互、console 零报错后再发布；回报里写明<em>哪些是示例或假设</em>。</div></div></div>
+                <div class="cd-q out"><div class="qh"><span class="n" style="color:var(--green);">03</span><h4>产出了什么</h4></div><ul><li>画布 3 个画板：桌面可交互整站 1440×7600、手机 390、主视觉 1920×1080</li><li>独立 <span class="mono">index.html</span> + <span class="mono">kv.html</span> + README（DOM 与交互对照表）</li><li><span class="mono">DESIGN.md</span> 240 行：token、层级、材质、禁用清单、自查表</li><li><span class="mono">AI_PROMPT_改造现站.md</span>：分内容、UI、功能三轮，附十条验收</li></ul></div>
+                <div class="cd-q warn"><div class="qh"><span class="n" style="color:var(--amber);">04</span><h4>用的时候要注意</h4></div><ul><li>画布文件（.dc.html）双击打不开，发给同事前要转成独立 HTML</li><li>PNG / PDF 导出不嵌 Google Fonts，正式物料从 Figma 出</li><li>两人同时编辑会冲突，后保存的会被拉回前者的版本，适合一人主编</li><li>AI 会把示例数据和猜的日期写得像事实：要求它标注，没定的留空</li></ul></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ CD-P1-THINK ═══ -->
+<section class="slide cd-think" data-section="cd-p1-think" data-thumb="steps" data-thumb-color="blue" data-group="Claude Design · 三个项目" data-label="项目 1 · 我的 Prompt 思路"
+         data-speaker-notes="【约 90 秒】这一页讲我在这个项目里是怎么想的，Demo 里大家会看到结果，这里先看过程。先说结论：我在三个角色之间切换，导演、体系作者、编辑，顺序不能反。大家最容易犯的错是一上来就当编辑：让 AI 先生成，然后它生成什么你改什么，一直被输出牵着走。逐行讲：前两步是导演，花了一个小时把 deck、现站、设计系统三样事实拿齐，然后把问题分成功能和视觉两层；第三步是体系作者，这一步最值钱，把「轻、透、有呼吸感」这种感觉写成可以检查的规则；第四步委派只说三句话，因为该说的都在 Brief 里了；最后一步才是编辑，只看截图。标着「待补原话」的三行，是 Cowork 对话里的原始 Prompt，Wilson 会补上截图。">
+    <div class="stage">
+        <div class="kicker ">HOW I PROMPTED · PROJECT 01</div>
+        <h2>我的 Prompt 思路：先当导演和体系作者，最后才当编辑</h2>
+        <div class="cd-lead"><p>整个项目在一个 Cowork 对话里完成。顺序很重要：先把事实拿全、把规则写成 Brief，再让 agent 去生成；我自己只在最后看截图、改偏差。</p><div class="sps"><span class="sp sp-A"><b>A</b>Cowork 对话 · 读 deck、走查现站、写 Brief、委派 agent</span><span class="sp sp-B"><b>B</b>Claude Design 画布 · agent 产出，我在画布上改</span></div></div>
+        <div class="cd-steps"><div class="row"><div class="mv"><b>先把事实拿全</b><span>导演 · 约 1 小时</span><i class="sp-A">A</i></div><div class="bd"><div class="q todo"><span>待补原话</span>Cowork 对话里「读 deck 全文、跑现站每个路由、载入 DS token」的那段原话</div></div></div><div class="row"><div class="mv"><b>分两层诊断</b><span>导演</span><i class="sp-A">A</i></div><div class="bd"><div class="q todo"><span>待补原话</span>Cowork 对话里要求「IA 与功能走查」和「视觉方向」分成两份文档的原话</div></div></div><div class="row"><div class="mv"><b>把品味写成 Brief</b><span>体系作者 · 约 40 分钟</span><i class="sp-A">A</i></div><div class="bd"><div class="q">「文案逐字来自 deck，不许润色……信息架构十一段顺序固定，不许 agent 增删……禁止：emoji 图标、渐变铺底、左侧色条卡片、Inter/Roboto、lorem ipsum」<button class="copy-btn inline cd-qcopy" data-copy="文案逐字来自 deck，不许润色……信息架构十一段顺序固定，不许 agent 增删……禁止：emoji 图标、渐变铺底、左侧色条卡片、Inter/Roboto、lorem ipsum">复制原文</button></div><div class="o">→ BRIEF.md 22 KB，之后每次生成和验收都对着它</div></div></div><div class="row"><div class="mv"><b>委派，只说三句话</b><span>约 300 字</span><i class="sp-A">A</i></div><div class="bd"><div class="q">「先加载 design skill……完整阅读 BRIEF.md，内容、顺序、文案一律以它为准……用 Playwright 截图自查、console 零报错后再发布」<button class="copy-btn inline cd-qcopy" data-copy="先加载 design skill……完整阅读 BRIEF.md，内容、顺序、文案一律以它为准……用 Playwright 截图自查、console 零报错后再发布">复制原文</button></div><div class="o">→ agent 30 分钟交回三个画板，附偏差清单</div></div></div><div class="row"><div class="mv"><b>只看截图，只改偏差</b><span>编辑</span><i class="sp-B">B</i></div><div class="bd"><div class="q todo"><span>待补原话</span>复查时给 agent 的修改指令原话（例如署名重复那一处）</div></div></div></div>
+    </div>
+</section>
+
+<!-- ═══ CD-P1-DEMO ═══ -->
+<section class="slide center cd-demo" data-section="cd-p1-demo" data-thumb="divider" data-thumb-color="blue" data-group="Claude Design · 三个项目" data-label="项目 1 · Demo"
+         data-speaker-notes="【约 6 分钟，现场演示】建议顺序：①打开 Cowork 里那次对话，往上翻到 BRIEF.md，停在「禁止」清单和「信息架构十一段顺序固定」两处，念一句就走；再找到 agent 的回报，指出它自己标的偏差：「Main 高度 6400 会裁掉 FAQ，改成 7600」。这就是让它自查的价值。②切到 Claude Design 画布：先缩小看三个画板并排；点一个标题当场改一个字；切一下顶部的强调色 Tweak，说明只有贯穿全站的变量才做成 Tweak，文案写死在页面里。③打开 handoff 文件夹：index.html 双击就能开；DESIGN.md 翻到禁用清单；AI_PROMPT_改造现站.md 翻到十条验收。收尾一句：同一份设计，给设计师的是画布，给工程的是 HTML，给对方 AI 的是 Prompt。网络不行时，回到上一页，用两张截图讲完。">
+    <div class="cover-bg">
+        <div class="orb" style="width:520px;height:520px;background:var(--brand);top:-16%;left:8%;"></div>
+        <div class="orb" style="width:420px;height:420px;background:var(--purple);bottom:-12%;right:8%;animation-delay:-5s;"></div>
+    </div>
+    <div class="stage">
+        <div><span class="label label-blue" style="font-size:.8rem;">PROJECT 01 · 「我是主理人」活动官网</span></div>
+        <div class="big grad-text">Demo</div>
+        <div class="mono" style="font-size:.66rem;letter-spacing:.16em;color:var(--text-muted);margin-bottom:.6rem;">现场会看这三处</div>
+        <div class="watch"><div><b>01 · COWORK</b>对话里的 Brief 和委派指令：agent 回报了哪些偏差</div><div><b>02 · CLAUDE DESIGN</b>画布上点选改字，切换强调色 Tweak，三个画板并排看</div><div><b>03 · HANDOFF</b>交付包：index.html、DESIGN.md、给 Mkt 那边 AI 的 Prompt</div></div>
+        <div class="goto">切到：Claude Design 画布 · claude.ai/code/artifact/8a78ab6b…　｜　备用：上一页两张截图</div>
+    </div>
+</section>
+
+<!-- ═══ CD-P1-RECAP ═══ -->
+<section class="slide cd-recap" data-section="cd-p1-recap" data-thumb="split" data-thumb-color="blue" data-group="Claude Design · 三个项目" data-label="项目 1 · 回顾：把要求写成 Brief"
+         data-speaker-notes="【约 2 分钟】演示回来，先用一句话收住：刚才大家看到的画布之所以能一次就接近成品，是因为生成之前我已经把要求写全了。然后指左上的常见写法：这是大多数人第一次会写的 Prompt，它的问题不是短，而是 AI 只能猜，猜风格、猜内容、猜结构，猜出来的就是那种谁都能做的「科技感」页面。再指下面的 Brief 骨架，一行一行对应右上角的五样东西，不用全念，只念「不可妥协」那一行，告诉大家：否定句清单 AI 遵守得最好。右下是 Claude Design 里的操作技巧，前两条来自官方帮助中心：大改用对话、局部用评论、微调直接动手；反馈要具体到能执行。第三条是我的习惯：换方向前先存档，不然回不去。">
+    <div class="stage">
+        <div class="kicker ">RECAP 01 · 从零出画布</div>
+        <h2>回顾：让 AI 少猜，靠的是一份写全的 Brief</h2>
+        <div class="cd-seen"><em>刚才看到的</em><span><b>1</b>Brief 先写好，agent 只负责翻译成画布</span><span><b>2</b>画布上直接改字、切 Tweak</span><span><b>3</b>一份设计按使用者拆成三种交付</span></div>
+        <div class="cd-rc">
+            <div class="cd-pr">
+                <div class="weak"><div class="h"><span>✕ 常见写法</span><i>AI 只能猜</i></div><p>帮我给「我是主理人」活动做一个好看的官网，风格现代一点，要有科技感。</p></div>
+                <div class="prompt strong"><div class="p-head" style="margin-bottom:.35rem;"><span class="p-tag">✓ 更专业的写法 · Brief 骨架</span><button class="copy-btn" data-copy="【角色】你是资深产品设计师兼前端工程师，用 Claude Design 产出「我是主理人」活动官网的可交互画布。&#10;【口径】以 All Hands deck 第 07–25 页为准：这不是黑客松，是主理人选拔。&#10;【输入】deck 全文、现站走查 27 条、imToken Web DS 的 token。三者冲突时以 deck 为准。&#10;【不可妥协】文案逐字来自 deck，不许润色；首页十一段顺序固定，不许增删；没定的日期留空；颜色、字号、圆角只用 DS token；禁止 emoji 图标、渐变铺底、左侧色条卡片。&#10;【规格】三个画板：桌面 1440 可交互整站、手机 390、主视觉 1920×1080。每段按「段落 | 现站状态 | 你要做的」写成表格。&#10;【验收】1440 和 390 各截图，逐项点交互，console 零报错，然后再发布。&#10;【回报】链接；每段做了什么；哪些是示例或假设；和 Brief 不一致的地方。">复制全文</button></div><div class="ln"><span class="tg">角色</span><span>你是资深产品设计师兼前端工程师，用 Claude Design 产出「我是主理人」活动官网的可交互画布。</span></div><div class="ln"><span class="tg">口径</span><span>以 All Hands deck 第 07–25 页为准：这不是黑客松，是主理人选拔。</span></div><div class="ln"><span class="tg">输入</span><span>deck 全文、现站走查 27 条、imToken Web DS 的 token。三者冲突时以 deck 为准。</span></div><div class="ln"><span class="tg">不可妥协</span><span>文案逐字来自 deck，不许润色；首页十一段顺序固定，不许增删；没定的日期留空；颜色、字号、圆角只用 DS token；禁止 emoji 图标、渐变铺底、左侧色条卡片。</span></div><div class="ln"><span class="tg">规格</span><span>三个画板：桌面 1440 可交互整站、手机 390、主视觉 1920×1080。每段按「段落 | 现站状态 | 你要做的」写成表格。</span></div><div class="ln"><span class="tg">验收</span><span>1440 和 390 各截图，逐项点交互，console 零报错，然后再发布。</span></div><div class="ln"><span class="tg">回报</span><span>链接；每段做了什么；哪些是示例或假设；和 Brief 不一致的地方。</span></div></div>
+            </div>
+            <div class="cd-side">
+                <div class="cd-q prompt-q"><div class="qh"><h4>一份 Brief 要写全这五样</h4></div><ul><li><b>口径</b>：以哪份文档为准，冲突时听谁的</li><li><b>文案</b>：逐字给出，不让它自己写</li><li><b>视觉规则</b>：token、唯一的突破点、禁止项</li><li><b>结构</b>：段落顺序写死，不许增删</li><li><b>验收</b>：截图宽度、要点的交互、console</li></ul></div>
+                <div class="cd-q tools"><div class="qh"><h4>在 Claude Design 里这样改</h4></div><ul><li>大方向在对话里改；某个组件用行内评论；改字、挪位置直接在画布上动</li><li>反馈要能执行：「表单字段间距收到 8px」比「看起来不太对」有用</li><li>换方向之前，先让它把当前版本存下来</li><li>只把贯穿全站的变量做成 Tweak，比如强调色；文案写死在页面里</li></ul></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ CLAUDE DESIGN · P2 世界杯 ═══ -->
+<section class="slide" data-section="cd-p2" data-thumb="split" data-thumb-color="purple" data-group="Claude Design · 三个项目" data-label="项目 2 · 世界杯 HyperAgent：设计导出，交给工程师的 AI"
+         data-speaker-notes="【约 90 秒】背景一句话：两个人一周上线，Ben 一边带娃一边用 vibe coding 跑通了 Polymarket 接入、钱包登录和一版黑色界面，就是左上那张；我同时在推 Cross-chain Send，抽空在 Claude Design 里做前端，就是左下那张。工具这一格要讲清交接：周四晚上，我把 Claude Design 项目整个导出来发给 Ben，他先让自己的 Claude 把文件读懂，再用 Claude Code 把前端接到他的后端上，当晚在 Vercel 上线。Prompt 这一格讲 Primer：我没有一屏一屏地描述风格，而是写了一份 Primer 贴在每次对话的最前面，后面才是这一屏的需求。Primer 迭代了三层：v2 定产品、参照和双主题 token，Supplement 补细节，Visual Refresh 把主色换成 Azure、加上玻璃材质。注意事项里重点讲第一条：原型里 mock 数据的字段名，我直接写进了接口文档，工程照着用，UI 一行都不用改。">
+    <div class="stage">
+        <div class="kicker purple">PROJECT 02 · DESIGN → ENGINEERING HANDOFF</div>
+        <h2>世界杯 HyperAgent：设计导出，交给工程师的 AI</h2>
+        <div class="cd-strip"><span class="hl">写 Primer</span><i>→</i><span class="">一屏一对话</span><i>→</i><span class="">Weavy 出素材</span><i>→</i><span class="hl">让它自审</span><i>→</i><span class="">写数据接口</span><i>→</i><span class="hl">导出项目</span><i>→</i><span class="">工程师的 Claude 读懂</span><i>→</i><span class="">Claude Code 接后端</span><em style="margin-left:auto;font-style:normal;font-size:.72rem;color:var(--text-secondary);">一周 · 2 个执行人 · 周四晚合并上线</em></div>
+        <div class="cd-body">
+            <div class="cd-shots">
+                <div class="cd-shot"><div class="cap"><b>工程先跑通的版本</b><span>Ben · vibe coding · 黑色主题</span></div>
+                    <div class="placeholder has-zoom" style="">
+                        <div class="ph-title">Ben 的首版：Landing + Connect Wallet</div><div class="ph-file">assets/worldcup/ben-01-landing-connect.jpg</div><div class="ph-desc">截图待补</div>
+                        <img class="zoomable" src="assets/worldcup/ben-01-landing-connect.jpg" alt="Ben 的首版：Landing + Connect Wallet" title="点击放大" style="object-fit:cover;object-position:center top;background:var(--surface);border-radius:var(--radius);" onclick="openLightbox(this.src, this.alt)" onerror="this.remove()"><span class="zoom-hint">点击放大</span>
+                    </div></div>
+                <div class="cd-shot"><div class="cap"><b>Claude Design 版本</b><span>我 · 同一个产品的首页</span></div>
+                    <div class="placeholder has-zoom" style="border-color:var(--purple);">
+                        <div class="ph-title">Claude Design 版首页</div><div class="ph-file">assets/worldcup/wilson-01-hero.jpg</div><div class="ph-desc">截图待补</div>
+                        <img class="zoomable" src="assets/worldcup/wilson-01-hero.jpg" alt="Claude Design 版首页" title="点击放大" style="object-fit:cover;object-position:center top;background:var(--surface);border-radius:var(--radius);" onclick="openLightbox(this.src, this.alt)" onerror="this.remove()"><span class="zoom-hint">点击放大</span>
+                    </div></div>
+            </div>
+            <div class="cd-quad">
+                <div class="cd-q tools"><div class="qh"><span class="n" style="color:var(--brand);">01</span><h4>用了什么工具</h4></div><ul><li><b>Claude Design</b>：项目「world cup win with imToken」，所有界面都在这里做</li><li><b>Weavy</b>：跑出 8 个球员剪影和鲸鱼吉祥物姿态，风格统一</li><li>工程侧：Ben 用 <b>Claude</b> 读懂导出文件，<b>Claude Code</b> 接后端</li><li>Vercel 部署，Discord 群里发链接</li></ul></div>
+                <div class="cd-q prompt-q"><div class="qh"><span class="n" style="color:var(--purple);">02</span><h4>给了什么 Prompt</h4></div>
+                    <p style="margin:0;font-size:.78rem;line-height:1.5;">一份 <b>Primer</b> 贴在每次对话最前面，后面接单屏需求。Primer 叠了三层：<b>v2</b>（产品、参照、双主题 token）、<b>Supplement</b>、<b>Visual Refresh</b>（Azure 主色、玻璃材质、动效 &lt; 250ms）。</p>
+                    <div class="prompt"><div class="p-head" style="margin-bottom:.3rem;"><span class="p-tag">按 Primer 用法整理的模板</span><button class="copy-btn" data-copy="[粘贴 Primer 全文：---PRIMER START--- 到 ---PRIMER END---。内容包括产品一句话、情绪参照（要像谁、不要像谁）、双主题语义 token、字体、动效、响应式规则]&#10;[需要时再叠加 Supplement 块、Visual Refresh 块，按顺序贴在后面]&#10;&#10;本屏需求：[屏幕名]&#10;这一屏要让用户做成的事：[一句话]&#10;必须出现的数据和状态：[列表]&#10;&#10;交付 4 个变体：mobile-light · mobile-dark · desktop-light · desktop-dark。&#10;组件里只用上面定义的语义 token，不要写死色值。&#10;这一轮先看大方向；下一轮我会继续带着 Primer 抓细节。">复制全文</button></div>
+                    <div class="p-body"><em>[Primer 全文]</em> + <em>[本屏需求]</em>。每屏交 <em>4 个变体</em>：手机 / 桌面 × 浅色 / 深色；组件里<em>只用语义 token</em>；一屏一个对话，跑两轮，第二轮<em>继续带着 Primer</em>。</div></div></div>
+                <div class="cd-q out"><div class="qh"><span class="n" style="color:var(--green);">03</span><h4>产出了什么</h4></div><ul><li><span class="mono">app/</span>：15 个 JSX 组件 + <span class="mono">tokens.css</span>（双主题语义 token）+ <span class="mono">data.js</span></li><li><span class="mono">WC2026 HyperAgent - Offline.html</span>：5.9 MB 离线单文件，双击就能看</li><li><span class="mono">Audit &amp; Plan</span>：它自己查出 18 条问题，按 P0–P3 分四期修</li><li><span class="mono">Data Interface Spec</span>：实体、接口、原型字段到正式接口的对照</li></ul></div>
+                <div class="cd-q warn"><div class="qh"><span class="n" style="color:var(--amber);">04</span><h4>用的时候要注意</h4></div><ul><li>原型里的字段名就是接口契约：写进文档，工程照用，UI 不用返工</li><li>导出前先清理：没被引用的旧文件会误导对方的 AI，先移到 archive</li><li>Primer 和绑定的设计系统冲突时，它会自己挑一个；审计把这条列成待决问题，要你拍板</li><li>截图看不出的问题要让它实际去点：主题切换后文字颜色残留、手机上横向溢出，都是点过才发现的</li></ul></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ CD-P2-THINK ═══ -->
+<section class="slide cd-think" data-section="cd-p2-think" data-thumb="steps" data-thumb-color="purple" data-group="Claude Design · 三个项目" data-label="项目 2 · 我的 Prompt 思路"
+         data-speaker-notes="【约 2 分钟】这一页最想让大家带走的是第一句：我几乎不直接写 Prompt。我先在 Cowork 里用大白话把想法说清楚，让它理解项目，再让它把我的话翻译成给 Claude Design 的 Prompt。逐行讲：第一行，先让它理解信息架构和用户从哪里来，这一步没有任何设计要求；第二行，我用中英混杂的大白话讲了两种用户进来的路径，最后一句是关键：「你需要把这些需求转化成为新增加的 prompt」；第三行，看到设计里紫色太多，我没有去改画面，而是让它写一份新的视觉规则，叠在原来的 Primer 上；第四行是 Claude Design 侧栏里的原话，Wilson 会补截图；最后一行是 Weavy 生图：先跑一张，满意了，就把这一张的风格锁成所有姿态共用的规则。这个项目我还否定过它一次：它给剪影写的 Prompt 连国旗颜色都定死了，我说细节太多、扩展性太差，只要讲清楚图片放哪、翻页怎么动。">
+    <div class="stage">
+        <div class="kicker purple">HOW I PROMPTED · PROJECT 02</div>
+        <h2>我的 Prompt 思路：不直接写，先在 Cowork 把话说清楚</h2>
+        <div class="cd-lead"><p>三个对话空间分工：Cowork 负责理解项目、把我的话翻译成 Prompt；Claude Design 负责出画面；另开一个 Cowork 对话专门写 Weavy 的生图 Prompt。</p><div class="sps"><span class="sp sp-A"><b>A</b>Cowork · 理解项目，写给 Claude Design 的 Prompt</span><span class="sp sp-B"><b>B</b>Claude Design · 边看边给 Prompt</span><span class="sp sp-C"><b>C</b>Cowork · Weavy 生图 Prompt</span></div></div>
+        <div class="cd-steps"><div class="row"><div class="mv"><b>先让它理解项目</b><span>06-09</span><i class="sp-A">A</i></div><div class="bd"><div class="q">「我需要你去首先理解整个项目的信息架构……那么用户是怎么来到这个网站的呢？首先我们会有一个 discord channel……排名的规则主要就是看胜率。」<button class="copy-btn inline cd-qcopy" data-copy="我需要你去首先理解整个项目的信息架构&#10;&#10;那么用户是怎么来到这个网站的呢？ 首先我们会有一个 discord channel， 然后我们会在里面实时更新比赛的信息，然后用户点击参加之后，可以跳到这个网站上。 channel 中 的人，也就是这个 Lead board 中的参与排名的人。 排名的规则主要就是看胜率。">复制原文</button></div><div class="o">→ IA 文档 + Vibe Coding Kit（22 屏、优先级、每屏 Prompt）</div></div></div><div class="row"><div class="mv"><b>用场景讲需求，让它转成 Prompt</b><span>06-09</span><i class="sp-A">A</i></div><div class="bd"><div class="q">「thinking about that you are a brand new user for PolyMarket……用户是怎么来到这个平台的呢？第一种……第二种……你需要把这些需求转化成为新增加的 prompt，我将会用到 Claude Design 中继续完善设计。」<button class="copy-btn inline cd-qcopy" data-copy="I need to give you some feedback on the overall website. Because I want to create a website which is fun. with strong work cup theme. Even got some gamification. feeding in it. this platform should be easy to be onboarded. Let&#x27;s talk about some details. thinking about that you are a brand new user for PolyMarket. 你可能需要比较明确的引导。即便你有 crypto wallet 但是你可能也没有足够可用的相应的资产。因此，onboarding 体验很重要。&#10;&#10;用户是怎么来到这个平台的呢？&#10;&#10;第一种：用户在 Discord Group 里面看到实时直播的比赛信息或者是交易龙虎榜的榜单而被吸引……&#10;&#10;第二种：用户在社交媒体上看到我们的活动推广，然后点击进来，这个时候他的落地页可能就是我们平台的首页。……&#10;&#10;我暂时先补充这么多，你需要把这些需求转化成为新增加的prompt ， 我将会用到 Claude design中继续完善设计。">复制原文</button></div><div class="o">→ Primer v2 + Supplement</div></div></div><div class="row"><div class="mv"><b>看到偏差，写成新的一层规则</b><span>06-09</span><i class="sp-A">A</i></div><div class="bd"><div class="q">「我发现现在设计中使用了很多紫色……视觉上的主色还是使用 imToken 的品牌色。并且要采用更多的 Glass UI 的质感，我希望能够像 Apple 的网站设计风格，简洁但是充满细节。你撰写一份新的视觉风格的说明，作为新增的 prompt。」<button class="copy-btn inline cd-qcopy" data-copy="我发现现在设计中使用了很多紫色，虽然我们的设计系统中设定了 AI 用色采用紫色。 但是这是一个新产品。所以我要求是视觉上的主色还是使用 imToken 的品牌色。并且要采用更多的 Glass UI 的质感，  我希望能够像 Apple 的 网站设计风格，简洁但是充满细节。&#10;&#10;你撰写一份新的视觉风格的说明，作为新增的prompt ，我需要给到 claude design">复制原文</button></div><div class="o">→ Visual Refresh（叠在 Primer 上的第三层）</div></div></div><div class="row"><div class="mv"><b>Claude Design 里随时给的 Prompt</b><span>06-09 ~ 06-11</span><i class="sp-B">B</i></div><div class="bd"><div class="q todo"><span>待补原话</span>Claude Design 对话侧栏里的原始 Prompt（截图或导出）</div></div></div><div class="row"><div class="mv"><b>生图：先跑一张，满意了再锁风格</b><span>06-11</span><i class="sp-C">C</i></div><div class="bd"><div class="q">「我运行了 Pose 1，效果就是我想要的……当我运行 Pose 2 的时候，原本黑色的背景竟然变成了白色，风格也变了。请按照 Pose 1 的视觉风格来约束其他的所有 pose 的视觉风格。」<button class="copy-btn inline cd-qcopy" data-copy="对于 你的各种Pose 的 prompt ，我运行了Pose 1，效果就是我想要的，……当时当我运行 Pose 2的时候，原本黑色的背景竟然变成了白色，风格也变了，这不是我想要的。&#10;&#10;请按照 Pose 1 的视觉风格来约束其他的所有pose 的视觉风格。">复制原文</button></div><div class="o">→ 8 个姿态共用一段 Style DNA</div></div></div></div>
+    </div>
+</section>
+
+<!-- ═══ CD-P2-DEMO ═══ -->
+<section class="slide center cd-demo" data-section="cd-p2-demo" data-thumb="divider" data-thumb-color="purple" data-group="Claude Design · 三个项目" data-label="项目 2 · Demo"
+         data-speaker-notes="【约 6 分钟，现场演示】建议顺序：①打开 Claude Design 项目「world cup win with imToken」，先打开一屏，翻到对话开头给大家看 Primer 是整段贴进去的；再切一下浅色和深色、手机和桌面。②打开 Audit &amp; Plan：先看顶部的 3 / 6 / 6 / 3 四个数；念 P0 第 2 条（切换主题后文字颜色残留，截图里看不出来，它实际点过才发现）；再念最后的待决问题：Primer 和绑定的设计系统打架，它推荐 A，但让我拍板。③打开 Data Interface Spec 第 3 节，指「原型字段 → 正式接口」那张表：前端今天绑定的字段名，就是后端要给的字段名。④最后打开导出的文件夹，双击 Offline.html。收尾一句：导出不是把文件扔过去，而是连同读懂它需要的说明一起交出去。网络不行时，直接双击本地的 Offline.html 演示。">
+    <div class="cover-bg">
+        <div class="orb" style="width:520px;height:520px;background:var(--brand);top:-16%;left:8%;"></div>
+        <div class="orb" style="width:420px;height:420px;background:var(--purple);bottom:-12%;right:8%;animation-delay:-5s;"></div>
+    </div>
+    <div class="stage">
+        <div><span class="label label-purple" style="font-size:.8rem;">PROJECT 02 · 世界杯 HyperAgent</span></div>
+        <div class="big grad-text">Demo</div>
+        <div class="mono" style="font-size:.66rem;letter-spacing:.16em;color:var(--text-muted);margin-bottom:.6rem;">现场会看这三处</div>
+        <div class="watch"><div><b>01 · CLAUDE DESIGN</b>项目里 Primer 放在哪、一屏一个对话，以及四个变体</div><div><b>02 · AUDIT & SPEC</b>它自己写的审计清单和数据接口说明</div><div><b>03 · EXPORT</b>导出的文件夹长什么样，工程师收到后怎么用</div></div>
+        <div class="goto">切到：claude.ai/design/p/e28a36e3… · world cup win with imToken　｜　备用：Offline.html</div>
+    </div>
+</section>
+
+<!-- ═══ CD-P2-RECAP ═══ -->
+<section class="slide cd-recap" data-section="cd-p2-recap" data-thumb="split" data-thumb-color="purple" data-group="Claude Design · 三个项目" data-label="项目 2 · 回顾：用 Primer 定规则，交接前先自审"
+         data-speaker-notes="【约 2 分钟】演示回来先收一句：这个项目能一周上线，关键是两件事，前面用 Primer 把规则定死，后面交出去之前先让它自己查一遍。指常见写法：「深色、有科技感、要高级」，这三个词在 AI 那里几乎没有信息量。再看 Primer：最有用的是「要像」和「不要像」两行，说「像 Linear 的密度」比说「高级」准得多；说「不要 DraftKings 的赌场感」，一下就排除了一整类风格。右上五条是写 Primer 的清单。右下讲交接：第一条的按钮复制的是自审 Prompt，就是刚才 Audit &amp; Plan 的结构；最后一条 /design-sync 是官方功能，工程同事会用得上：它能从代码库把组件和 token 导进 Claude Design，设计出来的东西直接用的就是你们的真组件。">
+    <div class="stage">
+        <div class="kicker purple">RECAP 02 · 设计交给工程</div>
+        <h2>回顾：规则写成 Primer 反复用，交出去之前先让它自审</h2>
+        <div class="cd-seen"><em>刚才看到的</em><span><b>1</b>一份 Primer 贴在每个对话最前面</span><span><b>2</b>它自己点出 18 条问题和一个待决冲突</span><span><b>3</b>导出时附上数据接口说明</span></div>
+        <div class="cd-rc">
+            <div class="cd-pr">
+                <div class="weak"><div class="h"><span>✕ 常见写法</span><i>AI 只能猜</i></div><p>做一个世界杯预测产品的首页，深色，有科技感，要高级。</p></div>
+                <div class="prompt strong"><div class="p-head" style="margin-bottom:.35rem;"><span class="p-tag">✓ 更专业的写法 · Primer + 单屏需求</span><button class="copy-btn" data-copy="【产品】WC2026 HyperAgent：只面向 imToken 老用户的封闭社区赛。AI 找出定价偏差的市场并解释理由；Polymarket 结算，每一笔都由用户自己签名。&#10;【要像】Linear 的专注和密度、Apple Sports 的赛程卡片、Polymarket 的交易场感。&#10;【不要像】DraftKings 式的赌场感和假紧迫感；霓虹赛博朋克；满屏彩虹渐变。&#10;【Token】语义命名，浅色、深色各一套：--bg、--card、--ink、--brand（#007FFF）、--yes、--no。组件里不写死色值。&#10;【响应式】手机优先，390、平板到 1440 都要顺畅可用。&#10;【本屏】Match 详情和 AI 对话：连接钱包、AI 判断、下注预览、签名状态，都以卡片形式嵌在对话里。&#10;【交付】4 个变体：mobile-light、mobile-dark、desktop-light、desktop-dark。">复制全文</button></div><div class="ln"><span class="tg">产品</span><span>WC2026 HyperAgent：只面向 imToken 老用户的封闭社区赛。AI 找出定价偏差的市场并解释理由；Polymarket 结算，每一笔都由用户自己签名。</span></div><div class="ln"><span class="tg">要像</span><span>Linear 的专注和密度、Apple Sports 的赛程卡片、Polymarket 的交易场感。</span></div><div class="ln"><span class="tg">不要像</span><span>DraftKings 式的赌场感和假紧迫感；霓虹赛博朋克；满屏彩虹渐变。</span></div><div class="ln"><span class="tg">Token</span><span>语义命名，浅色、深色各一套：--bg、--card、--ink、--brand（#007FFF）、--yes、--no。组件里不写死色值。</span></div><div class="ln"><span class="tg">响应式</span><span>手机优先，390、平板到 1440 都要顺畅可用。</span></div><div class="ln"><span class="tg">本屏</span><span>Match 详情和 AI 对话：连接钱包、AI 判断、下注预览、签名状态，都以卡片形式嵌在对话里。</span></div><div class="ln"><span class="tg">交付</span><span>4 个变体：mobile-light、mobile-dark、desktop-light、desktop-dark。</span></div></div>
+            </div>
+            <div class="cd-side">
+                <div class="cd-q prompt-q"><div class="qh"><h4>一份 Primer 要写全这五样</h4></div><ul><li><b>产品和受众</b>：一句话说清给谁用、解决什么</li><li><b>正反参照</b>：要像谁、不要像谁，各 3–5 个，比形容词准</li><li><b>语义 token</b>：双主题，按用途命名，不按颜色命名</li><li><b>字体、动效、响应式</b>：写成数值，不写感觉</li><li><b>升级时写明覆盖哪一条</b>：例如 Visual Refresh 注明覆盖 v2 §4</li></ul></div>
+                <div class="cd-q tools"><div class="qh"><h4>交给工程之前</h4></div><ul><li>先让它自审：每页在浅色、深色、桌面、手机下都实际点一遍（按钮复制这段 Prompt）</li><li>让它写数据接口说明：字段名就用前端现在绑定的名字</li><li>导出前清掉没被引用的旧文件；交给对方时附一句「先读 README 和接口说明」</li><li>有代码库的团队，可以在 Claude Code 里用 /design-sync 把真实组件和 token 同步进 Claude Design</li></ul><button class="copy-btn inline cd-xcopy" data-copy="审查整个项目：每个页面在浅色 / 深色、桌面 / 手机下都实际操作一遍，不要只看截图。&#10;按 P0（坏了，先修）/ P1（视觉缺陷）/ P2（内容和一致性）/ P3（代码健康）列出问题，每条写：位置、现象、修法、涉及的文件。&#10;先列出做得好、不要动的部分。&#10;如果项目里的规则互相冲突（例如 Primer 和绑定的设计系统），单独列成待决问题，给出选项和你的推荐，等我决定。&#10;最后给一个分阶段的修复计划，每期结束都要重新验证所有页面。">复制自审 Prompt</button></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ CLAUDE DESIGN · P3 Portfolio D ═══ -->
+<section class="slide" data-section="cd-p3" data-thumb="split" data-thumb-color="green" data-group="Claude Design · 三个项目" data-label="项目 3 · Portfolio D：在 Claude Code 里转去 Claude Design 探索"
+         data-speaker-notes="【约 90 秒】先讲起点：alpha.token.im 是一个很大的 monorepo，7 月 2 日我在 Claude Code 里让它在 playground 做了三个资产页方向，代码都能跑，但我都不满意，问题不在代码，而在方向本身没想清楚。所以我停下来，去 Claude Design 探索了一个新方向，叫 Token Universe，就是左上这张。定下来以后点 Send to Claude Code，设计连同 mock 数据被送回 repo，放在 design-reference/portfolio-d 下面，当天就实现成了 playground 里的一个变体。第二天做了一轮虚拟评审，把 8 处要改的写成 Brief。大家看左上截图里还有 Speculative、YOUR STAKE、「Earn 4.3% on Aave」，这三处都是评审抓出来的，Brief 第 1、4、8 条就是在改它们。注意事项里讲第一条：送回 repo 的是参考，不是代码，CSS 里 6 个裸色值不在 repo 的色板里，要先加成语义 token。左下的实现截图我会在演示里直接打开。">
+    <div class="stage">
+        <div class="kicker green">PROJECT 03 · CLAUDE CODE ⇄ CLAUDE DESIGN</div>
+        <h2>Portfolio D：写代码途中，转去 Claude Design 探索</h2>
+        <div class="cd-strip"><span class="">07/02 Claude Code 做了三个方向</span><i>→</i><span class="hl">07/02 Claude Design 探索</span><i>→</i><span class="hl">Send to Claude Code</span><i>→</i><span class="">07/03 评审，写 Brief</span><i>→</i><span class="">07/06 按 Brief 重建</span><i>→</i><span class="">07/17 接真实钱包数据</span><em style="margin-left:auto;font-style:normal;font-size:.72rem;color:var(--text-secondary);">分支 feat/portfolio-d</em></div>
+        <div class="cd-body">
+            <div class="cd-shots">
+                <div class="cd-shot"><div class="cap"><b>Claude Design 探索稿</b><span>Portfolio D · Token Universe v1</span></div>
+                    <div class="placeholder has-zoom" style="border-color:var(--green);">
+                        <div class="ph-title">Claude Design · Portfolio D v1</div><div class="ph-file">assets/portfolio-d/pd-v1-1.jpg</div><div class="ph-desc">截图待补</div>
+                        <img class="zoomable" src="assets/portfolio-d/pd-v1-1.jpg" alt="Claude Design · Portfolio D v1" title="点击放大" style="object-fit:cover;object-position:center top;background:var(--surface);border-radius:var(--radius);" onclick="openLightbox(this.src, this.alt)" onerror="this.remove()"><span class="zoom-hint">点击放大</span>
+                    </div></div>
+                <div class="cd-shot"><div class="cap"><b>repo 里的实现</b><span>alpha.token.im · portfolio-universe</span></div>
+                    <div class="placeholder has-zoom" style="">
+                        <div class="ph-title">repo 实现截图（待 Wilson 提供）</div><div class="ph-file">assets/portfolio-d/pd-shipped.jpg</div><div class="ph-desc">截图待补</div>
+                        <img class="zoomable" src="assets/portfolio-d/pd-shipped.jpg" alt="repo 实现截图（待 Wilson 提供）" title="点击放大" style="object-fit:cover;object-position:center top;background:var(--surface);border-radius:var(--radius);" onclick="openLightbox(this.src, this.alt)" onerror="this.remove()"><span class="zoom-hint">点击放大</span>
+                    </div></div>
+            </div>
+            <div class="cd-quad">
+                <div class="cd-q tools"><div class="qh"><span class="n" style="color:var(--brand);">01</span><h4>用了什么工具</h4></div><ul><li><b>Claude Code CLI</b>：在 alpha.token.im repo 里工作，起点和终点都在这里</li><li><b>Claude Design</b>：「Cross-chain Send」项目里的 Portfolio D.html</li><li><b>Send to Claude Code</b>：把设计稿和 mock 数据送回 repo</li><li>repo 自带的 AGENTS.md、DESIGN.md 约束实现</li></ul></div>
+                <div class="cd-q prompt-q"><div class="qh"><span class="n" style="color:var(--purple);">02</span><h4>给了什么 Prompt</h4></div>
+                    <p style="margin:0;font-size:.78rem;line-height:1.5;">两份：给 Claude Design 的 <b>Brief · Token Universe 2.0</b>（8 条改动 + 自洽的 mock 数据）；给 Claude Code 的主 Prompt，分<b>硬约束</b>、<b>起点假设</b>和 <b>DIVERGENCE 协议</b>。</p>
+                    <div class="prompt"><div class="p-head" style="margin-bottom:.3rem;"><span class="p-tag">Brief · Token Universe 2.0（节选）</span><button class="copy-btn" data-copy="# Brief · Portfolio · Option 3 · Token Universe 2.0&#10;本 brief 是对已有 &quot;Token Universe&quot; 探索稿的定向优化迭代，不是重新探索。&#10;&#10;## 相对上一版的 8 个改动指令（必须全部执行）&#10;1. 分类重构为单轴&quot;资产此刻的角色&quot;六桶，删除 Governance 独立桶（治理属性下沉 Token Detail），&quot;Speculative&quot; 更名为 &quot;高波动 · High Volatility&quot;（中性描述，不做价值判断）&#10;2. 新增 委托 AI Delegated 桶，视觉最强一等公民&#10;3. 成本盈亏取代价格动量：每张 token 卡显示 avg basis + unrealized（金额+%），价格 7d% 退居次要&#10;4. 移除所有第三方 Earn CTA（如 &quot;Earn 4.3% on Aave&quot;），改为中性状态标记（&quot;闲置 42 天&quot;）+「委托 Agent 处理」意图移交入口&#10;5. 负债与在途不占分类席位：负债 = Hero 净值公式减项；流转中 = Hero 下方瞬态 status ribbon&#10;6. AI 动态归类闭环：每张卡右上角小 ✨ chip，tap 显示&quot;为什么在这个桶&quot;，提供一键改桶；这是 Portfolio 内唯一允许的 AI 元素&#10;7. 视觉修正：AI 紫 #A78BFA 只给委托 AI 桶；NFT 改靛蓝 #6366F1；主色 #007FFF 收回（CTA / 选中态 / hero eyebrow）；深色卡仅限核心持仓，全局 ≤3 张&#10;8. NFT 列名修正：YOUR STAKE 改为 HOLDINGS（stake 会误导为质押）&#10;&#10;## 必须遵守&#10;- Mock 数据一个数字都不许改，所有总额 / 占比 / 盈亏都经过程序验证自洽&#10;- 委托 AI 桶必须存在且视觉最强&#10;- 不用 &quot;Speculative&quot;、不用 &quot;YOUR STAKE&quot;&#10;- 无第三方 Earn CTA、无推荐 feed、无 AI 输入框（Portfolio 铁律）&#10;- 链只以聚合 chip 出现（&quot;4 chains&quot;），单链名不裸露在一级卡面&#10;- 空桶不渲染；另出一张「新手小额态」变体&#10;&#10;请基于以上做定向优化：给我 移动 + 桌面 两套高保真，另加一张「新手小额态」变体。">复制全文</button></div>
+                    <div class="p-body"><em>定向优化，不是重新探索。</em>8 条改动：分类改成六桶，Speculative 改为高波动；新增「委托 AI」桶；成本盈亏取代价格涨跌；<em>移除第三方 Earn 按钮</em>；YOUR STAKE 改为 HOLDINGS……<em>Mock 数据一个数字都不许改。</em></div></div></div>
+                <div class="cd-q out"><div class="qh"><span class="n" style="color:var(--green);">03</span><h4>产出了什么</h4></div><ul><li><span class="mono">design-reference/portfolio-d/</span>：原始 JSX、CSS、mock 数据</li><li>同目录 README：写明这是只读参考，不能直接 import，以及怎么对接 repo 的类型</li><li>playground 变体 <span class="mono">TokenUniverseVariant</span>，之后进入正式功能 <span class="mono">features/portfolio-universe</span></li><li>按天拆好的提交：数据模型、卡片、审计、验证各一条</li></ul></div>
+                <div class="cd-q warn"><div class="qh"><span class="n" style="color:var(--amber);">04</span><h4>用的时候要注意</h4></div><ul><li>送回来的是参考，不是代码：CSS 里 6 个裸色值不在 repo 色板里，要先加成语义 token</li><li>Claude Design 不知道 repo 的规矩，回到 repo 以 AGENTS.md 为准</li><li>首版会混进不该有的东西：Speculative、YOUR STAKE、第三方 Earn 按钮都在 v1 里，靠评审抓出来写进 Brief</li><li>让 Claude Code 偏离方案前先停下：用 DIVERGENCE 表列出想改什么、为什么，等你裁决</li></ul></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ CD-P3-THINK ═══ -->
+<section class="slide cd-think" data-section="cd-p3-think" data-thumb="steps" data-thumb-color="green" data-group="Claude Design · 三个项目" data-label="项目 3 · 我的 Prompt 思路"
+         data-speaker-notes="【约 2 分钟】这个项目用了三个工具，思路的核心是：每次换工具，都先让 AI 把上下文整理成一份新的、能独立使用的 Prompt。逐行讲：第一行，我给的是方向和人群，不是画面要求，让 Cowork 写成给 Claude Design 的探索 Prompt；第二行是 Claude Design 侧栏里的原话，Wilson 会补截图；第三行最值得学：我先承认自己也有看不懂的地方，让它讲给我听，然后请一群虚拟角色，用户、UX、UI、CEO，一起挑刺，最后让它把结论写成给 Claude Design 的改进 Brief；第四行是我对它的一次纠正：它写的 Prompt 依赖一堆我们之前生成的文件，换个会话就失效，所以我要它改成全文本、不依赖文件、留有开放空间的版本。最后一行，在 Claude Code 里我每轮只做一件事：裁决它交上来的 DIVERGENCE 表。">
+    <div class="stage">
+        <div class="kicker green">HOW I PROMPTED · PROJECT 03</div>
+        <h2>我的 Prompt 思路：在三个工具之间传递同一份上下文</h2>
+        <div class="cd-lead"><p>Cowork 负责想清楚、写 Prompt；Claude Design 负责出方向；Claude Code 负责在代码库里实现。每次换工具，都先让 AI 把上下文整理成一份能独立使用的 Prompt。</p><div class="sps"><span class="sp sp-A"><b>A</b>Cowork · 定方向、评审、写 Prompt</span><span class="sp sp-B"><b>B</b>Claude Design · Portfolio D 侧栏</span><span class="sp sp-C"><b>C</b>Claude Code CLI · alpha.token.im</span></div></div>
+        <div class="cd-steps"><div class="row"><div class="mv"><b>给出大胆的方向，让它写探索 Prompt</b><span>06-19</span><i class="sp-A">A</i></div><div class="bd"><div class="q">「要走一个更加大胆和前卫的 Agentic Wallet 为中心的钱包产品……我需要你快速分析一下两类用户群体，然后结合我们对于 imToken 的未来十年的定位……你再总结出新的大胆探索的 prompt，我给出去，让 claude design 继续探索。」<button class="copy-btn inline cd-qcopy" data-copy="OK，我要继续让 Claude Design 去探索 Homepage 也就是 Dashboard 页面， 另外就是 Portfolio 页面。 要走一个更加大胆和前卫的 Agentic Wallet 为中心的 钱包产品，我们的目标就是吸引那些想要尝试 Agent Wallet,  做投资的资深用户， 另一类重要且最广泛的人群就是在使用各类 AI 产品并且需要有一个 agent wallet 做小额支付的用户群体。&#10;&#10;我需要你快速分析一下，两类用户群体，然后结合我们对于 imToken 的未来十年的定位&#10;&#10;[粘贴 Rebranding 三个方向 A / B / C]&#10;&#10;你再总结出新的 大胆探索的 prompt， 我给给出去，让 claude design 继续探索。">复制原文</button></div><div class="o">→ 给 Claude Design 的探索 Prompt</div></div></div><div class="row"><div class="mv"><b>在 Claude Design 里探索 Portfolio D</b><span>06-19 ~ 07-02</span><i class="sp-B">B</i></div><div class="bd"><div class="q todo"><span>待补原话</span>Portfolio D 左侧侧边栏里的原始 Prompt（截图或导出）</div></div></div><div class="row"><div class="mv"><b>先让它讲给我听，再请一群角色来挑刺</b><span>07-03</span><i class="sp-A">A</i></div><div class="bd"><div class="q">「这里面我也有不太理解的地方……先去理解这个方案，同时思考和解释一下给我听。……做一次虚拟 workshop，里面包含不同类型的用户，也包含产品设计师、UX 设计、UI 设计、CEO 等角色……形成一套针对当前方案的具体改进方案，prompt 给我，我要让 claude Design 去优化设计。」<button class="copy-btn inline cd-qcopy" data-copy="关于Portfolio， 我探索了一个方案，你可以理解一下，毕竟这是我利用ai 工作做出来的，所以，这里面我也有不太理解的地方。  首先你还是得调取之前我们在这个项目中的所有关于 Portfolio 的上下文。  然后再去理解这个方案，同时思考和解释一下给我听。&#10;&#10;我总觉得这个设计跟用户真实使用的场景还是有所差异。 你能否做二次挖掘，再创意，然后优化 mock 数据不够真实的问题。&#10;&#10;你深度思考，最好是 做一次 虚拟workshop，里面包含不同类型的用户，也包含产品设计师，ux 设计，UI 设计， CEO 等角色。  然后从新讨论一下这个方向 Token-centric （Token Universe）能够很好的强调资产的 Token 化，并且让设计有更多的交互性，且真的能解决用户的问题。&#10;&#10;希望你设定多个agent 去形成workflow。&#10;&#10;最终把 讨论的记录和结果，通过视觉化的 html 产出。&#10;&#10;同时 形成一套 针对当前方案的具体改进方案，prompt 给我， 我要让 claude Design 去优化设计。">复制原文</button></div><div class="o">→ Brief · Token Universe 2.0（8 条改动 + 自洽数据）</div></div></div><div class="row"><div class="mv"><b>回到代码库前，要一份不依赖文件的 Prompt</b><span>07-06</span><i class="sp-A">A</i></div><div class="bd"><div class="q">「我该如何利用 Fable 5 的能力去开启一个 workflow，实现像素级的体验优化，同时又能够从策略层及时的进行调整……我发现你的产出中有大量的依赖于我们在 claude cowork 的长期沟通中产出的文件……通过全文本的 prompt，不要依赖文件……转化为有开放空间的指引。」<button class="copy-btn inline cd-qcopy" data-copy="那么对于 使用 Claude Code 进行 Portfolio 设计的过程中，我该如何利用 Fable 5 的能力去开启一个 workflow ，实现像素级的体验优化，同时又能够从策略层及时的进行调整，确保 portfolio 的方案是有意义的，对用户有价值的？&#10;&#10;给我 prompt 建议，并且要产出很务实的方案，而不是虚无缥缈的纯概念探索。&#10;&#10;而且要最终打磨到可交付的细节体验。&#10;&#10;我发现你的产出中有大量的依赖于 我们 在 claude cowork 的长期沟通中产出的文件，这回事一个很大的限制，并且之前产出的文件是否是高质量的呢？&#10;&#10;所以我希望你修改刚才的md 产出， 通过全文本的 prompt， 不要依赖文件。 要在prompt 中描述清楚即可，转化为有开放空间的指引，让 Fable5 去完成后续的探索。">复制原文</button></div><div class="o">→ 给 Claude Code 的 P0 主 Prompt（硬约束 / 起点假设 / DIVERGENCE）</div></div></div><div class="row"><div class="mv"><b>在 Claude Code 里只裁决 DIVERGENCE 表</b><span>07-06 起</span><i class="sp-C">C</i></div><div class="bd"><div class="q todo"><span>待补原话</span>Claude Code 里贴 P0 之后的短指令和裁决记录（可选）</div></div></div></div>
+    </div>
+</section>
+
+<!-- ═══ CD-P3-DEMO ═══ -->
+<section class="slide center cd-demo" data-section="cd-p3-demo" data-thumb="divider" data-thumb-color="green" data-group="Claude Design · 三个项目" data-label="项目 3 · Demo"
+         data-speaker-notes="【约 6 分钟，现场演示】建议顺序：①在终端里打开 alpha.token.im，跑起本地 dev server，进 portfolio-explore playground，快速切一下 Concept A / B / C，说一句：代码都能跑，但方向不对，这时候继续在代码里改只会越改越乱。②切到 Claude Design 的「Cross-chain Send」项目，打开 Portfolio D，指出 v1 里的 Speculative、YOUR STAKE 和 Earn 按钮；然后演示 Send to Claude Code。③回到终端，打开 design-reference/portfolio-d/README.md，念第一段：这是只读参考，不是可以 import 的代码；再念色值那一段：6 个裸 hex 要先加成语义 token。④最后在浏览器里打开实现出来的 Token Universe 页面。收尾一句：Claude Code 适合把事情做对，Claude Design 适合先想清楚做什么，两个来回切换，比在一个工具里硬磨要快。本地服务起不来时，用 Claude Design 里的 Portfolio D 讲完。">
+    <div class="cover-bg">
+        <div class="orb" style="width:520px;height:520px;background:var(--brand);top:-16%;left:8%;"></div>
+        <div class="orb" style="width:420px;height:420px;background:var(--purple);bottom:-12%;right:8%;animation-delay:-5s;"></div>
+    </div>
+    <div class="stage">
+        <div><span class="label label-green" style="font-size:.8rem;">PROJECT 03 · Portfolio D · Token Universe</span></div>
+        <div class="big grad-text">Demo</div>
+        <div class="mono" style="font-size:.66rem;letter-spacing:.16em;color:var(--text-muted);margin-bottom:.6rem;">现场会看这三处</div>
+        <div class="watch"><div><b>01 · CLAUDE CODE</b>repo 里的 playground：三个不满意的方向</div><div><b>02 · CLAUDE DESIGN</b>Portfolio D 的探索，然后点 Send to Claude Code</div><div><b>03 · BACK IN REPO</b>design-reference 目录，以及实现出来的页面</div></div>
+        <div class="goto">切到：Terminal · alpha.token.im　｜　Claude Design · Cross-chain Send / Portfolio D</div>
+    </div>
+</section>
+
+<!-- ═══ CD-P3-RECAP ═══ -->
+<section class="slide cd-recap" data-section="cd-p3-recap" data-thumb="split" data-thumb-color="green" data-group="Claude Design · 三个项目" data-label="项目 3 · 回顾：两个工具之间怎么来回切"
+         data-speaker-notes="【约 2 分钟】演示回来先收一句：Claude Code 擅长把事情做对，Claude Design 擅长先想清楚做什么；卡住的时候换工具，比在一个工具里硬磨快。指常见写法：「改得更好看一点，参考一下设计稿」，这句话会让 Claude Code 把设计稿当代码抄，还会顺手改掉它觉得不好看的地方。再看主 Prompt，重点讲最后两层：起点假设写明可以挑战，是给它留出发挥的空间；DIVERGENCE 协议是给它加一道闸，想偏离方案必须先停下来问我。我每轮只做一件事：裁决这张表。右下第一条是个实用提醒：Send to Claude Code 生成的指令依赖一个连接器，本地 Claude Code 有时读不到设计，这时在导出里改选下载 zip 就行，GitHub 上有人报过这个问题。">
+    <div class="stage">
+        <div class="kicker green">RECAP 03 · CLAUDE CODE ⇄ CLAUDE DESIGN</div>
+        <h2>回顾：Claude Design 想方向，Claude Code 守规则</h2>
+        <div class="cd-seen"><em>刚才看到的</em><span><b>1</b>代码能跑，但方向不对</span><span><b>2</b>在 Claude Design 里探索，再送回 repo</span><span><b>3</b>repo 里的规则优先于设计稿</span></div>
+        <div class="cd-rc">
+            <div class="cd-pr">
+                <div class="weak"><div class="h"><span>✕ 常见写法</span><i>AI 只能猜</i></div><p>把 Portfolio 页面改得更好看一点，参考一下 design-reference 里的设计。</p></div>
+                <div class="prompt strong"><div class="p-head" style="margin-bottom:.35rem;"><span class="p-tag">✓ 更专业的写法 · 给 Claude Code 的主 Prompt</span><button class="copy-btn" data-copy="【角色】你是 imToken UI 3.0 的资深产品设计工程师，在这个 repo 里把 Portfolio 从设计方向做成可交付的实现。&#10;【设计来源】design-reference/portfolio-d/ 是 Claude Design 的探索稿，只作参考，不要直接 import。&#10;【硬约束】违反就返工：页面里不放 AI 输入框、动态 Feed、第三方推荐按钮；不用 Speculative、YOUR STAKE；颜色只用 repo 的语义 token，缺的先加 token；以 AGENTS.md 和 DESIGN.md 为准。&#10;【起点假设】六桶分类、异构卡片、成本盈亏口径：有推理支持，但不是定论，你可以挑战。&#10;【工作协议】像素问题自己截图、自己修、自己验证后再汇报；想偏离起点假设，先输出 DIVERGENCE 表（想改什么、为什么、影响谁、备选 A / B、你的建议），然后停下等我裁决。&#10;【回报】改了哪些文件；截图；哪些还没做完。">复制全文</button></div><div class="ln"><span class="tg">角色</span><span>你是 imToken UI 3.0 的资深产品设计工程师，在这个 repo 里把 Portfolio 从设计方向做成可交付的实现。</span></div><div class="ln"><span class="tg">设计来源</span><span>design-reference/portfolio-d/ 是 Claude Design 的探索稿，只作参考，不要直接 import。</span></div><div class="ln"><span class="tg">硬约束</span><span>违反就返工：页面里不放 AI 输入框、动态 Feed、第三方推荐按钮；不用 Speculative、YOUR STAKE；颜色只用 repo 的语义 token，缺的先加 token；以 AGENTS.md 和 DESIGN.md 为准。</span></div><div class="ln"><span class="tg">起点假设</span><span>六桶分类、异构卡片、成本盈亏口径：有推理支持，但不是定论，你可以挑战。</span></div><div class="ln"><span class="tg">工作协议</span><span>像素问题自己截图、自己修、自己验证后再汇报；想偏离起点假设，先输出 DIVERGENCE 表（想改什么、为什么、影响谁、备选 A / B、你的建议），然后停下等我裁决。</span></div><div class="ln"><span class="tg">回报</span><span>改了哪些文件；截图；哪些还没做完。</span></div></div>
+            </div>
+            <div class="cd-side">
+                <div class="cd-q prompt-q"><div class="qh"><h4>什么时候该切去 Claude Design</h4></div><ul><li>在代码里连着改了两三轮，还是不满意</li><li>问题出在方向和结构，不在实现细节</li><li>需要把几个方向并排比较</li><li>需要不写代码的同事一起看、一起改</li></ul></div>
+                <div class="cd-q tools"><div class="qh"><h4>来回切换时注意</h4></div><ul><li>Send to Claude Code 之后本地读不到设计，就在导出里选「下载 zip」，解压后让 Claude Code 先读里面的 README</li><li>设计参考放在单独目录，README 写明只读，以及怎么对应到 repo 的类型</li><li>会话变长、开始跑偏时，新开一个会话，重贴主 Prompt 和上一轮的裁决结果</li><li>规则分三层写：硬约束不许碰，起点假设可以挑战，开放区留给它发挥</li></ul></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ CLAUDE DESIGN · COMPARE ═══ -->
+<section class="slide" data-section="cd-compare" data-thumb="table" data-thumb-color="purple" data-group="Claude Design · 三个项目" data-label="总结 1 · 三种用法怎么选"
+         data-speaker-notes="【约 60 秒】三个都演示完了，这一页帮大家对号入座。不用逐格念，只念最后一列「最容易出错的地方」，因为这三条都是我自己踩过的：第一种，把画布文件直接发给别人，对方打不开；第二种，导出包里夹着旧文件和假数据，对方的 AI 会照单全收；第三种，把设计参考当成代码直接搬进 repo，绕过了代码库自己的 token 和组件。然后说：你们比赛时大部分人会是第一种，已经有代码的团队可能是第三种。">
+    <div class="stage">
+        <div class="kicker purple">TAKEAWAY 1 / 5</div>
+        <h2>三种用法，按你手上的情况选</h2>
+        <div class="card" style="padding:.4rem 1.2rem;margin-top:1.2rem;">
+            <table class="dol cd-cmp" style="font-size:.95rem;">
+                <thead><tr><th style="width:17%;">用法</th><th style="width:21%;">什么时候用</th><th style="width:20%;">从哪里开始</th><th style="width:21%;">最后交出去的</th><th style="color:var(--amber);">最容易出错的地方</th></tr></thead>
+                <tbody>
+                    <tr><td><b>在 Cowork 里直接出画布</b><div class="gloss" style="font-size:.72rem;">项目 1 · 我是主理人</div></td><td>从零做一个页面，由你一个人主导到底</td><td>Cowork 对话里调用 /design</td><td>画布，再转成独立 HTML 和 DESIGN.md</td><td>把画布文件直接发给别人，对方打不开</td></tr>
+                    <tr><td><b>Claude Design 项目导出交接</b><div class="gloss" style="font-size:.72rem;">项目 2 · 世界杯</div></td><td>设计和工程同时推进，最后要合成一个产品</td><td>一个 Claude Design 项目，每屏一个对话</td><td>整个项目导出，附审计清单和数据接口说明</td><td>导出包里夹着旧文件和假数据，对方的 AI 照单全收</td></tr>
+                    <tr><td><b>Claude Code 途中转去探索</b><div class="gloss" style="font-size:.72rem;">项目 3 · Portfolio D</div></td><td>代码写到一半，发现方向本身没想清楚</td><td>Claude Code，切到 Claude Design，再 Send to Claude Code</td><td>repo 里的设计参考，加上照着它做的实现</td><td>把参考当代码直接搬，绕过代码库自己的 token 和组件</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div style="margin-top:1.1rem;"><span class="spill purple"><span class="dot"></span>三种用法里 Claude Design 做的是同一件事：在写代码之前，把「做成什么样」先想清楚、看得见</span></div>
+    </div>
+</section>
+
+<!-- ═══ CLAUDE DESIGN · SEVEN PRACTICES ═══ -->
+<section class="slide" data-section="cd-practices" data-thumb="grid3" data-thumb-color="blue" data-group="Claude Design · 三个项目" data-label="总结 2 · 用好 Claude Design 的七个做法"
+         data-speaker-notes="【约 2 分钟】这七条都来自刚才三个项目，每条下面的紫色小标签写着出处，大家可以回头对照。不用七条都念，重点讲三条。第 2 条：这是设计师在 AI 时代最值钱的动作，把感觉翻译成可以检查的规则。你们不是设计师也没关系，照着参照写数值就行，这就是前面第 2 步 style-lock 在做的事。第 4 条：工程同事会很有感觉，数据先自洽，字段名先定好，原型做完接口也就定了。第 7 条：Claude Design 不知道你代码库的规矩，送回去以后一切以代码库为准。">
+    <div class="stage">
+        <div class="kicker">TAKEAWAY 2 / 5</div>
+        <h2>用好 Claude Design 的七个做法</h2>
+        <p class="subtitle" style="margin-bottom:1.1rem;">每一条都来自上面三个项目，标签写着出处。</p>
+        <div class="cd-seven"><div class="it"><div class="num">01</div><div><h4>先把事实拿全，再开画布</h4><p>口径（deck、PRD）、现状（现有页面）、约束（设计系统）三样缺一样，后面的生成都在猜。</p><span class="src">项目 1：这一步花了 1 小时，是最不能省的</span></div></div><div class="it"><div class="num">02</div><div><h4>把感觉写成规则</h4><p>「轻且透」是感觉，「白色 58% 透明 + 20px 模糊」是规则。感觉它会随机发挥，规则它会照做。</p><span class="src">项目 1 的 DESIGN.md · 项目 2 的三层 Primer</span></div></div><div class="it"><div class="num">03</div><div><h4>一屏一个对话，一次要齐变体</h4><p>每屏同时要手机和桌面、浅色和深色。第一轮看方向，第二轮抓细节，第二轮仍然带着 Primer。</p><span class="src">项目 2</span></div></div><div class="it"><div class="num">04</div><div><h4>数据先自洽，再让它画</h4><p>总额、占比、盈亏都能复算，并写明「一个数字都不许改」。字段名定好，后面就是接口。</p><span class="src">项目 3 的 Brief · 项目 2 的数据接口说明</span></div></div><div class="it"><div class="num">05</div><div><h4>让它自己检查</h4><p>要求它截图、逐项点交互、看 console，并回报偏差。很多问题只有点过才会出现。</p><span class="src">项目 2：18 条问题里 3 条 P0 是点出来的</span></div></div><div class="it"><div class="num">06</div><div><h4>交出去之前，想清楚谁来用</h4><p>同一份设计：画布给设计师，HTML 和 README 给工程，DESIGN.md 给约束，Prompt 给对方的 AI。</p><span class="src">项目 1、项目 2</span></div></div><div class="it"><div class="num">07</div><div><h4>回到代码库，以代码库为准</h4><p>设计稿是参考。颜色换成代码库的语义 token，组件用已有的，冲突时停下来问人。</p><span class="src">项目 3</span></div></div>
+            <div class="it" style="background:rgba(var(--brand-rgb),.05);border-color:rgba(var(--brand-rgb),.3);"><div class="num" style="color:var(--purple);">＋</div><div><h4>一句话</h4><p style="color:var(--text);">生成之前先定义：讲什么、按什么规则画、怎么算合格，三样写成文字再开工。</p></div></div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ CLAUDE DESIGN · LIMITS ═══ -->
+<section class="slide" data-section="cd-limits" data-thumb="grid3" data-thumb-color="amber" data-group="Claude Design · 三个项目" data-label="总结 3 · 它做不好的，和必须你来做的"
+         data-speaker-notes="【约 90 秒】左边是工具本身的限制，截至 9 月的预览版，提前告诉合作的人，免得他们踩坑。中间是它会犯的错，前三条在这三个项目里真实出现过，最危险的是第一条：它会把示例数据、猜的日期写得和事实一样自信。右边是必须你来做的五件事，没有一件需要会画图，但每一件都需要你理解这个产品为什么存在。最下面一行是什么时候别用它。">
+    <div class="stage">
+        <div class="kicker amber">TAKEAWAY 3 / 5</div>
+        <h2>它做不好的，和必须你来做的</h2>
+        <div class="grid-3 cd-lim" style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-top:1.2rem;">
+            <div class="card amber-left" style="padding:1.1rem 1.2rem;">
+                <div class="mono" style="font-size:.62rem;letter-spacing:.14em;color:var(--amber);font-weight:700;">工具的限制 · 2026-09 预览版</div>
+                <ul style="margin:.6rem 0 0;padding-left:1.1rem;font-size:.9rem;line-height:1.65;">
+                    <li>画板之间状态不共享，桌面和手机的交互各管各的</li>
+                    <li>PNG、PDF 导出不嵌 Google Fonts，中文会回退成系统字体</li>
+                    <li>画布文件不能直接分发，要先转成独立 HTML</li>
+                    <li>两人同时编辑会冲突，适合一人主编</li>
+                </ul>
+            </div>
+            <div class="card red-left" style="padding:1.1rem 1.2rem;">
+                <div class="mono" style="font-size:.62rem;letter-spacing:.14em;color:var(--red);font-weight:700;">它会犯的错</div>
+                <ul style="margin:.6rem 0 0;padding-left:1.1rem;font-size:.9rem;line-height:1.65;">
+                    <li><b>自信地写错</b>：示例数据、猜的日期，写得和事实一样</li>
+                    <li><b>热心地补充</b>：加上你没要的段落、动效和颜色</li>
+                    <li><b>规则冲突时自己挑一个</b>：项目 2 的 Primer 和设计系统打架，它先按自己的判断做，审计时才列出来</li>
+                    <li><b>越改越偏</b>：改到第五轮，颜色悄悄多了两种</li>
+                </ul>
+            </div>
+            <div class="card accent-left" style="padding:1.1rem 1.2rem;">
+                <div class="mono" style="font-size:.62rem;letter-spacing:.14em;color:var(--brand);font-weight:700;">必须你来做的</div>
+                <ul style="margin:.6rem 0 0;padding-left:1.1rem;font-size:.9rem;line-height:1.65;">
+                    <li>判断这个页面到底要讲什么</li>
+                    <li>在几个都画得出来的方向里选一个</li>
+                    <li>决定哪些地方不改，并说得出理由</li>
+                    <li>没定的信息留空，不让它编</li>
+                    <li>品牌资产宁可绕路去拿原图，也不让它重画</li>
+                </ul>
+            </div>
+        </div>
+        <div class="card" style="margin-top:1rem;padding:.8rem 1.2rem;display:flex;gap:1.4rem;align-items:center;flex-wrap:wrap;">
+            <span class="mono" style="font-size:.62rem;letter-spacing:.14em;color:var(--text-muted);font-weight:700;">什么时候别用它</span>
+            <span style="font-size:.88rem;">正式物料、高清导出 → <b>Figma</b></span>
+            <span style="font-size:.88rem;">要直接上线的代码 → <b>Claude Code</b></span>
+            <span style="font-size:.88rem;">多人同时编辑 → <b>Figma</b></span>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ CLAUDE DESIGN · STARTER PROMPT ═══ -->
+<section class="slide" data-section="cd-starter" data-thumb="split" data-thumb-color="green" data-group="Claude Design · 三个项目" data-label="总结 4 · 明天就能用的起手 Prompt"
+         data-speaker-notes="【约 60 秒】最后给一个可以直接带走的东西。三个项目里我写的 Prompt 长短不一，但结构都是这七段。最长、最值得花时间的是第 5 段规格，用表格写，AI 读表格比读一段话准得多。第 4 段不可妥协和最后的「不要做的事」清单，AI 的遵守程度很高；反过来，「适当发挥」这种话，每次理解都不一样。按钮复制的是空白模板，方括号里的部分换成你自己的。下一页是学习链接，这一段就收尾了。">
+    <div class="stage">
+        <div class="kicker green">TAKEAWAY 4 / 5</div>
+        <h2>明天就能用的起手 Prompt：七段结构</h2>
+        <p class="subtitle" style="margin-bottom:1.2rem;">三个项目的 Prompt 长短不一，结构都是这七段。第 ⑤ 段最长，也最值得花时间。</p>
+        <div style="display:grid;grid-template-columns:.9fr 1.2fr;gap:1.4rem;align-items:start;">
+            <div class="card" style="padding:.6rem 1.2rem;"><div style="display:grid;grid-template-columns:2rem 5.2rem 1fr;gap:.5rem;align-items:baseline;padding:.45rem 0;border-bottom:1px dashed var(--border);"><span class="mono" style="font-weight:800;color:var(--brand);">①</span><b style="font-size:.95rem;">角色</b><span style="font-size:.86rem;color:var(--text-secondary);">你是谁</span></div><div style="display:grid;grid-template-columns:2rem 5.2rem 1fr;gap:.5rem;align-items:baseline;padding:.45rem 0;border-bottom:1px dashed var(--border);"><span class="mono" style="font-weight:800;color:var(--brand);">②</span><b style="font-size:.95rem;">背景</b><span style="font-size:.86rem;color:var(--text-secondary);">这件事是什么、给谁看、以哪份文档为准</span></div><div style="display:grid;grid-template-columns:2rem 5.2rem 1fr;gap:.5rem;align-items:baseline;padding:.45rem 0;border-bottom:1px dashed var(--border);"><span class="mono" style="font-weight:800;color:var(--brand);">③</span><b style="font-size:.95rem;">输入</b><span style="font-size:.86rem;color:var(--text-secondary);">你会拿到什么，冲突时以谁为准</span></div><div style="display:grid;grid-template-columns:2rem 5.2rem 1fr;gap:.5rem;align-items:baseline;padding:.45rem 0;border-bottom:1px dashed var(--border);"><span class="mono" style="font-weight:800;color:var(--brand);">④</span><b style="font-size:.95rem;">不可妥协</b><span style="font-size:.86rem;color:var(--text-secondary);">3–6 条硬规则</span></div><div style="display:grid;grid-template-columns:2rem 5.2rem 1fr;gap:.5rem;align-items:baseline;padding:.45rem 0;border-bottom:1px dashed var(--border);"><span class="mono" style="font-weight:800;color:var(--brand);">⑤</span><b style="font-size:.95rem;">规格</b><span style="font-size:.86rem;color:var(--text-secondary);">逐屏写，用表格，不用段落</span></div><div style="display:grid;grid-template-columns:2rem 5.2rem 1fr;gap:.5rem;align-items:baseline;padding:.45rem 0;border-bottom:1px dashed var(--border);"><span class="mono" style="font-weight:800;color:var(--brand);">⑥</span><b style="font-size:.95rem;">验收</b><span style="font-size:.86rem;color:var(--text-secondary);">截图、点交互、console</span></div><div style="display:grid;grid-template-columns:2rem 5.2rem 1fr;gap:.5rem;align-items:baseline;padding:.45rem 0;border-bottom:1px dashed var(--border);"><span class="mono" style="font-weight:800;color:var(--brand);">⑦</span><b style="font-size:.95rem;">回报</b><span style="font-size:.86rem;color:var(--text-secondary);">改了什么、哪些是假设、偏差</span></div>
+                <p style="margin:.7rem 0 .2rem;font-size:.82rem;color:var(--text-secondary);line-height:1.55;">「不要做的事」写成清单，它会照做；「适当发挥」这种话，每次理解都不一样。</p>
+            </div>
+            <div class="prompt" style="margin:0;">
+                <div class="p-head" style="margin-bottom:.4rem;"><span class="p-tag">起手模板 · 七段</span><button class="copy-btn" data-copy="① 角色：你是资深产品设计师兼前端工程师。&#10;② 背景：[这件事是什么、为什么做、给谁看；以哪份文档为准]&#10;③ 输入：[你会拿到哪些材料，每份怎么用；互相冲突时以谁为准]&#10;④ 不可妥协：[3–6 条硬规则，例如：文案逐字使用，不许润色；没定的信息留空，不许编；颜色、字号、圆角只用设计系统里的值]&#10;⑤ 规格：[逐屏 / 逐段 / 逐个交互写清楚，用表格：段落 | 现状 | 你要做的]&#10;⑥ 验收：[在 390 和 1440 两个宽度截图，逐项点交互，console 零报错]&#10;⑦ 回报：改了什么；哪些是示例或假设；和要求的偏差；没完成的事。&#10;&#10;不要做的事：[清单，例如：不要新增我没列的段落；不要换字体；不要加我没要的动效]">复制模板</button></div>
+                <div class="p-body mono" style="font-size:.74rem;line-height:1.75;white-space:pre-wrap;">① 角色：你是资深产品设计师兼前端工程师。
+② 背景：[这件事是什么、为什么做、给谁看；以哪份文档为准]
+③ 输入：[你会拿到哪些材料，每份怎么用；互相冲突时以谁为准]
+④ 不可妥协：[3–6 条硬规则，例如：文案逐字使用，不许润色；没定的信息留空，不许编；颜色、字号、圆角只用设计系统里的值]
+⑤ 规格：[逐屏 / 逐段 / 逐个交互写清楚，用表格：段落 | 现状 | 你要做的]
+⑥ 验收：[在 390 和 1440 两个宽度截图，逐项点交互，console 零报错]
+⑦ 回报：改了什么；哪些是示例或假设；和要求的偏差；没完成的事。
+
+不要做的事：[清单，例如：不要新增我没列的段落；不要换字体；不要加我没要的动效]</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ CLAUDE DESIGN · LINKS ═══ -->
+<section class="slide" data-section="cd-links" data-thumb="grid3" data-thumb-color="blue" data-group="Claude Design · 三个项目" data-label="总结 5 · 学习链接：事后去哪里学、去哪里问"
+         data-speaker-notes="【约 40 秒】最后一页不用讲，给大家拍照或者会后打开 deck 点。按顺序说一句怎么用：第一次用，先看左上官方入门里的帮助中心两篇，一篇讲怎么开始，一篇讲怎么导入设计系统；想把 Prompt 写好，看中间那组官方文档和交互式教程；遇到问题，先搜帮助中心，Claude Code 相关的去 GitHub Issues 搜，很多坑别人已经报过。右下是今天三个项目的原始材料，需要公司账号才能打开。所有链接都可以直接点。">
+    <div class="stage">
+        <div class="kicker">TAKEAWAY 5 / 5 · LINKS</div>
+        <h2>事后去哪里学，有问题去哪里找</h2>
+        <p class="subtitle" style="margin-bottom:1rem;">所有链接都可以直接点。官方链接在 2026-09-24 核对过。</p>
+        <div class="cd-links"><div class="grp"><h4>官方入门<i>START HERE</i></h4><a href="https://claude.com/product/design" target="_blank" rel="noopener"><b>Claude Design 产品页</b><em>能做什么、FAQ、合作工具</em><span>claude.com/product/design</span></a><a href="https://support.claude.com/en/articles/14604416-get-started-with-claude-design" target="_blank" rel="noopener"><b>Get started with Claude Design</b><em>帮助中心：写 Prompt、迭代、导出、交给 Claude Code</em><span>support.claude.com/en/articles/14604416-get-started-with-claude-design</span></a><a href="https://support.claude.com/en/articles/14604397-set-up-your-design-system-in-claude-design" target="_blank" rel="noopener"><b>Set up your design system</b><em>帮助中心：导入设计系统，/design-sync</em><span>support.claude.com/en/articles/14604397-set-up-your-design-system-in-claude-design</span></a><a href="https://www.anthropic.com/news/claude-design-anthropic-labs" target="_blank" rel="noopener"><b>Introducing Claude Design</b><em>2026-04-17 发布介绍</em><span>www.anthropic.com/news/claude-design-anthropic-labs</span></a><a href="https://www.anthropic.com/webinars/getting-started-with-claude-design" target="_blank" rel="noopener"><b>Getting Started with Claude Design</b><em>网络研讨会，2026-09-03，可回看</em><span>www.anthropic.com/webinars/getting-started-with-claude-design</span></a></div><div class="grp"><h4>写好 Prompt<i>PROMPTING</i></h4><a href="https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/overview" target="_blank" rel="noopener"><b>Prompt engineering overview</b><em>官方文档入口</em><span>platform.claude.com/docs/en/build-with-claude/prompt-engineering/overview</span></a><a href="https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices" target="_blank" rel="noopener"><b>Prompting best practices</b><em>清晰、示例、结构化、角色</em><span>platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices</span></a><a href="https://github.com/anthropics/prompt-eng-interactive-tutorial" target="_blank" rel="noopener"><b>Prompt 交互式教程</b><em>GitHub，一步步练</em><span>github.com/anthropics/prompt-eng-interactive-tutorial</span></a><a href="https://academy.claude.com/" target="_blank" rel="noopener"><b>Claude Academy</b><em>免费课程与教程</em><span>academy.claude.com/</span></a></div><div class="grp"><h4>配套工具<i>TOOLS</i></h4><a href="https://support.claude.com/en/articles/13345190-get-started-with-claude-cowork" target="_blank" rel="noopener"><b>Get started with Claude Cowork</b><em>项目 1 的工作环境</em><span>support.claude.com/en/articles/13345190-get-started-with-claude-cowork</span></a><a href="https://support.claude.com/en/articles/12512180-use-skills-in-claude" target="_blank" rel="noopener"><b>Use skills in Claude</b><em>/design 这类 skill 怎么用</em><span>support.claude.com/en/articles/12512180-use-skills-in-claude</span></a><a href="https://code.claude.com/docs/en/overview" target="_blank" rel="noopener"><b>Claude Code 文档</b><em>项目 2、3 的工程侧</em><span>code.claude.com/docs/en/overview</span></a></div><div class="grp"><h4>遇到问题<i>HELP</i></h4><a href="https://support.claude.com/en/" target="_blank" rel="noopener"><b>Claude 帮助中心</b><em>先搜这里</em><span>support.claude.com/en/</span></a><a href="https://github.com/anthropics/claude-code/issues" target="_blank" rel="noopener"><b>Claude Code · GitHub Issues</b><em>例：#69246 本地读不到设计时改用 zip</em><span>github.com/anthropics/claude-code/issues</span></a><a href="https://claude.com/community" target="_blank" rel="noopener"><b>Claude Community</b><em>社区讨论</em><span>claude.com/community</span></a></div><div class="grp"><h4>今天的材料<i>INTERNAL</i></h4><a href="design-kit/case-bossgame/README.md" target="_blank" rel="noopener"><b>资料包 · case-bossgame/README.md</b><em>项目 1 的七步复盘与六个 Prompt 模板</em><span>design-kit/case-bossgame/README.md</span></a><a href="https://claude.ai/code/artifact/8a78ab6b-6bd5-4dc5-8d01-e36aeed6b117" target="_blank" rel="noopener"><b>项目 1 · Claude Design 画布</b><em>需公司账号</em><span>claude.ai/code/artifact/8a78ab6b-6bd5-4dc5-8d01-e36aeed6b117</span></a><a href="https://claude.ai/design/p/e28a36e3-3aa1-46ac-b114-54423e9a576c" target="_blank" rel="noopener"><b>项目 2 · world cup win with imToken</b><em>需公司账号</em><span>claude.ai/design/p/e28a36e3-3aa1-46ac-b114-54423e9a576c</span></a><a href="https://claude.ai/design/p/8cfcb0fa-99a5-4196-ae78-a5899c2cf013" target="_blank" rel="noopener"><b>imToken Web Design System</b><em>Claude Design 里的设计系统</em><span>claude.ai/design/p/8cfcb0fa-99a5-4196-ae78-a5899c2cf013</span></a></div></div>
+    </div>
+</section>
+</div><!-- /deck -->
+
+<!-- Style detail modal (outside .deck so position:fixed is not trapped) -->
+<div class="style-modal" id="styleModal">
+    <div class="sm-box">
+        <button class="sm-close">ESC · 关闭</button>
+        <div class="sm-sw"></div>
+        <div>
+            <h3 class="sm-title"></h3>
+            <div class="sm-en"></div>
+            <div class="sm-grid">
+                <div><div class="k">借鉴什么</div><div class="v sm-take"></div></div>
+                <div><div class="k">注意</div><div class="v sm-risk"></div></div>
+            </div>
+            <div class="prompt">
+                <div class="p-head"><span class="p-tag">Prompt 关键词</span><button class="copy-btn">复制</button></div>
+                <div class="p-body sm-kw" style="font-family:var(--font-mono);font-size:.76rem;"></div>
+            </div>
+            <div class="prompt">
+                <div class="p-head"><span class="p-tag">PROMPT 00b · 用这张参照和三个答案生成 style-lock.md</span><button class="copy-btn">复制</button></div>
+                <div class="p-body sm-full" style="font-size:.78rem;white-space:pre-line;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Fixed footer: label · logo · counter -->
+<div class="foot">
+    <span class="foot-label" id="footLabel">Confu EP02 · 我是主理人 赛前培训 04</span>
+    <span class="footer-logo" id="footLogo"></span>
+    <span class="foot-num" id="footNum">01 / 01</span>
+</div>
+<div class="rail-hotzone" id="railHotzone"></div>
+<div class="kbd-hint" id="kbdHint">← → · Space 翻页 &nbsp;·&nbsp; N 讲者备注 &nbsp;·&nbsp; 点击左右半屏</div>
+
+<!-- ===== Speaker notes panel (N) ===== -->
+<div class="notes-panel" id="notesPanel">
+    <div class="n-head">
+        <span>Speaker Notes</span>
+        <span id="notesMeta" style="color:#64748B;letter-spacing:.06em;"></span>
+        <span class="n-close" onclick="toggleNotes()">按 N 关闭 ✕</span>
+    </div>
+    <div class="n-body" id="notesBody">（这一页没有讲者备注）</div>
+</div>
+
+<!-- ===== Mobile prototype panel (slide-in from right) ===== -->
+<div class="demo-panel" id="demoPanel">
+    <div class="demo-panel-header">
+        <span>LIVE PROTOTYPE · 393 × 852</span>
+        <button class="overlay-close" onclick="toggleDemoPanel()" aria-label="Close">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+    </div>
+    <div class="demo-phone-frame"><iframe id="demoIframe" src="about:blank"></iframe></div>
+</div>
+
+<!-- ===== Desktop / URL modal (fade-in center) — with dual-safety fallback ===== -->
+<div class="desktop-modal-backdrop" id="desktopBackdrop" onclick="if(event.target===this)toggleDesktopModal()">
+    <div class="desktop-modal">
+        <div class="desktop-modal-bar">
+            <span class="dot" style="background:#FF5F57;"></span><span class="dot" style="background:#FEBC2E;"></span><span class="dot" style="background:#28C840;"></span>
+            <span class="url" id="desktopUrl">about:blank</span>
+            <a class="ext" id="desktopExt" href="#" target="_blank" rel="noopener">新标签打开 ↗</a>
+            <button class="overlay-close" onclick="toggleDesktopModal()" aria-label="Close" style="width:28px;height:28px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
+        </div>
+        <div class="frame-wrap">
+            <iframe id="desktopIframe" src="about:blank"></iframe>
+            <div class="frame-fallback" id="frameFallback">
+                <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" style="opacity:.55;"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 9h20M7 14h6"/></svg>
+                <div class="ff-title">看不到内容？</div>
+                <div class="ff-desc">Confluence、Figma、ChatGPT 这类站点会拒绝被嵌入。点右边在新标签打开 —— 讲完切回来，这一页还在。</div>
+                <div class="ff-url" id="ffUrl"></div>
+                <a class="demo-btn solid" id="ffOpen" href="#" target="_blank" rel="noopener" style="text-decoration:none;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                    在新标签打开
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== Image lightbox ===== -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+    <img id="lightboxImg" src="" alt="">
+    <button class="overlay-close lb-close" onclick="closeLightbox()" aria-label="Close">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text)" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+    <div class="lb-hint">点击任意处 或按 Esc 关闭</div>
+</div>
+
+<!-- Inline imToken logo — OFFICIAL (token.im/img/imTokenLogo.svg) -->
+<template id="imtokenLogoTpl">
+<svg width="111" height="20" viewBox="0 0 111 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_2033_385)">
+<path d="M25.1855 2.3707C25.9965 13.3565 18.9356 18.549 12.6057 19.1027C6.72078 19.6174 1.18138 16.0009 0.695418 10.4444C0.294547 5.85387 3.1314 3.89953 5.36028 3.70471C7.65276 3.50374 9.57916 5.08486 9.74628 6.99921C9.90726 8.83978 8.75898 9.67748 7.96031 9.74722C7.32874 9.80257 6.5342 9.41907 6.46242 8.59571C6.40094 7.88823 6.66955 7.79181 6.60389 7.04023C6.48706 5.70214 5.32031 5.54627 4.68158 5.60164C3.90854 5.66934 2.506 6.57165 2.70285 8.81927C2.90072 11.0864 5.07425 12.8776 7.92342 12.6285C10.9981 12.3598 13.1389 9.9656 13.2998 6.60754C13.2983 6.42965 13.3358 6.25361 13.4095 6.09177L13.4105 6.08769C13.4436 6.01733 13.4824 5.94977 13.5264 5.88568C13.592 5.78722 13.6761 5.67855 13.7848 5.5596C13.7857 5.55653 13.7857 5.55653 13.7878 5.55653C13.8667 5.46732 13.9621 5.37093 14.0697 5.26737C15.4128 4.00001 20.2499 1.01107 24.8246 1.95748C24.9212 1.97821 25.0086 2.02965 25.0737 2.10412C25.1387 2.1786 25.1779 2.27211 25.1855 2.3707Z" fill="url(#paint0_linear_2033_385)"/>
+<path d="M36.5366 7.08005V17.9294C36.5366 17.9443 36.5306 17.9587 36.5201 17.9692C36.5095 17.9798 36.4952 17.9858 36.4802 17.9858H34.1692C34.1544 17.9858 34.1399 17.9798 34.1294 17.9692C34.1188 17.9587 34.1128 17.9443 34.1128 17.9294V7.08005C34.1128 7.06661 34.1183 7.0537 34.1277 7.0442C34.1372 7.03466 34.1502 7.0293 34.1636 7.0293H36.4858C36.4994 7.0293 36.5121 7.03466 36.5218 7.0442C36.5312 7.0537 36.5366 7.06661 36.5366 7.08005Z" fill="#111D4A"/>
+<path d="M54.6594 3.16064C54.6475 3.16064 54.6361 3.16541 54.6276 3.17386C54.619 3.18232 54.6143 3.1938 54.6143 3.20577V5.1512C54.6143 5.16465 54.6195 5.17756 54.629 5.18708C54.6385 5.1966 54.6518 5.20194 54.6651 5.20194H59.2982V17.929C59.2982 17.944 59.3043 17.9583 59.3148 17.9689C59.3252 17.9795 59.3395 17.9854 59.3547 17.9854H61.7612C61.7764 17.9854 61.7906 17.9795 61.8011 17.9689C61.8115 17.9583 61.8177 17.944 61.8177 17.929V5.20194H66.079C66.0952 5.20194 66.1113 5.19542 66.1227 5.18377C66.1346 5.17214 66.1412 5.15637 66.1412 5.13991V3.20577C66.1412 3.1938 66.136 3.18232 66.1275 3.17386C66.1194 3.16541 66.1075 3.16064 66.0957 3.16064H54.6594Z" fill="#111D4A"/>
+<path d="M55.5025 17.9238C55.5025 17.9403 55.4964 17.9561 55.4845 17.9677C55.4731 17.9793 55.457 17.9859 55.4408 17.9859H53.1862C53.1696 17.9859 53.1539 17.9793 53.1421 17.9677C53.1307 17.9561 53.124 17.9403 53.124 17.9238V11.6026C53.1221 11.2949 53.0975 10.9876 53.0509 10.6835C52.8928 9.59515 52.4869 8.86209 51.0332 8.86209H50.971C50.5295 8.87823 50.0984 9.0001 49.7139 9.21734C49.213 9.48111 48.7877 9.86951 48.4795 10.3451C48.5251 10.6967 48.5474 11.0508 48.5474 11.4052V18.0648C48.5474 18.0798 48.5413 18.0941 48.5308 18.1047C48.5204 18.1152 48.5061 18.1212 48.4909 18.1212H46.2702C46.2537 18.1212 46.2379 18.1147 46.2264 18.103C46.2148 18.0914 46.2082 18.0756 46.2082 18.0592V12.2511C46.2082 11.2191 46.2702 10.1139 45.7574 9.4993C45.5446 9.26909 45.2806 9.09248 44.9868 8.98367C44.6928 8.87495 44.3776 8.83711 44.0663 8.87334C43.6339 8.89252 43.2099 9 42.8206 9.18914C42.5567 9.29947 42.316 9.45823 42.1104 9.65715C41.8676 9.88745 41.6889 10.177 41.5919 10.4974V17.9238C41.5919 17.9403 41.5853 17.9561 41.5738 17.9677C41.5622 17.9793 41.5464 17.9859 41.5298 17.9859H39.2752C39.2589 17.9859 39.2431 17.9793 39.2314 17.9677C39.2198 17.9561 39.2134 17.9403 39.2134 17.9238V7.15345C39.2134 7.1385 39.2192 7.12416 39.2298 7.11357C39.2403 7.10303 39.2548 7.0971 39.2696 7.0971H40.2335C40.4214 7.09644 40.6046 7.15568 40.7566 7.26621C40.9086 7.37673 41.0216 7.53273 41.079 7.71171C41.1241 7.86962 41.1804 8.00497 41.2029 8.07262C42.1567 7.24347 43.3836 6.79748 44.6469 6.82079C45.1341 6.78685 45.6229 6.85735 46.0807 7.0275C46.5385 7.19765 46.9549 7.46361 47.3017 7.80757C47.464 8.00136 47.6092 8.20892 47.7356 8.42788C48.2175 7.91609 48.8019 7.51232 49.4509 7.24309C50.0999 6.97385 50.7987 6.84529 51.5009 6.8659C52.6958 6.8659 55.4745 7.2719 55.4745 11.0443L55.5025 17.9238Z" fill="#111D4A"/>
+<path d="M88.5546 18.0137H86.0802C86.0684 18.0143 86.0565 18.0121 86.0461 18.0072C86.0351 18.0023 86.0256 17.9948 86.0185 17.9855C85.5001 17.2637 84.3949 15.5382 84.2767 15.4085L84.2259 15.3239C83.837 14.8108 82.9184 13.6322 81.6893 13.3672L80.7592 14.3315V17.9404C80.7592 17.9463 80.7583 17.9521 80.7559 17.9576C80.754 17.9631 80.7502 17.9681 80.7464 17.9723C80.7421 17.9765 80.7369 17.9798 80.7317 17.982C80.726 17.9843 80.7203 17.9855 80.7146 17.9855H78.4149C78.3992 17.9841 78.385 17.9769 78.3745 17.9654C78.3641 17.954 78.3584 17.9389 78.3584 17.9234V2.96899C78.3584 2.95403 78.3641 2.93969 78.375 2.92912C78.3855 2.91854 78.3997 2.9126 78.4149 2.9126H80.7592C80.7716 2.9126 80.783 2.91735 80.7915 2.92581C80.8 2.93427 80.8048 2.94575 80.8048 2.95772V11.4161L85.314 6.7922H85.3529H87.9289C88.0025 6.7922 88.0362 6.7922 88.0642 6.84295C88.0927 6.89371 88.0642 6.93881 88.0642 6.98956L83.3186 11.8108C84.3726 12.3725 85.2789 13.1764 85.962 14.1566L86.0128 14.2243C86.1704 14.4273 87.9403 16.9536 88.6111 17.8953C88.6268 17.9027 88.6392 17.9161 88.6448 17.9325C88.6505 17.9489 88.6496 17.967 88.642 17.9827C88.6344 17.9983 88.6211 18.0104 88.605 18.0162C88.5884 18.0221 88.5703 18.0211 88.5546 18.0137Z" fill="#111D4A"/>
+<path d="M36.7733 4.11377C36.7789 4.4024 36.6987 4.68617 36.5426 4.92898C36.3864 5.17178 36.1617 5.36262 35.8968 5.47723C35.6318 5.59184 35.339 5.62503 35.0552 5.57257C34.7715 5.52011 34.5098 5.38439 34.3032 5.18266C34.0969 4.98093 33.9551 4.72234 33.896 4.43975C33.8369 4.15719 33.8633 3.8634 33.9716 3.59583C34.08 3.32825 34.2654 3.09897 34.5043 2.93714C34.7433 2.77533 35.0249 2.6883 35.3136 2.68711C35.503 2.68488 35.6911 2.72 35.8671 2.79051C36.043 2.86099 36.2033 2.96546 36.3388 3.09793C36.4744 3.23042 36.5826 3.38831 36.6571 3.56261C36.7317 3.7369 36.7712 3.9242 36.7733 4.11377Z" fill="#111D4A"/>
+<path d="M70.9317 6.56689C67.6118 6.56689 65.5547 8.77174 65.5547 12.3243C65.5547 15.8768 67.6118 18.0816 70.9317 18.0816C74.2517 18.0816 76.3429 15.8711 76.3429 12.3186C76.3429 8.76609 74.2517 6.56689 70.9317 6.56689ZM73.0795 15.3016C72.7909 15.5672 72.4524 15.7724 72.0835 15.9051C71.7151 16.0378 71.3234 16.0953 70.9317 16.0741C68.3899 16.0741 67.8658 13.9652 67.8658 12.2058C67.8658 9.75291 68.8632 8.55743 70.9317 8.55743C73.0002 8.55743 73.9868 9.81491 73.9868 12.3074C73.9981 13.6663 73.6881 14.6757 73.0795 15.296V15.3016Z" fill="#111D4A"/>
+<path d="M98.958 14.5853C98.9072 14.5232 98.7999 14.5853 98.7496 14.5853L96.7594 14.8841C96.7257 14.8848 96.693 14.8952 96.665 14.9143C96.637 14.9333 96.6147 14.96 96.6018 14.9913C96.3853 15.349 96.0848 15.6484 95.7259 15.8636C95.3675 16.0788 94.962 16.2033 94.5443 16.2262C94.0026 16.3028 93.4495 16.228 92.9477 16.01C92.4449 15.7921 92.0129 15.4395 91.6981 14.9913C91.3478 14.5388 91.1289 13.9982 91.0667 13.4293V13.3898L96.8102 12.6004C97.1649 12.5591 97.5048 12.4357 97.8034 12.2399C98.1016 12.0441 98.3503 11.7814 98.5293 11.4726C98.696 11.1539 98.7852 10.8006 98.79 10.4412C98.7947 10.0817 98.7154 9.72613 98.5578 9.40307C98.0232 8.24334 97.0623 7.33448 95.875 6.86556C95.038 6.54663 94.135 6.44399 93.2482 6.56723C92.3613 6.69043 91.5201 7.03548 90.8018 7.57043C90.1447 8.09493 89.6154 8.76177 89.2531 9.52071C88.8909 10.2796 88.7053 11.1109 88.7105 11.9519C88.683 12.4986 88.7134 13.0468 88.8012 13.5871C89.2014 15.8991 90.8863 18.2336 93.834 18.2336C97.3515 18.2336 98.6988 16.0683 98.9466 14.7713C98.9803 14.7319 99.0197 14.6304 98.958 14.5853ZM91.6307 9.66247C91.897 9.33095 92.2284 9.0574 92.6049 8.85862C92.9809 8.65984 93.3935 8.54001 93.8174 8.5065C94.2077 8.42992 94.6102 8.44839 94.9919 8.56024C95.3736 8.67214 95.7226 8.87414 96.0098 9.14931C96.2358 9.3619 96.4262 9.60944 96.5738 9.88238C96.6161 9.9703 96.6384 10.0667 96.6384 10.1643C96.6384 10.262 96.6161 10.3584 96.5738 10.4463C96.5354 10.5365 96.4741 10.6152 96.3958 10.6746C96.3179 10.7339 96.2254 10.7718 96.1285 10.7846L90.8806 11.5177C90.9618 10.8397 91.2291 10.1974 91.653 9.66247H91.6307Z" fill="#111D4A"/>
+<path d="M110.325 11.2078V17.9238C110.325 17.9403 110.319 17.9561 110.307 17.9677C110.296 17.9793 110.279 17.9859 110.263 17.9859H108.008C107.993 17.9859 107.979 17.9799 107.968 17.9694C107.958 17.9588 107.952 17.9444 107.952 17.9295V12.3413C107.952 12.3413 107.952 11.4165 107.907 10.5763C107.899 10.2948 107.835 10.0177 107.719 9.76123C107.603 9.50472 107.437 9.2738 107.231 9.082C107.017 8.91341 106.771 8.79164 106.508 8.7246C106.245 8.65757 105.971 8.64679 105.703 8.69289C104.637 8.83033 103.664 9.3687 102.981 10.1985V17.9238C102.981 17.9403 102.974 17.9561 102.963 17.9677C102.951 17.9793 102.935 17.9859 102.919 17.9859H100.664C100.648 17.9859 100.632 17.9793 100.621 17.9677C100.609 17.9561 100.602 17.9403 100.602 17.9238V6.95046C100.602 6.93403 100.609 6.91822 100.621 6.90659C100.632 6.89496 100.648 6.88845 100.664 6.88845H102.552C102.569 6.88845 102.585 6.89496 102.596 6.90659C102.608 6.91822 102.615 6.93403 102.615 6.95046V8.02188C103.567 7.15783 104.796 6.65853 106.081 6.6121C107.163 6.54445 110.325 6.60645 110.325 11.2078Z" fill="#111D4A"/>
+</g>
+<defs>
+<linearGradient id="paint0_linear_2033_385" x1="22.7129" y1="5.92105" x2="4.29862" y2="16.3638" gradientUnits="userSpaceOnUse">
+<stop stop-color="#0CC5FF"/>
+<stop offset="1" stop-color="#007FFF"/>
+</linearGradient>
+<clipPath id="clip0_2033_385">
+<rect width="110" height="19" fill="white" transform="translate(0.5 0.913574)"/>
+</clipPath>
+</defs>
+</svg>
+</template>
+
+<script>
+/* ============================================================
+   imToken slides engine · v2.3
+   Thumbnails are derived from each slide's data-thumb attribute —
+   no manual registration map to drift out of sync.
+   ============================================================ */
+
+const slides   = [...document.querySelectorAll('.slide')];
+const sidebar  = document.getElementById('sidebarNav');
+const prog     = document.getElementById('prog');
+const footNum  = document.getElementById('footNum');
+const footLabel= document.getElementById('footLabel');
+const DECK_CONTEXT = footLabel.textContent;
+let cur = 0;
+
+/* ---------- thumbnail builder ---------- */
+function buildThumbContent(cfg) {
+    const inner = document.createElement('div');
+    inner.className = 'thumb-inner';
+    inner.style.background = cfg.bg;
+    const c = cfg.color || '#94A3B8', muted = '#E2E8F0';
+    const line = (w, col, o) => { const l = document.createElement('div'); l.className='thumb-line'; l.style.cssText=`width:${w};background:${col};opacity:${o};`; return l; };
+    const t = cfg.type;
+    if (t === 'cover') {
+        inner.classList.add('cover-type');
+        const d = document.createElement('div'); d.style.cssText = `width:6px;height:6px;border-radius:50%;background:${c};margin-bottom:2px;`; inner.appendChild(d);
+        ['60%','40%'].forEach(w => inner.appendChild(line(w, c, 0.5)));
+    } else if (t === 'statement') {
+        inner.classList.add('cover-type');
+        inner.appendChild(line('74%', c, 0.65)); inner.appendChild(line('52%', c, 0.4));
+    } else if (t === 'divider') {
+        inner.classList.add('cover-type');
+        const n = document.createElement('div'); n.style.cssText = `width:12px;height:8px;border-radius:2px;background:${c};opacity:.7;margin-bottom:2px;`; inner.appendChild(n);
+        inner.appendChild(line('46%', c, 0.35));
+    } else if (t === 'grid2' || t === 'grid3' || t === 'grid4') {
+        inner.appendChild(line('50%', c, 0.6));
+        const row = document.createElement('div'); row.className='thumb-row'; row.style.flex='1';
+        const n = t === 'grid2' ? 2 : (t === 'grid3' ? 3 : 4);
+        for (let i=0;i<n;i++){ const col=document.createElement('div'); col.className='thumb-block'; col.style.cssText=`flex:1;background:${muted};`; row.appendChild(col); }
+        inner.appendChild(row);
+    } else if (t === 'split') {
+        const row = document.createElement('div'); row.className='thumb-row'; row.style.cssText='flex:1;align-items:stretch;';
+        const left = document.createElement('div'); left.style.cssText='flex:1;display:flex;flex-direction:column;gap:1px;justify-content:center;';
+        for (let i=0;i<3;i++) left.appendChild(line(`${70-i*15}%`, i===0?c:muted, i===0?0.7:1));
+        const right = document.createElement('div'); right.className='thumb-block'; right.style.cssText=`flex:1;background:${c};opacity:0.12;margin-left:1px;`;
+        row.appendChild(left); row.appendChild(right); inner.appendChild(row);
+    } else if (t === 'stack') {
+        inner.appendChild(line('55%', c, 0.6));
+        const colors = ['#E5F2FF','#EDE9FE','#FEF3C7','#D1FAE5'];
+        for (let i=0;i<(cfg.rows||3);i++){ const bar=document.createElement('div'); bar.className='thumb-block'; bar.style.cssText=`width:100%;flex:1;background:${colors[i]||muted};${i===0?'border-left:2px solid '+c:''};`; inner.appendChild(bar); }
+    } else if (t === 'table') {
+        inner.appendChild(line('62%', c, 0.6));
+        for (let i=0;i<4;i++){ const r=document.createElement('div'); r.style.cssText=`width:100%;height:2px;background:${i===0?c:muted};opacity:${i===0?0.35:1};`; inner.appendChild(r); }
+    } else if (t === 'timeline') {
+        inner.appendChild(line('48%', c, 0.55));
+        const row = document.createElement('div'); row.className='thumb-row'; row.style.cssText='flex:1;align-items:center;gap:2px;';
+        for (let i=0;i<5;i++){ const d=document.createElement('div'); d.style.cssText=`width:3px;height:3px;border-radius:50%;background:${c};opacity:${0.35+i*0.13};flex-shrink:0;`; row.appendChild(d);
+            if(i<4){ const l=document.createElement('div'); l.style.cssText=`flex:1;height:1px;background:${muted};`; row.appendChild(l);} }
+        inner.appendChild(row);
+    } else if (t === 'steps') {
+        inner.style.justifyContent='center'; inner.style.alignItems='flex-start'; inner.style.paddingLeft='7px';
+        for (let i=0;i<4;i++){ const d=document.createElement('div'); d.style.cssText=`width:3px;height:3px;border-radius:50%;background:${c};opacity:${0.4+i*0.15};`; inner.appendChild(d);
+            if(i<3){ const l=document.createElement('div'); l.style.cssText=`width:1px;height:2px;background:${muted};margin-left:1px;`; inner.appendChild(l);} }
+    } else if (t === 'term') {
+        inner.style.background = '#0B1120'; inner.style.justifyContent='center'; inner.style.gap='2px'; inner.style.paddingLeft='5px';
+        ['52%','36%','60%','28%'].forEach((w,i)=>inner.appendChild(line(w, i%2?'#7FB6FF':'#34D399', 0.75)));
+    } else if (t === 'stat') {
+        inner.classList.add('cover-type'); inner.style.flexDirection='row'; inner.style.gap='3px';
+        for (let i=0;i<3;i++){ const b=document.createElement('div'); b.style.cssText=`width:8px;height:${8+i*3}px;border-radius:1px;background:${c};opacity:${0.4+i*0.2};`; inner.appendChild(b); }
+    } else if (t === 'placeholder') {
+        inner.classList.add('cover-type');
+        const b=document.createElement('div'); b.style.cssText=`width:78%;height:58%;border:1.5px dashed ${c};border-radius:2px;opacity:.45;`; inner.appendChild(b);
+    } else { /* fallback: grid2 */
+        inner.appendChild(line('50%', c, 0.6));
+        const row=document.createElement('div'); row.className='thumb-row'; row.style.flex='1';
+        for(let i=0;i<2;i++){ const col=document.createElement('div'); col.className='thumb-block'; col.style.cssText=`flex:1;background:${muted};`; row.appendChild(col);} inner.appendChild(row);
+    }
+    return inner;
+}
+
+const THUMB_COLORS = { blue:'#007FFF', purple:'#7C3AED', green:'#059669', amber:'#D97706', red:'#DC2626', gray:'#94A3B8' };
+const COVERISH = ['cover','statement','divider'];
+
+/* ---------- outline numbering ----------
+   编号从 data-group / data-thumb 自动推导，不需要手工维护：
+   · 分隔页            → PART N，并重置小节计数
+   · 归属某个 Part 的页 → N.M
+   · Opening / Closing → 0.M / END.M
+   · 封面与结尾封底     → —                                            */
+function buildOutline() {
+    const st = { part: null, sub: 0 };
+    return slides.map((slide, k) => {
+        const thumb = slide.dataset.thumb || '';
+        const group = slide.dataset.group || '';
+        let label = slide.dataset.label || slide.dataset.section || ('Slide ' + (k + 1));
+        if (thumb === 'divider') {
+            const m = label.match(/Part\s*(\d+)/i);
+            st.part = m ? +m[1] : (typeof st.part === 'number' ? st.part + 1 : 1);
+            st.sub = 0;
+            return { num: 'PART ' + st.part, title: label.replace(/^Part\s*\d+\s*[·:.-]\s*/i, ''), partStart: true };
+        }
+        if (thumb === 'cover') { return { num: '—', title: label, partStart: false }; }
+        const gm = group.match(/Part\s*(\d+)/i);
+        let key;
+        if (gm) key = +gm[1];
+        else if (/Closing|结尾|收尾/i.test(group)) key = 'END';
+        else key = 0;                       // Opening 及其它
+        if (st.part !== key) { st.part = key; st.sub = 0; }
+        st.sub++;
+        return { num: st.part + '.' + st.sub, title: label, partStart: false };
+    });
+}
+const OUTLINE = buildOutline();
+
+slides.forEach((slide, k) => {
+    const row = document.createElement('div');
+    row.className = 'nav-thumb' + (OUTLINE[k].partStart ? ' part-start' : '');
+    const type  = slide.dataset.thumb || 'grid2';
+    const color = THUMB_COLORS[slide.dataset.thumbColor] || THUMB_COLORS.blue;
+    const bg    = COVERISH.includes(type) ? 'linear-gradient(135deg,#E5F2FF,#EDE9FE)' : '#fff';
+    const frame = document.createElement('div');
+    frame.className = 'thumb-frame';
+    frame.appendChild(buildThumbContent({ type, bg, color }));
+    row.appendChild(frame);
+    const meta = document.createElement('div');
+    meta.className = 'nav-meta';
+    const num = document.createElement('div');
+    num.className = 'nav-num';
+    num.textContent = OUTLINE[k].num;
+    const ttl = document.createElement('div');
+    ttl.className = 'nav-title';
+    ttl.textContent = OUTLINE[k].title;
+    meta.appendChild(num); meta.appendChild(ttl);
+    row.appendChild(meta);
+    row.title = OUTLINE[k].num + '  ' + OUTLINE[k].title;
+    row.addEventListener('click', () => go(k));
+    sidebar.appendChild(row);
+});
+const thumbs = [...sidebar.children];
+
+/* ---------- stepped reveal, scoped per slide ---------- */
+const REDUCE = matchMedia('(prefers-reduced-motion:reduce)').matches;
+const stepTimers = [];
+function clearStepTimers(){ while(stepTimers.length) clearTimeout(stepTimers.pop()); }
+function playSteps(slide) {
+    if (!slide) return;
+    const steps = [...slide.querySelectorAll('[data-step]')];
+    const replay = slide.querySelector('.replay');
+    if (!steps.length) { if (replay) replay.classList.remove('show'); return; }
+    const MAX = steps.reduce((m,e)=>Math.max(m, +e.dataset.step||0), 0);
+    let curStep = 0;
+    const render = () => {
+        steps.forEach(e => e.classList.toggle('on', (+e.dataset.step||0) <= curStep));
+        if (replay) replay.classList.toggle('show', curStep >= MAX);
+    };
+    clearStepTimers(); curStep = 0; render();
+    const start = REDUCE ? 0 : 420, gap = REDUCE ? 0 : 950;
+    for (let s = 1; s <= MAX; s++) {
+        stepTimers.push(setTimeout(() => { curStep = s; render(); }, start + (s-1)*gap));
+    }
+}
+document.addEventListener('click', (e) => {
+    const r = e.target.closest('.replay');
+    if (r) { e.stopPropagation(); playSteps(r.closest('.slide')); }
+}, true);
+
+/* ---------- paging ---------- */
+function go(n) {
+    cur = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach((s, k) => s.classList.toggle('active', k === cur));
+    thumbs.forEach((t, k) => t.classList.toggle('active', k === cur));
+    prog.style.width = ((cur + 1) / slides.length * 100) + '%';
+    const pad = x => String(x).padStart(2, '0');
+    footNum.textContent = pad(cur + 1) + ' / ' + pad(slides.length);
+    footLabel.textContent = slides[cur].dataset.group || DECK_CONTEXT;
+    if (thumbs[cur]) thumbs[cur].scrollIntoView({ block: 'nearest' });
+    slides[cur].scrollTop = 0;
+    playSteps(slides[cur]);
+    renderNotes();
+    slides[cur].querySelectorAll('iframe[data-autoplay]').forEach(f => {
+        if (f.contentWindow) { try { f.contentWindow.postMessage({ type: 'deck-play' }, '*'); } catch(_){} }
+    });
+    /* 深链接。沙箱 iframe（about:srcdoc / 跨源预览）里 replaceState 会抛
+       SecurityError，且每翻一页抛一次 —— 包起来，失败就安静跳过。 */
+    try { if (history.replaceState) history.replaceState(null, '', '#/' + (cur + 1)); } catch (_) {}
+}
+
+/* ---------- auto-hide rail ---------- */
+const railEl = document.querySelector('.sidebar-nav');
+const hotzone = document.getElementById('railHotzone');
+let railTimer = null;
+function railPeek(on) {
+    clearTimeout(railTimer);
+    if (on) railEl.classList.add('peek');
+    else railTimer = setTimeout(() => railEl.classList.remove('peek'), 260);
+}
+[hotzone, railEl].forEach(el => {
+    el.addEventListener('mouseenter', () => railPeek(true));
+    el.addEventListener('mouseleave', () => railPeek(false));
+});
+
+/* ---------- click / tap paging ---------- */
+const INTERACTIVE_SEL = 'a[href], button, input, select, textarea, summary, label, iframe, video, audio, [onclick], [role="button"], .demo-btn, .replay, .copy-btn, .sidebar-nav, .nav-thumb, .demo-panel, .desktop-modal, .notes-panel, .lightbox, [contenteditable], .sw-tile, .style-modal';
+/* 点在文字上的一击要给「双击选词」让路：延迟 180ms 再翻页；
+   点在空白处立即翻页，演讲手感不受影响。 */
+const TEXTISH_SEL = 'p, h1, h2, h3, h4, h5, h6, li, td, th, dt, dd, code, pre, blockquote, figcaption, .lead, .quote, .label, .mono, .note, .kicker, .card, .callout, .p-body, .stat, .comparison';
+const DRAG_TOLERANCE = 8;   /* px：超过这个距离视为划选，不是翻页 */
+const DBLCLICK_GRACE = 180; /* ms */
+
+const deckEl = document.querySelector('.deck');
+let pressPt = null, pendingTurn = null;
+function cancelPendingTurn() { clearTimeout(pendingTurn); pendingTurn = null; }
+
+deckEl.addEventListener('pointerdown', (e) => {
+    pressPt = { x: e.clientX, y: e.clientY };
+    cancelPendingTurn();
+});
+deckEl.addEventListener('dblclick', cancelPendingTurn);
+
+deckEl.addEventListener('click', (e) => {
+    if (e.target.closest(INTERACTIVE_SEL)) return;
+    if (overlayOpen()) return;
+
+    /* 1. 拖动过 —— 这是一次划选，不翻页 */
+    if (pressPt && Math.hypot(e.clientX - pressPt.x, e.clientY - pressPt.y) > DRAG_TOLERANCE) return;
+
+    /* 2. 当前已有选区 —— 双击选词 / 三击选段的后续几下都走这里，不翻页 */
+    const sel = window.getSelection && window.getSelection();
+    if (sel && !sel.isCollapsed && String(sel).trim()) return;
+
+    const dir = (e.clientX / window.innerWidth) < 0.5 ? -1 : 1;
+
+    /* 3. 点在文字上 —— 缓一拍，等着看是不是双击 */
+    if (e.target.closest(TEXTISH_SEL)) {
+        pendingTurn = setTimeout(() => { pendingTurn = null; go(cur + dir); }, DBLCLICK_GRACE);
+    } else {
+        go(cur + dir);
+    }
+});
+
+/* ---------- keyboard hint ---------- */
+const kbdHint = document.getElementById('kbdHint');
+setTimeout(() => kbdHint.classList.add('show'), 500);
+setTimeout(() => kbdHint.classList.remove('show'), 4200);
+
+/* ---------- speaker notes ---------- */
+const notesPanel = document.getElementById('notesPanel');
+const notesBody  = document.getElementById('notesBody');
+const notesMeta  = document.getElementById('notesMeta');
+function renderNotes() {
+    const s = slides[cur];
+    const n = s.dataset.speakerNotes;
+    notesBody.textContent = n && n.trim() ? n.trim() : '（这一页没有讲者备注）';
+    const pad = x => String(x).padStart(2, '0');
+    notesMeta.textContent = pad(cur + 1) + ' / ' + pad(slides.length) + '  ·  ' + (s.dataset.label || '');
+}
+function toggleNotes(force) {
+    const open = typeof force === 'boolean' ? force : !notesPanel.classList.contains('open');
+    notesPanel.classList.toggle('open', open);
+}
+
+/* ---------- keyboard ---------- */
+document.addEventListener('keydown', (e) => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) return;
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    if (e.key === 'Escape') { if (overlayOpen()) { closeAllOverlays(); } else { toggleNotes(false); } return; }
+    if (overlayOpen()) return;
+    if (['ArrowRight','ArrowDown','PageDown',' '].includes(e.key)) { e.preventDefault(); go(cur + 1); }
+    else if (['ArrowLeft','ArrowUp','PageUp'].includes(e.key)) { e.preventDefault(); go(cur - 1); }
+    else if (e.key === 'Home') { e.preventDefault(); go(0); }
+    else if (e.key === 'End') { e.preventDefault(); go(slides.length - 1); }
+    else if (e.key === 'r' || e.key === 'R') { e.preventDefault(); playSteps(slides[cur]); }
+    else if (e.key === 'n' || e.key === 'N') { e.preventDefault(); toggleNotes(); }
+    else if (/^[1-9]$/.test(e.key)) { e.preventDefault(); go(parseInt(e.key, 10) - 1); }
+});
+
+/* ---------- footer logo ---------- */
+document.getElementById('footLogo').innerHTML = document.getElementById('imtokenLogoTpl').innerHTML;
+
+/* ---------- prototype / URL overlays (dual safety) ---------- */
+function overlayOpen() {
+    return document.getElementById('demoPanel').classList.contains('open')
+        || document.getElementById('desktopBackdrop').classList.contains('open')
+        || document.getElementById('lightbox').classList.contains('open')
+        || document.getElementById('styleModal').classList.contains('open');
+}
+/* 图片放大。关闭后回到原来那一页 —— 不翻页、不重播、不丢分步状态。 */
+function openLightbox(src, alt) {
+    if (!src) return;
+    const lb = document.getElementById('lightbox'), im = document.getElementById('lightboxImg');
+    im.src = src; im.alt = alt || '';
+    lb.classList.add('open');
+}
+function closeLightbox() {
+    const lb = document.getElementById('lightbox');
+    if (!lb.classList.contains('open')) return;
+    lb.classList.remove('open');
+    setTimeout(() => { document.getElementById('lightboxImg').src = ''; }, 320);
+}
+function toggleDemoPanel(url) {
+    const panel = document.getElementById('demoPanel');
+    const iframe = document.getElementById('demoIframe');
+    const isOpen = panel.classList.contains('open');
+    if (isOpen && url && iframe.getAttribute('src') !== url) { iframe.src = url; return; }
+    if (isOpen) {
+        panel.classList.remove('open'); document.body.classList.remove('demo-open');
+        setTimeout(() => { iframe.src = 'about:blank'; }, 400);
+    } else if (url) {
+        iframe.src = url; panel.classList.add('open'); document.body.classList.add('demo-open');
+    }
+}
+let frameProbe = null;
+function toggleDesktopModal(url, title) {
+    const backdrop = document.getElementById('desktopBackdrop');
+    const iframe   = document.getElementById('desktopIframe');
+    const fallback = document.getElementById('frameFallback');
+    const isOpen   = backdrop.classList.contains('open');
+    clearTimeout(frameProbe);
+    if (isOpen && url && iframe.getAttribute('src') !== url) { /* swap */ }
+    else if (isOpen) {
+        backdrop.classList.remove('open');
+        setTimeout(() => { iframe.src = 'about:blank'; fallback.classList.remove('show','hint'); }, 350);
+        return;
+    }
+    if (!url) return;
+    fallback.classList.remove('show','hint');
+    document.getElementById('desktopUrl').textContent = title || url;
+    document.getElementById('desktopExt').href = url;
+    document.getElementById('ffUrl').textContent = url;
+    document.getElementById('ffOpen').href = url;
+    iframe.src = url;
+    backdrop.classList.add('open');
+    /* Dual safety. Chrome fires `load` even for frames the site REFUSED to serve,
+       so onload is not a usable signal. The only trustworthy test is whether we can
+       actually see painted content (same-origin). Cross-origin => unverifiable =>
+       show the new-tab card rather than a blank white rectangle in front of a room. */
+    frameProbe = setTimeout(() => {
+        /* Three states, because "did this frame actually paint?" is not always knowable:
+             ok      – same-origin and we can see content   -> do nothing
+             empty   – same-origin and the body is empty    -> full cover (bad/missing URL)
+             unknown – cross-origin, cannot inspect at all  -> non-blocking escape strip,
+                       so a site that DID embed is never covered by a false alarm. */
+        let verdict = 'unknown';
+        /* 相对路径 = 跟 deck 一起发布的同目录文件，一定能嵌。
+           （Chrome 把 file:// 的 iframe 也当跨源，contentDocument 会抛，
+           不特判的话每次开本地原型都会误弹逃生条。） */
+        const isRelative = !/^([a-z][a-z0-9+.-]*:)?\/\//i.test(url) && !/^data:/i.test(url);
+        if (isRelative) verdict = 'ok';
+        else {
+            try {
+                const d = iframe.contentDocument;
+                if (d && d.body) verdict = d.body.childElementCount > 0 ? 'ok' : 'empty';
+            } catch (_) { verdict = 'unknown'; }
+        }
+        if (verdict === 'empty') fallback.classList.add('show');
+        else if (verdict === 'unknown') fallback.classList.add('hint');
+    }, 2200);
+}
+function closeAllOverlays() {
+    closeLightbox();
+    document.getElementById('styleModal').classList.remove('open');
+    if (document.getElementById('demoPanel').classList.contains('open')) toggleDemoPanel();
+    if (document.getElementById('desktopBackdrop').classList.contains('open')) toggleDesktopModal();
+}
+
+/* ---------- copy buttons on prompt blocks ---------- */
+document.addEventListener('click', (e) => {
+    const b = e.target.closest('.copy-btn');
+    if (!b) return;
+    e.stopPropagation();
+    const box = b.closest('.prompt');
+    const txt = b.dataset.copy || (box ? (box.querySelector('.p-body')?.innerText || '') : '');
+    const done = () => { const o = b.textContent; b.textContent = '已复制 ✓'; b.classList.add('done'); setTimeout(() => { b.textContent = o; b.classList.remove('done'); }, 1600); };
+    const legacy = () => { const ta = document.createElement('textarea'); ta.value = txt; ta.style.cssText='position:fixed;opacity:0;'; document.body.appendChild(ta); ta.select(); try{document.execCommand('copy');done();}catch(_){} ta.remove(); };
+    if (navigator.clipboard && window.isSecureContext) { navigator.clipboard.writeText(txt).then(done).catch(legacy); }
+    else { const ta = document.createElement('textarea'); ta.value = txt; ta.style.cssText='position:fixed;opacity:0;'; document.body.appendChild(ta); ta.select(); try{document.execCommand('copy');done();}catch(_){} ta.remove(); }
+}, true);
+
+
+/* ---------- Style menu · 17 + 2 baselines · every tile is a real Refero style reference ---------- */
+const REFERO = 'https://images.refero.design/styles/';
+/* PROMPT-PACK.md 00b 第 3–6 行原文（第 1–2 行由弹窗按这一张填好） */
+const PROMPT_00B_REST = "请从这个参照里提取九要素，写成 style-lock.md（格式见 templates/style-lock.md）：参照锚点 / 形状语言 / 字体系统 / 色彩策略 / 密度与留白 / 层次表达 / 动效性格 / 图像与材质 / 禁止项（≥5 条，必须包含「AI 默认风格」反模式）。\n每一行都要是可验证的值（像素、字重、色值、毫秒），不要形容词；每个值后面标来源：（截图目测）/（参照站官方）/（本包默认）。只有一张静态截图时，动效一行直接用本包默认四档 fast 150 / normal 240 / soft 360 / hero 500ms，标（本包默认）。\n如果我的参照本身就是玻璃 / 渐变风格（菜单 06、15），模板里「紫→蓝渐变首屏 + 玻璃卡片」那条禁止项改成「玻璃 / 渐变只出现在一处：[写明哪一处]」，不要整条删掉。\n写完先用三句话复述「这个风格的核心是…」，等我确认再算完成。";
+const STYLES = [
+ {n:1, name:'极简功能', ref:'shadcn/ui', url:'https://ui.shadcn.com', img:'ui.shadcn.com/c14c0a94-1037-449e-bf5b-4cb972656ac7', file:'01-shadcn.jpg', who:'趁手的日常工具', take:'黑色只用于主操作，灰色用于分隔和次要状态，语义色只出现在状态点；层级用字号和字距区分。', risk:'很容易被看成「没做设计」。', kw:'minimal, functional, 1px hairline borders, monochrome with a single accent, Inter, no decoration, generous whitespace, no gradients'},
+ {n:2, name:'排版驱动', ref:'Tailwind CSS', url:'https://tailwindcss.com', img:'tailwindcss.com/47824fc7-5175-4bc3-922e-c2ee7d26066c', file:'02-tailwind.jpg', who:'严谨的讲师', take:'用超大标题和很小的等宽代码拉开尺寸差来区分层级；强调色只用在代码高亮里。', risk:'文案必须足够短。', kw:'typographic, oversized Inter headlines, tight tracking, small monospace accents, accent only in code, flat white canvas'},
+ {n:3, name:'编辑杂志', ref:'Medium', url:'https://medium.com', img:'medium.com/4784cf2e-58ed-4b0c-8e6d-8758f595d997', file:'03-medium.jpg', who:'有品味的策展人', take:'文学气质来自羊皮纸色的底，而不是字体；只放一个衬线标题和一个黑色胶囊按钮，其余都留白。', risk:'放进表格和表单就会走样。', kw:'editorial, vellum off-white canvas, high-contrast serif headline, restrained sans body, single black pill CTA, generous whitespace'},
+ {n:4, name:'通透金融', ref:'Compound', url:'https://withcompound.com/membership', img:'withcompound.com/1873b3b2-636f-49f0-aa1a-7c5022b69331', file:'04-compound.jpg', who:'不说废话的私人银行家', take:'层级用尺寸和留白区分，不靠字重；大圆角加极淡阴影，像浮起的纸片；近黑色只留给最重要的焦点。同类：N26、Titan。', risk:'再加一个强调色就乱了。', kw:'light airy fintech, white and soft gray, near-black only for focal points, hierarchy by scale and spacing not weight, large radius cards, barely-there shadows, pill buttons, single azure accent on actions'},
+ {n:5, name:'暗色科技', ref:'Linear Changelog', url:'https://linear.app/changelog', img:'linear.app/11d3e58a-87d7-4a9a-bbf5-720f4fd3ffc6', file:'05-linear.jpg', who:'懂行的极客同事', take:'大标题用 medium 而非 bold；靠边框和色调深浅分层，不用阴影；胶囊形控件和方正的框架形成对比。', risk:'大众用户长时间阅读会吃力。', kw:'dark mode, near-black canvas, tonal layering and 1px graphite borders instead of shadows, Inter medium headlines, 8px cards, pill controls, monochrome'},
+ {n:6, name:'玻璃拟态', ref:'amra', url:'https://www.amra.com', img:'www.amra.com/26836454-f4c6-4aba-87ef-80a62a7abb4b', file:'06-amra.jpg', who:'低调的智能助手', take:'把氛围和控件分开：模糊光球放在背景里表现 AI，前景的控件保持无色；唯一的柔紫色只用于主操作。', risk:'数据密集的页面可读性差。', kw:'frosted glass, translucent panels, backdrop blur, blurred gradient orbs as atmosphere, colorless controls, single soft violet CTA, white canvas'},
+ {n:7, name:'安静奢侈', ref:'Christopher Ireland', url:'https://christopherireland.net', img:'christopherireland.net/f293bacf-990b-4270-900d-90f3a565ca27', file:'07-christopher.jpg', who:'低调的收藏家', take:'只用字体、比例和留白，不用颜色、阴影和装饰；用细横线划分结构。', risk:'不适合密集数据。', kw:'quiet luxury, parchment white, oversized serif masthead, thin hairline rules, no color no shadow, one cinematic photograph, extreme whitespace'},
+ {n:8, name:'海报粗野', ref:'Gumroad', url:'https://gumroad.com', img:'gumroad.com/ac783c6e-6c2b-4663-87b3-bcd12d463b0a', file:'08-gumroad.jpg', who:'玩世不恭的朋友', take:'黑白配一个霓虹粉；品牌图形像贴纸一样零散点缀，不铺底，也不当背景。', risk:'金融、医疗等信任型产品慎用。', kw:'off-white canvas, heavy black type and dividers, one neon pink, sticker-like outlined graphics, black rectangular buttons, no gradients'},
+ {n:9, name:'便当网格', ref:'FORA', url:'https://fora-concept.com', img:'fora-concept.com/8e5c66ea-64f0-4e5c-9296-48e79aa15529', file:'09-bento.jpg', who:'有态度的设计工作室', take:'整屏切成几个大块，每块只讲一件事；纯色块（白、赤陶、淡紫）和照片交替排列形成节奏，不用阴影，也不用渐变。', risk:'不适合线性流程、表单多的页面。', kw:'bento / mosaic grid, full-bleed color-block tiles, one fact per tile, flat saturated section colors (white, terracotta, lavender), raw-edged photo tiles, small pill tags, no shadows, no gradients'},
+ {n:10, name:'材质渲染', ref:'Desktop.fm', url:'https://desktop.fm', img:'desktop.fm/5b70f172-2ba2-4f26-9956-251d4cfc0329', file:'10-desktopfm.jpg', who:'讲究的手艺人', take:'质感来自一件实物的高质量渲染，界面本身保持单色；整页只靠一道光束带出动感。', risk:'主题一多、迭代一快，实物渲染图就跟不上。', kw:'one glossy rendered object as hero, cloud-gray field, monochrome UI, single neon green light streak, floating card 25px radius'},
+ {n:11, name:'扁平友好', ref:'Busuu', url:'https://busuu.com', img:'busuu.com/ce352889-4a1f-490c-b963-9da669794bc3', file:'11-busuu.jpg', who:'亲切的老师', take:'扁平插画配一个绿色主按钮；鲜艳的颜色集中用在首屏，往下立刻回到白底。', risk:'这类风格很常见，很难显得独特。', kw:'flat friendly, vivid hero gradient, white content canvas, flat vector illustration, single bright green pill CTA, rounded'},
+ {n:12, name:'圆润玩趣', ref:'Duolingo', url:'https://duolingo.com', img:'duolingo.com/9457a848-2905-4fe8-bb58-e168049120cf', file:'12-duolingo.jpg', who:'鼓励你的教练', take:'按钮底部有一条实色的边，像能按下去的实体按键；圆角配粗字重；插画是主视觉。', risk:'不适合严肃的 B2B。', kw:'playful, lime green brand, bold rounded headlines, buttons with firm bottom shadow, character illustrations, white canvas, flat cards'},
+ {n:13, name:'终端等宽', ref:'Langbase', url:'https://langbase.com', img:'langbase.com/6faf7a27-f3f3-42b7-9b55-1a0b2ff59439', file:'13-langbase.jpg', who:'硬核的工程师', take:'黑底配细网格和结构性边框；渐变只出现在正在活动的区域，其余都是纯黑。', risk:'大众消费品慎用。', kw:'terminal aesthetic, inky black, faint grid lines, structural borders, glowing data bars only in active area, white pill primary, monospace accents'},
+ {n:14, name:'复古像素', ref:'Obscura', url:'https://obscura.net', img:'obscura.net/6454b0bf-266d-4d3e-9957-1c9d38d87117', file:'14-obscura.jpg', who:'怀旧的老玩家', take:'像素字标题和现代无衬线正文形成反差；控件保持现代 SaaS 的样子；只有主操作用橙色。', risk:'信任型产品慎用。', kw:'retro pixel, sky-blue canvas, pixel-art clouds and mascot, pixelated display headline with modern sans body, one orange CTA, soft white cards'},
+ {n:15, name:'流体渐变', ref:'Lovable', url:'https://lovable.dev', img:'lovable.dev/341ba7d1-ee78-4db4-9ba9-34c359cc36c9', file:'15-lovable.jpg', who:'让人惊叹的发布会', take:'星云渐变只放在首屏，其余回到米白；渐变只当一处标志，不铺满整个界面。', risk:'用多了就像一般加密产品。', kw:'organic nebula gradient hero only, warm off-white canvas elsewhere, compact black headlines, ghost buttons with thin borders, rounded frames'},
+ {n:16, name:'数据密集', ref:'OpenSea', url:'https://opensea.io', img:'opensea.io/2465f692-3a79-4576-970c-ee56c1e72375', file:'16-opensea.jpg', who:'盯盘的交易员', take:'数字等宽、按列对齐；电光蓝只给活跃状态和链接；卡片靠内边框区分，不用阴影。', risk:'新手和手机首屏慎用。', kw:'dense data console, midnight black, graphite panels, monospaced numerals, single electric blue for active states, inset borders no shadows, left icon rail'},
+ {n:17, name:'手绘纸感', ref:'Tally', url:'https://tally.so', img:'tally.so/32129d0a-39b5-4bbd-8446-fa564f7ff15e', file:'17-tally.jpg', who:'爱涂写的同事', take:'涂鸦只画在界面周围，不碰控件；唯一的蓝色留给主操作。', risk:'正式、精密的场景慎用。', kw:'hand-drawn, white canvas, ink doodles and scribbled annotations around the UI, clean sans type, single vivid blue CTA, soft layered cards'},
+ {n:18, name:'AI 共识长相', ref:'ChatGPT', url:'https://chatgpt.com', img:'chatgpt.com/667cf5b9-5940-4db5-a972-fb6bd51d5783', file:'18-chatgpt.jpg', base:true, who:'大多数 AI 产品', take:'雾灰色侧栏、白色画布，加一个胶囊形输入框。Perplexity、OpenAI Devs、Poly 都是这一套。', risk:'首版长成这样，说明用的是默认值。', kw:'（不要作为目标）fog-gray sidebar, white canvas, long pill input, black filled primary'},
+ {n:19, name:'加密共识长相', ref:'Uniswap', url:'https://uniswap.org', img:'uniswap.org/a5229548-6e45-435d-9ef7-58ef706ec859', file:'19-uniswap.jpg', base:true, who:'大多数加密产品', take:'白底、多彩的模糊光斑，加大圆角胶囊按钮。Safepal、Glow 都是这一套。', risk:'首版长成这样，说明用的是默认值。', kw:'（不要作为目标）white canvas, blurred multicolor blob glows, pill buttons'}
+];
+function styleImg(s){ if(s.warn) return '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;text-align:center;padding:.3rem;box-sizing:border-box;font-size:.72rem;font-weight:700;line-height:1.35;color:var(--amber);background:repeating-linear-gradient(45deg,rgba(var(--amber-rgb),.08) 0 8px,transparent 8px 16px);">⚠ 图待更换<br>预览图有误</div>'; return '<img src="assets/styles/'+s.file+'" alt="'+s.ref+'" loading="lazy" onerror="if(!this.dataset.f){this.dataset.f=1;this.src=\''+REFERO+s.img+'/preview_0.jpg\';}">'; }
+(function renderAtlas(){
+  const grid=document.getElementById('atlasGrid'); if(!grid) return;
+  grid.innerHTML=STYLES.map(s=>'<div class="sw-tile'+(s.base?' base':'')+(s.n===4?' pick':'')+'" data-style="'+s.n+'" title="点击查看借鉴什么，并复制关键词"><div class="t-img">'+styleImg(s)+'</div>'
+    +'<div class="t-name"><span class="n">'+(s.base?'BASE':String(s.n).padStart(2,'0'))+'</span>'+s.name+'</div><div class="t-en">'+s.ref+'</div><div class="t-p"'+(s.who.length>=10?' style="font-size:.74rem;"':'')+'>像：'+s.who+'</div></div>').join('');
+})();
+const styleModal=document.getElementById('styleModal');
+function openStyle(n){
+  const s=STYLES.find(x=>x.n===+n); if(!s) return;
+  styleModal.querySelector('.sm-sw').innerHTML=s.warn
+    ? '<div class="sm-img" style="aspect-ratio:auto;padding:1.2rem 1.3rem;border-color:rgba(var(--amber-rgb),.5);background:rgba(var(--amber-rgb),.06);font-size:.9rem;line-height:1.6;"><b style="color:var(--amber);">⚠ 图待换</b><br>'+s.warn+'<br><span style="color:var(--text-secondary);font-size:.8rem;">想看真正的便当网格，可以在 Refero Styles 搜索 bento grid layout with mixed-size rounded tiles, one fact per tile</span></div>'
+    : '<div class="sm-img">'+styleImg(s)+'</div><a class="demo-btn ghost" style="margin-top:.8rem;" href="'+s.url+'" target="_blank" rel="noopener">打开 '+s.ref+' ↗</a>';
+  styleModal.querySelector('.sm-title').textContent=String(s.n).padStart(2,'0')+' · '+s.name+' · '+s.ref;
+  styleModal.querySelector('.sm-en').textContent='来源：Refero Styles · 像：'+s.who;
+  styleModal.querySelector('.sm-take').textContent=s.take;
+  styleModal.querySelector('.sm-risk').textContent=s.risk;
+  styleModal.querySelector('.sm-kw').textContent=s.kw;
+  styleModal.querySelector('.sm-full').textContent='参照：'+s.ref+(s.warn?'（预览图有误，只参考文字和关键词）':'（'+s.url+'）')+'。我的用户在 [心情] 下打开它；我希望它像 [一个什么样的人]；绝不能像 [ ]。\n借它的：'+s.take.replace('⚠ 图待换 · ','')+'　不借：'+s.risk+'　关键词：'+s.kw+'\n'+PROMPT_00B_REST;
+  styleModal.classList.add('open');
+}
+document.addEventListener('click',e=>{
+  const t=e.target.closest('.sw-tile'); if(t){ e.stopPropagation(); openStyle(t.dataset.style); return; }
+  if(e.target.closest('.sm-close')){ e.stopPropagation(); styleModal.classList.remove('open'); return; }
+  if(e.target===styleModal){ styleModal.classList.remove('open'); }
+},true);
+/* ---------- QA: ?qa → list slides whose stage overflows (read with --dump-dom) ---------- */
+if (/[?&]qa\b/.test(location.search)) {
+  setTimeout(()=>{ const out=[]; document.querySelectorAll('.slide').forEach((sl,i)=>{ sl.classList.add('active'); const st=sl.querySelector('.stage'); if(st && st.scrollHeight>st.clientHeight+6) out.push((i+1)+':'+sl.dataset.section+':'+st.scrollHeight+'/'+st.clientHeight); sl.classList.remove('active'); });
+    const d=document.createElement('pre'); d.id='qa-report'; d.textContent='QA_OVERFLOW['+out.join(' | ')+']'; document.body.appendChild(d); }, 1500);
+}
+
+/* ---------- boot ---------- */
+let hashIdx = NaN;
+try { hashIdx = parseInt((location.hash.match(/^#\/(\d+)$/) || [])[1], 10); } catch (_) {}
+go(Number.isFinite(hashIdx) ? hashIdx - 1 : 0);
+</script>
+</body>
+</html>

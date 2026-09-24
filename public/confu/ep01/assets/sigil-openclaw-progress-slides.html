@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- ============================================================
+     Sigil for OpenClaw — 全员进展汇报 · 2026-08
+     imToken Slides · paged dark deck (Sigil house style)
+     Audience: 全公司同事(多数未接触过本项目)· 中文 · ≤10 页
+     ============================================================ -->
+<title>Sigil for OpenClaw — 项目进展汇报</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+SC:wght@400;500;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+    --bg: #0a0e1a; --bg-deep: #0a1024; --panel: #14203f; --panel-2: #0d1838;
+    --brand: #5aa6ff; --brand-soft: #7fb6ff; --brand-alt: #6fb0ff;
+    --green: #7ff0c4; --green-deep: #10b981;
+    --amber: #ffd27d; --amber-deep: #e8a317;
+    --orange: #ff8f6b; --pink: #ff9aa9; --red-deep: #d4183d;
+    --ai: #c9a6ff;
+    --text: #ffffff;
+    --text-secondary: rgba(255,255,255,.62);
+    --text-muted: rgba(255,255,255,.4);
+    --mono-gray: #cdd6e4; --dot: #3a4a66;
+    --card: rgba(255,255,255,.04); --card-border: rgba(255,255,255,.1);
+    --font-display: 'Inter', -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Noto Sans SC', 'Microsoft YaHei', sans-serif;
+    --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Noto Sans SC', 'Microsoft YaHei', sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    --radius: 24px; --radius-sm: 12px;
+    --nav-width: 64px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: var(--font-body); background: var(--bg); color: var(--text); line-height: 1.6; -webkit-font-smoothing: antialiased; overflow: hidden; }
+
+/* ===== PROGRESS BAR ===== */
+.progress { position: fixed; top: 0; left: 0; height: 3px; width: 0; background: linear-gradient(90deg, var(--brand), var(--brand-soft)); z-index: 300; transition: width 0.4s ease; }
+
+/* ===== AUTO-HIDE LEFT RAIL ===== */
+.sidebar-nav {
+    position: fixed; top: 0; left: 0; bottom: 0; width: var(--nav-width);
+    background: rgba(13,24,56,0.92); backdrop-filter: blur(20px) saturate(140%);
+    border-right: 1px solid rgba(255,255,255,.1); z-index: 101;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 16px 0; overflow-y: auto; scrollbar-width: none;
+    transform: translateX(-100%);
+    transition: transform 220ms cubic-bezier(.3,.7,.4,1);
+    box-shadow: 8px 0 32px rgba(0,0,0,.35);
+}
+.sidebar-nav.peek { transform: translateX(0); }
+.rail-hotzone { position: fixed; left: 0; top: 0; bottom: 0; width: 24px; z-index: 100; background: transparent; }
+.sidebar-nav::-webkit-scrollbar { display: none; }
+.nav-thumb {
+    width: 48px; height: 32px; border-radius: 4px; background: var(--panel-2);
+    border: 1.5px solid rgba(255,255,255,.14); margin: 2px 0; cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.23,1,0.32,1);
+    position: relative; display: flex; align-items: stretch; overflow: hidden; flex-shrink: 0;
+}
+.nav-thumb:hover { transform: scale(2.2); border-color: var(--brand); box-shadow: 0 4px 20px rgba(90,166,255,0.35); z-index: 10; }
+.nav-thumb.active { border-color: var(--brand); box-shadow: 0 0 0 2px rgba(90,166,255,0.25); }
+.nav-thumb .nav-label {
+    position: absolute; left: 56px; top: 50%; transform: translateY(-50%);
+    background: #1c2c52; color: #fff; font-size: 11px; font-weight: 500;
+    padding: 5px 12px; border-radius: 6px; white-space: nowrap;
+    opacity: 0; pointer-events: none; transition: opacity 0.2s;
+}
+.nav-thumb:hover .nav-label { opacity: 1; }
+.thumb-inner { width: 100%; height: 100%; padding: 3px; display: flex; flex-direction: column; gap: 1px; overflow: hidden; }
+.thumb-inner.cover-type { align-items: center; justify-content: center; gap: 2px; }
+.thumb-line { height: 2px; border-radius: 1px; flex-shrink: 0; }
+.thumb-block { border-radius: 1px; flex-shrink: 0; }
+.thumb-row { display: flex; gap: 1px; width: 100%; flex-shrink: 0; }
+
+/* ===== DECK / SLIDES ===== */
+.deck { position: relative; width: 100vw; height: 100vh; }
+.slide {
+    position: absolute; inset: 0; display: none; flex-direction: column;
+    padding: 6.5vh 7vw 11vh 7vw;
+    opacity: 0; transition: opacity 0.5s ease; overflow: auto;
+    background: radial-gradient(120% 90% at 20% 12%, var(--panel) 0%, var(--bg) 72%);
+}
+.slide.active { display: flex; opacity: 1; }
+.slide .stage { flex: 1; display: flex; flex-direction: column; justify-content: center; max-width: 1280px; width: 100%; margin: 0 auto; position: relative; }
+.slide.center .stage { align-items: center; text-align: center; }
+.slide.bg-divider { background: radial-gradient(120% 90% at 24% 50%, var(--panel) 0%, var(--bg) 72%); }
+.slide.bg-danger { background: radial-gradient(120% 100% at 50% 0%, #2a160f 0%, var(--bg) 66%); }
+.slide.bg-hero { background: linear-gradient(90deg, var(--bg-deep) 0%, rgba(10,16,36,.74) 32%, rgba(10,16,36,0) 56%), var(--bg-deep); }
+
+@media (prefers-reduced-motion: no-preference) {
+.slide.active .stage > * { animation: fadeUp 0.55s cubic-bezier(0.25,1,0.5,1) both; }
+.slide.active .stage > *:nth-child(1) { animation-delay: 0.05s; }
+.slide.active .stage > *:nth-child(2) { animation-delay: 0.13s; }
+.slide.active .stage > *:nth-child(3) { animation-delay: 0.21s; }
+.slide.active .stage > *:nth-child(4) { animation-delay: 0.29s; }
+.slide.active .stage > *:nth-child(5) { animation-delay: 0.37s; }
+.slide.active .stage > *:nth-child(6) { animation-delay: 0.45s; }
+}
+@keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ===== FOOTER ===== */
+.foot {
+    position: fixed; bottom: 26px; left: 7vw; right: 7vw;
+    display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
+    font-size: 0.75rem; color: var(--text-muted); font-family: var(--font-mono); z-index: 20;
+}
+.foot .foot-label { text-align: left; letter-spacing: 0.04em; }
+.foot .foot-num { text-align: right; }
+.footer-logo { display: flex; align-items: center; justify-content: center; opacity: 0.82; }
+.footer-logo svg, .footer-logo img { height: 22px; width: auto; display: block; filter: drop-shadow(0 2px 6px rgba(0,0,0,.4)); }
+
+/* ===== KEYBOARD HINT ===== */
+.kbd-hint { position: fixed; bottom: 64px; left: 50%; transform: translateX(-50%);
+    font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted);
+    background: rgba(255,255,255,.08); backdrop-filter: blur(14px) saturate(160%);
+    border: 1px solid rgba(255,255,255,.16); border-radius: 100px;
+    padding: 7px 16px; z-index: 25; opacity: 0; pointer-events: none;
+    transition: opacity 0.6s ease; }
+.kbd-hint.show { opacity: 1; }
+
+/* ===== TYPOGRAPHY ===== */
+.kicker { font-family: var(--font-mono); font-size: clamp(0.8rem,1.1vw,1.05rem); color: var(--brand); text-transform: uppercase; letter-spacing: 0.32em; margin-bottom: 1.15rem; font-weight: 500; }
+h1 { font-family: var(--font-display); font-size: clamp(3rem, 6.6vw, 5.6rem); font-weight: 900; letter-spacing: -0.03em; line-height: 1.02; margin-bottom: 1.25rem; }
+h2 { font-family: var(--font-display); font-size: clamp(1.9rem, 4vw, 3.3rem); font-weight: 800; letter-spacing: -0.02em; line-height: 1.12; margin-bottom: 0.9rem; }
+h3 { font-family: var(--font-display); font-size: clamp(1.15rem, 1.8vw, 1.6rem); font-weight: 700; letter-spacing: -0.01em; margin-bottom: 0.5rem; }
+.subtitle { font-size: clamp(1.1rem, 1.7vw, 1.5rem); color: var(--text-secondary); line-height: 1.55; max-width: 64ch; }
+p { color: var(--text-secondary); font-size: clamp(0.95rem, 1.25vw, 1.15rem); line-height: 1.5; }
+.accent { color: var(--brand); }
+.accent-danger { color: var(--orange); }
+.accent-green { color: var(--green); }
+
+.shimmer {
+    background: linear-gradient(100deg, #fff 35%, var(--brand-soft) 50%, #fff 65%);
+    background-size: 220% auto;
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; color: transparent;
+    animation: sheen 7s linear infinite; will-change: background-position;
+}
+@keyframes sheen { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+/* ===== COMPONENTS ===== */
+.card { background: var(--card); border: 1px solid var(--card-border); border-radius: var(--radius); padding: 1.9rem 1.8rem; }
+.card.tint-blue   { background: rgba(90,166,255,.06);  border-color: rgba(90,166,255,.32); }
+.card.tint-green  { background: rgba(16,185,129,.06);  border-color: rgba(16,185,129,.34); }
+.card.tint-amber  { background: rgba(232,163,23,.05);  border-color: rgba(232,163,23,.32); }
+.card.tint-orange { background: rgba(255,143,107,.05); border-color: rgba(255,143,107,.3); }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.4rem; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.4rem; }
+
+.icon-tile { width: 72px; height: 72px; border-radius: 20px; display: flex; align-items: center; justify-content: center; margin-bottom: 1.15rem; flex: none; }
+.icon-tile.blue  { background: rgba(90,166,255,.14); }
+.icon-tile.green { background: rgba(127,240,196,.12); }
+.icon-tile.amber { background: rgba(255,210,125,.14); }
+.icon-tile.orange{ background: rgba(255,143,107,.14); }
+.icon-tile.ai    { background: rgba(201,166,255,.14); }
+
+.pill { display: inline-flex; align-items: center; gap: 10px; font-family: var(--font-mono); font-size: clamp(0.8rem,1vw,1rem); letter-spacing: 0.06em; color: var(--mono-gray); border: 1px solid rgba(255,255,255,.16); border-radius: 999px; padding: 9px 20px; }
+.pill.warn { color: var(--amber); border-color: rgba(232,163,23,.4); }
+.tag { display: inline-block; font-family: var(--font-mono); font-size: 0.85rem; color: var(--mono-gray); background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.16); border-radius: var(--radius-sm); padding: 8px 14px; }
+
+.glow-orb { position: absolute; border-radius: 50%; background: radial-gradient(circle, rgba(0,127,255,.22), transparent 66%); pointer-events: none; }
+
+/* image placeholder + auto-upgrade overlay */
+.ph { position: relative; border-radius: 22px; border: 1px dashed rgba(90,166,255,.42); background: rgba(255,255,255,.03); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.ph .ph-label { text-align: center; color: var(--text-muted); font-family: var(--font-mono); }
+.ph .ph-label .t { font-size: 1rem; letter-spacing: .14em; }
+.ph .ph-label .f { font-size: 0.74rem; margin-top: 8px; color: rgba(255,255,255,.3); }
+.ph > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+
+/* stepped reveal */
+[data-step] { opacity: 0; transform: translateY(16px); transition: opacity .55s ease, transform .55s ease; }
+[data-step].on { opacity: 1; transform: none; }
+.replay { position: absolute; top: 0; right: 0; font-family: var(--font-mono); font-size: 0.85rem; letter-spacing: .08em; color: var(--text-muted); cursor: pointer; opacity: 0; transition: opacity .5s; z-index: 5; }
+.replay.show { opacity: 1; }
+.replay:hover { color: var(--brand-soft); }
+
+/* flow arrows */
+.arw { flex: none; width: 46px; display: flex; align-items: center; }
+.arw .ln { width: 100%; height: 2px; background: linear-gradient(90deg, rgba(90,166,255,.15), var(--brand)); position: relative; }
+.arw .ln::after { content: ''; position: absolute; right: -1px; top: -5px; border-left: 11px solid var(--brand); border-top: 6px solid transparent; border-bottom: 6px solid transparent; }
+
+/* checklist rows (status board) */
+.ck { display: flex; align-items: flex-start; gap: 10px; padding: 7px 0; font-size: clamp(0.9rem,1.15vw,1.08rem); color: var(--text-secondary); line-height: 1.42; }
+.ck .m { font-family: var(--font-mono); flex: none; font-size: 0.95em; margin-top: 1px; }
+
+/* auth card mock (demo slide) */
+.auth-card { background: linear-gradient(180deg, #101c3e 0%, #0d1838 100%); border: 1px solid rgba(255,255,255,.14); border-radius: 26px; overflow: hidden; box-shadow: 0 30px 80px rgba(0,0,0,.55); width: 100%; max-width: 400px; }
+.auth-band { background: rgba(255,143,107,.14); border-bottom: 1px solid rgba(255,143,107,.3); color: var(--orange); font-family: var(--font-mono); font-size: 0.82rem; letter-spacing: .14em; padding: 12px 22px; font-weight: 600; }
+.auth-body { padding: 22px 26px 26px; }
+.auth-amt { font-family: var(--font-display); font-weight: 900; font-size: clamp(2.2rem,3.4vw,3rem); letter-spacing: -0.02em; line-height: 1.05; margin: 4px 0 16px; }
+.auth-row { display: flex; justify-content: space-between; gap: 12px; font-size: 0.92rem; padding: 7px 0; border-top: 1px solid rgba(255,255,255,.08); }
+.auth-row .k { color: var(--text-muted); font-family: var(--font-mono); font-size: 0.8rem; letter-spacing: .06em; }
+.auth-row .v { color: var(--text); text-align: right; }
+.auth-ok { display: flex; align-items: center; gap: 8px; color: var(--green); font-size: 0.88rem; padding: 4px 0; }
+.auth-btn { margin-top: 16px; background: rgba(90,166,255,.16); border: 1px solid rgba(90,166,255,.5); color: #fff; border-radius: 999px; padding: 13px 18px; text-align: center; font-weight: 700; font-size: 0.98rem; display: flex; align-items: center; justify-content: center; gap: 10px; }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 1100px) { .sidebar-nav, .rail-hotzone { display: none; } }
+@media (max-width: 768px) {
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    .flow-h { flex-direction: column; }
+    .flow-h .arw { transform: rotate(90deg); width: 30px; align-self: center; }
+}
+@media (prefers-reduced-motion: reduce) {
+    * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+    [data-step] { opacity: 1; transform: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="progress" id="prog"></div>
+<nav class="sidebar-nav" id="sidebar" aria-label="Slides"></nav>
+<div class="rail-hotzone" id="railHotzone"></div>
+<div class="kbd-hint" id="kbdHint">&larr; &rarr; &middot; Space &middot; 点击翻页</div>
+
+<main class="deck" id="deck">
+
+<!-- ============ 01 · COVER ============ -->
+<section class="slide bg-hero" data-section="cover" data-label="封面" data-group=""
+         data-speaker-notes="冷开场,让标题先落地。一句话交代:今天讲四件事——是什么、为什么、到哪了、需要什么。">
+  <div class="stage">
+    <div class="glow-orb" style="width:620px; height:620px; right:-8%; top:50%; transform:translateY(-50%);"></div>
+    <div class="kicker">PROGRESS UPDATE · ALL COMPANY · 2026.08</div>
+    <h1 class="shimmer" style="max-width:14ch;">Sigil for OpenClaw</h1>
+    <p class="subtitle">给 AI Agent 时代「盲签危机」的一层链上可验证护盾。<br>今天讲清四件事:<b style="color:#fff;">它是什么 · 为什么做 · 现在到哪了 · 还需要什么支持</b>。</p>
+    <div style="display:flex; align-items:center; gap:14px; margin-top:2.4rem;">
+      <span style="font-family:var(--font-mono); letter-spacing:.28em; color:var(--brand); font-size:1.05rem;">imToken</span>
+      <span style="width:6px; height:6px; border-radius:50%; background:var(--dot);"></span>
+      <span style="font-family:var(--font-mono); letter-spacing:.28em; color:var(--mono-gray); font-size:1.05rem;">OpenClaw</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 02 · 这是什么 — 四步流程 stepped reveal ============ -->
+<section class="slide" data-section="what" data-label="Sigil 是什么" data-group="01 · 这是什么" data-steps
+         data-speaker-notes="给没接触过项目的同事一句话定义:Agent 想动你的钱,先过 Sigil。按节奏讲四拍:行动→拦下→审阅→批准。">
+  <div class="stage">
+    <div class="replay" data-replay title="Replay">&#8635; replay</div>
+    <div class="kicker">WHAT IS SIGIL</div>
+    <h2 style="max-width:30ch;">你的 Agent 想花钱?<br>先过 <span class="accent">Sigil</span> 这一关。</h2>
+    <p class="subtitle" style="margin-bottom:0.6rem;">Sigil 是给 AI Agent 的<b style="color:#fff;">签名护盾</b>——一个开源插件 + 可验证授权协议,由 imToken 打造,首发于 OpenClaw。</p>
+    <div class="flow-h" style="display:flex; align-items:stretch; gap:14px; margin-top:1.8rem;">
+      <div class="card" style="flex:1; text-align:center; padding:1.6rem 1.2rem;" data-step="1">
+        <div class="icon-tile ai" style="margin:0 auto 1rem;"><svg width="34" height="34" viewBox="0 0 24 24" fill="none"><rect x="5" y="7" width="14" height="11" rx="3" stroke="#c9a6ff" stroke-width="1.6"/><path d="M12 7V4M9.5 12h.01M14.5 12h.01M9 15h6" stroke="#c9a6ff" stroke-width="1.6" stroke-linecap="round"/><circle cx="12" cy="3.5" r="1" fill="#c9a6ff"/></svg></div>
+        <h3 style="font-size:1.1rem;">Agent 行动</h3>
+        <p style="font-size:0.92rem;">替你浏览、下单——<br>走到要<b style="color:#fff;">花钱 / 签名</b>那一步</p>
+      </div>
+      <div class="arw" data-step="2"><div class="ln"></div></div>
+      <div class="card tint-blue" style="flex:1; text-align:center; padding:1.6rem 1.2rem;" data-step="2">
+        <div class="icon-tile blue" style="margin:0 auto 1rem;"><svg width="34" height="34" viewBox="0 0 24 24" fill="none"><path d="M12 3l7 4v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V7l7-4z" stroke="#5aa6ff" stroke-width="1.6" stroke-linejoin="round"/><path d="M12 8v4M12 15h.01" stroke="#5aa6ff" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+        <h3 style="font-size:1.1rem;">Sigil 拦下</h3>
+        <p style="font-size:0.92rem;">高危动作被<b style="color:#fff;">暂停</b>,<br>自动执行到此为止</p>
+      </div>
+      <div class="arw" data-step="3"><div class="ln"></div></div>
+      <div class="card" style="flex:1; text-align:center; padding:1.6rem 1.2rem;" data-step="3">
+        <div class="icon-tile amber" style="margin:0 auto 1rem;"><svg width="34" height="34" viewBox="0 0 24 24" fill="none"><rect x="7" y="2.5" width="10" height="19" rx="2.5" stroke="#ffd27d" stroke-width="1.6"/><path d="M10 18.5h4" stroke="#ffd27d" stroke-width="1.6" stroke-linecap="round"/><path d="M9.5 8h5M9.5 11h3.5" stroke="#ffd27d" stroke-width="1.4" stroke-linecap="round"/></svg></div>
+        <h3 style="font-size:1.1rem;">你来审阅</h3>
+        <p style="font-size:0.92rem;">手机上一张明白卡:<br><span style="font-family:var(--font-mono); font-size:0.85em; color:var(--mono-gray);">Pay US$850 · Grand Hyatt <span class="accent-green">✓</span></span></p>
+      </div>
+      <div class="arw" data-step="4"><div class="ln"></div></div>
+      <div class="card tint-green" style="flex:1; text-align:center; padding:1.6rem 1.2rem;" data-step="4">
+        <div class="icon-tile green" style="margin:0 auto 1rem;"><svg width="34" height="34" viewBox="0 0 24 24" fill="none"><path d="M12 11.5a3 3 0 013 3c0 2.2-.8 4.2-1.6 5.5M9.4 13.2a3 3 0 00-.4 1.3c0 1.6-.3 3-.8 4.2M12 8.5a6 6 0 016 6c0 1.1-.1 2.2-.4 3.2M6.3 10.8A6 6 0 006 14.5c0 .8 0 1.6-.2 2.3M12 5.5a9 9 0 00-7.6 4.2M15.6 6.3A9 9 0 0121 14.5" stroke="#7ff0c4" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+        <h3 style="font-size:1.1rem;">你来批准</h3>
+        <p style="font-size:0.92rem;">指纹 / Face ID 完成<br><b style="color:#fff;">Passkey</b> 验证才放行</p>
+      </div>
+    </div>
+    <p style="text-align:center; margin-top:1.8rem; font-size:clamp(1.05rem,1.5vw,1.3rem);" data-step="5">没有你的生物验证,<span class="accent" style="font-weight:700;">什么都不会发生</span>。 <span style="font-family:var(--font-mono); color:var(--text-muted); font-size:0.85em;">Nothing moves until you approve it.</span></p>
+  </div>
+</section>
+
+<!-- ============ 03 · 为什么做 (danger bg) ============ -->
+<section class="slide bg-danger" data-section="why" data-label="为什么做" data-group="02 · 为什么做"
+         data-speaker-notes="制造共识:Agent 开始替人行动了,而今天的授权方式是聊天框里回一句 Yes。两个失败:看不见、没身份。语气收紧。">
+  <div class="stage">
+    <div class="kicker" style="color:var(--orange);">WHY NOW</div>
+    <h2 style="max-width:30ch;">Agent 不只是回答了,<br>它开始替你<span class="accent-danger">行动</span>。</h2>
+    <div style="display:flex; gap:10px; flex-wrap:wrap; margin:0.4rem 0 1.6rem;">
+      <span class="pill">browse · 浏览</span><span class="pill">book · 下单</span><span class="pill warn">pay · 付款</span><span class="pill warn">sign · 签名</span>
+    </div>
+    <div class="grid-2">
+      <div class="card tint-orange">
+        <div class="icon-tile orange"><svg width="32" height="32" viewBox="0 0 24 24" fill="none"><path d="M4 4l16 16M9.9 5.1A9.7 9.7 0 0112 5c5 0 8.6 3.6 10 7-.5 1.2-1.3 2.5-2.4 3.6M6.1 6.6C3.8 8 2.6 10.2 2 12c1.4 3.4 5 7 10 7 1.5 0 2.9-.3 4.1-.9" stroke="#ff8f6b" stroke-width="1.6" stroke-linecap="round"/><path d="M9.5 9.8A3.5 3.5 0 0014.2 14.4" stroke="#ff8f6b" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+        <h3>失败一:看不见 <span style="font-family:var(--font-mono); font-size:0.72em; color:var(--text-muted); letter-spacing:.1em;">BLIND SIGNING</span></h3>
+        <p>今天的「授权」,是在聊天框里回一句 <b style="color:#fff; font-family:var(--font-mono);">Yes / Go</b>。哪个商户?多少钱?替你签了什么?——你从没真正看到。这就是<b style="color:var(--orange);">盲签</b>。</p>
+      </div>
+      <div class="card tint-orange">
+        <div class="icon-tile orange"><svg width="32" height="32" viewBox="0 0 24 24" fill="none"><circle cx="9" cy="8" r="3.2" stroke="#ff8f6b" stroke-width="1.6"/><path d="M3.5 19c.6-3 2.8-4.7 5.5-4.7s4.9 1.7 5.5 4.7" stroke="#ff8f6b" stroke-width="1.6" stroke-linecap="round"/><path d="M16.5 5.5l4 4M20.5 5.5l-4 4" stroke="#ff8f6b" stroke-width="1.7" stroke-linecap="round"/></svg></div>
+        <h3>失败二:没身份 <span style="font-family:var(--font-mono); font-size:0.72em; color:var(--text-muted); letter-spacing:.1em;">ANYONE CAN TYPE "YES"</span></h3>
+        <p>一条消息不是一个签名。你说 yes、骗子说 yes、拿到你手机的任何人说 yes——<b style="color:#fff;">对系统一模一样</b>。设备被借走、被偷走,都能用你的名义批准。</p>
+      </div>
+    </div>
+    <div class="card" style="margin-top:1.4rem; padding:1.2rem 1.8rem; display:flex; align-items:center; gap:18px; flex-wrap:wrap;">
+      <span style="font-family:var(--font-mono); font-size:0.8rem; letter-spacing:.18em; color:var(--orange); flex:none;">THIS ISN'T HYPOTHETICAL</span>
+      <p style="font-size:0.95rem; flex:1; min-width:280px;">真实事故已经发生:隐藏消息骗自主 Agent <b style="color:#fff;">授权了主人从没批准的转账</b>;一封邮件让 AI 助手<b style="color:#fff;">零点击泄露整个收件箱</b>;coding agent 在冻结期<b style="color:#fff;">抹掉了数月生产数据</b>。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 04 · 我们的答案 — 三支柱 ============ -->
+<section class="slide" data-section="pillars" data-label="三支柱" data-group="03 · 我们的答案"
+         data-speaker-notes="三支柱各一句金句:所见即所签 / 只有你能签 / 界面本身链上渲染、伪造不了。第三点是差异化核心,讲慢一点。">
+  <div class="stage">
+    <div class="kicker">OUR ANSWER</div>
+    <h2 style="max-width:30ch;">三个支柱,把「盲签」<br>变成<span class="accent">「所见即所签」</span>。</h2>
+    <div class="grid-3" style="margin-top:1.8rem;">
+      <div class="card">
+        <div class="icon-tile blue"><svg width="34" height="34" viewBox="0 0 24 24" fill="none"><path d="M2 12c1.4-3.4 5-7 10-7s8.6 3.6 10 7c-1.4 3.4-5 7-10 7S3.4 15.4 2 12z" stroke="#5aa6ff" stroke-width="1.6"/><circle cx="12" cy="12" r="3.2" stroke="#5aa6ff" stroke-width="1.6"/></svg></div>
+        <div style="font-family:var(--font-mono); font-size:0.78rem; letter-spacing:.18em; color:var(--brand); margin-bottom:0.5rem;">PILLAR 01</div>
+        <h3>看清你签的每一项</h3>
+        <p style="font-size:0.98rem;">商户、金额、日期、收款人——逐行解码成明白话。每个字段标来源:链上核实过的 <span class="accent-green" style="font-family:var(--font-mono);">✓ Verified</span>,agent 自己说的只算 <span style="font-family:var(--font-mono); color:var(--amber);">ⓘ Claimed</span>——它的说辞永远不被信任。</p>
+      </div>
+      <div class="card">
+        <div class="icon-tile green"><svg width="34" height="34" viewBox="0 0 24 24" fill="none"><rect x="5" y="10" width="14" height="10" rx="2.5" stroke="#7ff0c4" stroke-width="1.6"/><path d="M8 10V7.5a4 4 0 018 0V10" stroke="#7ff0c4" stroke-width="1.6"/><path d="M12 14v2.5" stroke="#7ff0c4" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+        <div style="font-family:var(--font-mono); font-size:0.78rem; letter-spacing:.18em; color:var(--green); margin-bottom:0.5rem;">PILLAR 02</div>
+        <h3>只有你能签</h3>
+        <p style="font-size:0.98rem;">你的指纹 / Face ID 是那道闸门,通过 <b style="color:#fff;">Passkey</b> 才释放签名。一次生物确认就是那个签名——绑定的是<b style="color:#fff;">你本人</b>,不是拿着手机的任何人。</p>
+      </div>
+      <div class="card tint-blue">
+        <div class="icon-tile blue"><svg width="34" height="34" viewBox="0 0 24 24" fill="none"><path d="M9.5 14.5l-3 3a3.2 3.2 0 01-4.5-4.5l0 0 3-3a3.2 3.2 0 014.5 0" transform="translate(3 1)" stroke="#5aa6ff" stroke-width="1.6" stroke-linecap="round"/><path d="M11.5 9.5l3-3a3.2 3.2 0 014.5 4.5l-3 3a3.2 3.2 0 01-4.5 0" transform="translate(-1 0)" stroke="#5aa6ff" stroke-width="1.6" stroke-linecap="round"/><path d="M9.8 14.2l4.4-4.4" stroke="#5aa6ff" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+        <div style="font-family:var(--font-mono); font-size:0.78rem; letter-spacing:.18em; color:var(--brand); margin-bottom:0.5rem;">PILLAR 03 · 差异化核心</div>
+        <h3>授权界面,伪造不了</h3>
+        <p style="font-size:0.98rem;">这张授权屏<b style="color:#fff;">不是 agent 画的</b>——它是注册在链上、pin 在 IPFS 的模块,在沙箱里渲染。向你要签名的东西,<b style="color:var(--brand-soft);">伪造不了那个告诉你在签什么的东西</b>。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 05 · 产品形态 ============ -->
+<section class="slide" data-section="product" data-label="产品形态" data-group="03 · 我们的答案"
+         data-speaker-notes="证明它是真产品:开源一行命令安装;风险分级——小事不打扰,花钱必须 Passkey 且永远锁死。">
+  <div class="stage">
+    <div class="kicker">THE PRODUCT</div>
+    <h2 style="max-width:30ch;">一行命令,装进任何 <span class="accent">OpenClaw</span> Agent。</h2>
+    <div class="grid-2" style="margin-top:1.7rem; align-items:stretch;">
+      <div class="card" style="display:flex; flex-direction:column; gap:1rem;">
+        <div style="background:#0a0f22; border:1px solid rgba(255,255,255,.12); border-radius:14px; overflow:hidden;">
+          <div style="display:flex; gap:7px; padding:11px 14px; border-bottom:1px solid rgba(255,255,255,.08);">
+            <span style="width:10px; height:10px; border-radius:50%; background:#ff5f57;"></span>
+            <span style="width:10px; height:10px; border-radius:50%; background:#febc2e;"></span>
+            <span style="width:10px; height:10px; border-radius:50%; background:#28c840;"></span>
+          </div>
+          <div style="padding:16px 18px; font-family:var(--font-mono); font-size:clamp(0.85rem,1.15vw,1.05rem); line-height:1.9;">
+            <div><span style="color:var(--green);">$</span> <span style="color:#fff;">openclaw plugins add sigil</span></div>
+            <div style="color:var(--text-muted);">Installing… <span class="accent-green">✓ Installed</span></div>
+          </div>
+        </div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <span class="tag">开源 · MIT</span><span class="tag">无需重构 agent</span><span class="tag">无锁定</span>
+        </div>
+        <p style="font-size:0.98rem;">配套 <b style="color:#fff;">Onboarding</b>:几下点按绑好钱包与 Passkey,自由配置哪些行为需要高等级授权。</p>
+      </div>
+      <div class="card" style="display:flex; flex-direction:column; justify-content:center; gap:0.35rem;">
+        <div style="font-family:var(--font-mono); font-size:0.78rem; letter-spacing:.18em; color:var(--brand); margin-bottom:0.6rem;">GRADED BY RISK · 按风险分级</div>
+        <div class="ck"><span class="m accent-green">●</span><span><b style="color:#fff;">低危</b> —— 一键放行,无需指纹。<span style="color:var(--text-muted);">小事不打扰你。</span></span></div>
+        <div class="ck"><span class="m" style="color:var(--amber);">●</span><span><b style="color:#fff;">高危</b> —— 必须 Passkey 生物验证,本人到场才放行。</span></div>
+        <div class="ck"><span class="m accent-danger">●</span><span><b style="color:#fff;">花钱 / 签名</b> —— <b style="color:var(--orange);">永远锁死在高危</b>,这一条关不掉。</span></div>
+        <div style="border-top:1px solid rgba(255,255,255,.1); margin-top:0.9rem; padding-top:1rem; display:flex; gap:10px; flex-wrap:wrap;">
+          <span class="pill">Relaxed</span><span class="pill">Balanced</span><span class="pill">Strict</span>
+          <span style="color:var(--text-muted); font-size:0.85rem; align-self:center;">一键切换防护档位</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 06 · 里程碑故事 (photos) ============ -->
+<section class="slide" data-section="story" data-label="三周里程碑" data-group="04 · 现在到哪了"
+         data-speaker-notes="讲温度:一次上海偶遇,三周变成上台 Demo。照片到位后自动替换占位框。">
+  <div class="stage">
+    <div class="kicker">HOW WE GOT HERE</div>
+    <h2 style="max-width:32ch;">三周:从上海的一次偶遇,<br>到新加坡的<span class="accent">上台 Demo</span>。</h2>
+    <div style="display:flex; gap:16px; margin-top:1.8rem;">
+      <div style="flex:1;">
+        <div class="ph" style="height:200px;">
+          <div class="ph-label"><div class="t">PHOTO</div><div class="f">assets/story-1-shanghai.jpg</div></div>
+          <img src="assets/story-1-shanghai.jpg" alt="" onerror="this.remove()">
+        </div>
+        <div style="font-family:var(--font-mono); font-size:0.82rem; letter-spacing:.16em; color:var(--brand); margin-top:0.9rem;">DAY 0 · 上海</div>
+        <h3 style="margin-top:.35rem; font-size:1.15rem;">一场 OpenClaw 活动上的偶遇</h3>
+        <p style="font-size:0.92rem;">认识了 OpenClaw chief architect Vincent 与 Claw Singapore 的 founder。</p>
+      </div>
+      <div style="flex:1;">
+        <div class="ph" style="height:200px;">
+          <div class="ph-label"><div class="t">PHOTO</div><div class="f">assets/story-2-sg-meetup.jpg</div></div>
+          <img src="assets/story-2-sg-meetup.jpg" alt="" onerror="this.remove()">
+        </div>
+        <div style="font-family:var(--font-mono); font-size:0.82rem; letter-spacing:.16em; color:var(--brand); margin-top:0.9rem;">+3 DAYS · 新加坡</div>
+        <h3 style="margin-top:.35rem; font-size:1.15rem;">imToken SG office 联合 meetup</h3>
+        <p style="font-size:0.92rem;">Claw Singapore 来到我们 office,co-host 线下交流会——合作就此启动。</p>
+      </div>
+      <div style="flex:1;">
+        <div class="ph" style="height:200px;">
+          <div class="ph-label"><div class="t">PHOTO</div><div class="f">assets/story-3-agentic-night.jpg</div></div>
+          <img src="assets/story-3-agentic-night.jpg" alt="" onerror="this.remove()">
+        </div>
+        <div style="font-family:var(--font-mono); font-size:0.82rem; letter-spacing:.16em; color:var(--green); margin-top:0.9rem;">+3 WEEKS · AGENTIC NIGHT</div>
+        <h3 style="margin-top:.35rem; font-size:1.15rem;">Sigil for OpenClaw 成功上台 ✓</h3>
+        <p style="font-size:0.92rem;">在 OpenClaw Singapore Agentic Night 上完成现场 Demo 亮相。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 07 · Demo 讲了什么 ============ -->
+<section class="slide" data-section="demo" data-label="Demo 场景" data-group="04 · 现在到哪了" data-steps
+         data-speaker-notes="用 Demo 剧本把抽象概念落地:订济州岛酒店,低危一键放行做铺垫,US$850 扣款前急刹车,指纹放行是高潮。">
+  <div class="stage">
+    <div class="replay" data-replay title="Replay">&#8635; replay</div>
+    <div class="kicker">THE DEMO · 60 SECONDS</div>
+    <h2 style="max-width:30ch;">US$850 扣款前,<br>Agent <span class="accent-danger">停住了</span>。</h2>
+    <div style="display:flex; gap:2.2rem; margin-top:1.5rem; align-items:center;">
+      <div style="flex:1.15; display:flex; flex-direction:column; gap:0.9rem;">
+        <div class="ck" data-step="1"><span class="m accent">01</span><span>给私人管家 Agent <b style="color:#fff;">Blu</b> 发任务:「订 8/9–8/11 济州岛的酒店,大床房,要吃到地道韩餐」——然后回去喝咖啡。</span></div>
+        <div class="ck" data-step="2"><span class="m accent">02</span><span>Blu 在浏览器里自己跑:搜索、筛选、比价。连接订房账户是<b style="color:#fff;">低危</b>动作——Telegram 一键放行,<span style="color:var(--text-muted);">不用指纹,不打扰</span>。</span></div>
+        <div class="ck" data-step="3"><span class="m accent">03</span><span>Blu 发来三家备选,选定 <b style="color:#fff;">Grand Hyatt Jeju</b>,走到下单最后一步——</span></div>
+        <div class="ck" data-step="4"><span class="m accent-danger">04</span><span><b style="color:var(--orange);">扣款瞬间,Sigil 拦下自动执行。</b>手机拉起授权卡:金额、商户、日期,链上核实 ✓。<b style="color:#fff;">按下指纹</b>,才放行。回一句「Go ahead」?不行,必须是<b style="color:#fff;">我本人</b>。</span></div>
+        <div class="ck" data-step="5"><span class="m accent-green">05</span><span>预订完成:确认回到 Telegram + Gmail。Agent 做了所有事,但<b style="color:#fff;">动钱那个决定,始终锁在我手里</b>。</span></div>
+      </div>
+      <div style="flex:0.85; display:flex; justify-content:center;" data-step="4">
+        <div class="auth-card">
+          <div class="auth-band">⚠ HIGH-RISK · PAYMENT</div>
+          <div class="auth-body">
+            <div style="font-family:var(--font-mono); font-size:0.76rem; letter-spacing:.14em; color:var(--text-muted);">AUTHORIZE PAYMENT</div>
+            <div class="auth-amt">US$850.00</div>
+            <div class="auth-row"><span class="k">TO</span><span class="v">Grand Hyatt Jeju <span class="accent-green">✓ Verified</span></span></div>
+            <div class="auth-row"><span class="k">DATES</span><span class="v">Aug 9 – Aug 11, 2026</span></div>
+            <div class="auth-row"><span class="k">CARD</span><span class="v">•••• 4242</span></div>
+            <div style="margin-top:12px;">
+              <div class="auth-ok">🟢 Merchant verified on-chain</div>
+              <div class="auth-ok">🟢 Amount matches your selection</div>
+            </div>
+            <div class="auth-btn">👆 Hold to authorize with Passkey</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 08 · 进展看板 ============ -->
+<section class="slide" data-section="status" data-label="进展看板" data-group="04 · 现在到哪了"
+         data-speaker-notes="三列如实过一遍:上台 Demo 已完成;onboarding 与内部 deck 在推进;插件的正式工程化尚待排期——这是事实,不是承诺。">
+  <div class="stage">
+    <div class="kicker">WHERE WE ARE</div>
+    <h2>进展看板</h2>
+    <div class="grid-3" style="margin-top:1.6rem; align-items:stretch;">
+      <div class="card tint-green">
+        <div style="font-family:var(--font-mono); font-size:0.8rem; letter-spacing:.18em; color:var(--green); margin-bottom:0.9rem;">✓ DONE · 已完成</div>
+        <div class="ck"><span class="m accent-green">✓</span><span>OpenClaw SG <b style="color:#fff;">Agentic Night 上台 Demo</b></span></div>
+        <div class="ck"><span class="m accent-green">✓</span><span>15 分钟 Demo 分镜脚本 + 讲稿</span></div>
+        <div class="ck"><span class="m accent-green">✓</span><span>对外 Pitch Deck(线上可放映)</span></div>
+        <div class="ck"><span class="m accent-green">✓</span><span>授权协议 + 架构设计稿(双语)</span></div>
+        <div class="ck"><span class="m accent-green">✓</span><span>双屏现场方案 + 应急预案</span></div>
+      </div>
+      <div class="card tint-blue">
+        <div style="font-family:var(--font-mono); font-size:0.8rem; letter-spacing:.18em; color:var(--brand); margin-bottom:0.9rem;">→ IN PROGRESS · 进行中</div>
+        <div class="ck"><span class="m accent">→</span><span><b style="color:#fff;">Onboarding</b> 设计与前端(工作分支推进中,Wilson)</span></div>
+        <div class="ck"><span class="m accent">→</span><span>内部 <b style="color:#fff;">All-Hands</b> deck 变体(故事页 / 愿景页 / 团队致谢页)</span></div>
+        <div class="ck"><span class="m accent">→</span><span>设备与网络 Runbook 验证(Mac Studio + Tailscale + 手机)</span></div>
+      </div>
+      <div class="card tint-amber">
+        <div style="font-family:var(--font-mono); font-size:0.8rem; letter-spacing:.18em; color:var(--amber); margin-bottom:0.9rem;">◷ NEXT · 待排期</div>
+        <div class="ck"><span class="m" style="color:var(--amber);">◷</span><span><b style="color:#fff;">Sigil 插件工程化</b>:链上授权解析、Passkey 验证、授权 UI 的正式开发</span></div>
+        <div class="ck"><span class="m" style="color:var(--amber);">◷</span><span>从 Demo 走向可安装的<b style="color:#fff;">开源发布</b>(GitHub + 安装物料)</span></div>
+      </div>
+    </div>
+    <p style="margin-top:1.4rem; font-size:0.95rem; color:var(--text-muted);">口径说明:以上以项目文档与 Runbook 记录为准;「待排期」代表已有设计方案、尚未正式立项开发。</p>
+  </div>
+</section>
+
+<!-- ============ 09 · 需要的支持 ============ -->
+<section class="slide" data-section="support" data-label="需要的支持" data-group="05 · 需要的支持"
+         data-speaker-notes="这一页是行动召唤,聚焦素材与内容:照片给 Wilson;截图按清单命名;讲稿和物料帮忙 review。落到具体的人和动作。">
+  <div class="stage">
+    <div class="kicker">WHAT WE NEED FROM YOU</div>
+    <h2 style="max-width:30ch;">接下来,需要大家的支持:<span class="accent">素材与内容</span>。</h2>
+    <div class="grid-3" style="margin-top:1.8rem; align-items:stretch;">
+      <div class="card">
+        <div class="icon-tile blue"><svg width="32" height="32" viewBox="0 0 24 24" fill="none"><rect x="3" y="6" width="18" height="14" rx="3" stroke="#5aa6ff" stroke-width="1.6"/><path d="M8.5 6l1.2-2h4.6L15.5 6" stroke="#5aa6ff" stroke-width="1.6" stroke-linejoin="round"/><circle cx="12" cy="13" r="3.4" stroke="#5aa6ff" stroke-width="1.6"/></svg></div>
+        <h3>① 现场照片</h3>
+        <p style="font-size:0.95rem;">上海活动、SG office meetup、Agentic Night 现场与<b style="color:#fff;">团队合影</b>——用来填进故事页与致谢页。手里有照片的同事,请直接发给 <b style="color:#fff;">Wilson</b>。</p>
+      </div>
+      <div class="card">
+        <div class="icon-tile blue"><svg width="32" height="32" viewBox="0 0 24 24" fill="none"><rect x="3.5" y="4" width="17" height="12" rx="2.5" stroke="#5aa6ff" stroke-width="1.6"/><path d="M8 20h8M12 16v4" stroke="#5aa6ff" stroke-width="1.6" stroke-linecap="round"/><path d="M7 9.5l2.5 2.5L14 7.5" stroke="#5aa6ff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <h3>② 产品截图</h3>
+        <p style="font-size:0.95rem;">分镜板还差 <b style="color:#fff;">11 张核心界面截图</b>(Onboarding、授权卡、Telegram 流程等),按 <span style="font-family:var(--font-mono); font-size:0.85em;">assets/README.md</span> 的清单命名放入即可自动上屏。</p>
+      </div>
+      <div class="card">
+        <div class="icon-tile blue"><svg width="32" height="32" viewBox="0 0 24 24" fill="none"><path d="M4 17.5V20h2.5L18 8.5 15.5 6 4 17.5z" stroke="#5aa6ff" stroke-width="1.6" stroke-linejoin="round"/><path d="M13.5 8l2.5 2.5" stroke="#5aa6ff" stroke-width="1.6"/><path d="M14 20h6" stroke="#5aa6ff" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+        <h3>③ 内容打磨</h3>
+        <p style="font-size:0.95rem;">All-Hands 讲稿的<b style="color:#fff;">彩排反馈</b>、deck 文案 review,以及面向开源发布的物料(GitHub README、安装引导、二维码页)——欢迎认领。</p>
+      </div>
+    </div>
+    <div style="margin-top:1.5rem; display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+      <span class="pill">对接人:Wilson</span>
+      <span style="color:var(--text-muted); font-size:0.9rem;">素材与反馈,本月内随时来——越早,内部 All-Hands 越完整。</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 10 · CLOSING ============ -->
+<section class="slide bg-hero center" data-section="closing" data-label="结尾" data-group=""
+         data-speaker-notes="收在金句上,停两秒:Stop signing blind。然后致谢,开放提问。">
+  <div class="stage">
+    <div class="glow-orb" style="width:700px; height:700px; left:50%; top:50%; transform:translate(-50%,-50%);"></div>
+    <h1 class="shimmer" style="max-width:16ch;">Stop signing blind.</h1>
+    <p class="subtitle" style="margin-top:0.8rem;">让 Agent 极度聪明,也绝对安全。<br>谢谢——期待你的照片、截图与反馈。</p>
+    <div style="display:flex; align-items:center; gap:14px; margin-top:2.2rem; justify-content:center;">
+      <span style="font-family:var(--font-mono); letter-spacing:.28em; color:var(--brand); font-size:1rem;">SIGIL FOR OPENCLAW</span>
+      <span style="width:6px; height:6px; border-radius:50%; background:var(--dot);"></span>
+      <span style="font-family:var(--font-mono); letter-spacing:.28em; color:var(--mono-gray); font-size:1rem;">2026.08</span>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ===== FOOTER ===== -->
+<div class="foot">
+  <span class="foot-label" id="footLabel">Sigil for OpenClaw · 进展汇报</span>
+  <span class="footer-logo" id="footLogo"></span>
+  <span class="foot-num" id="footNum">01 / 10</span>
+</div>
+
+<!-- Inline imToken logo — OFFICIAL dark variant (white wordmark). -->
+<template id="imtokenLogoTpl"><svg width="111" height="20" viewBox="0 0 111 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_dark)">
+<path d="M25.1855 2.3707C25.9965 13.3565 18.9356 18.549 12.6057 19.1027C6.72078 19.6174 1.18138 16.0009 0.695418 10.4444C0.294547 5.85387 3.1314 3.89953 5.36028 3.70471C7.65276 3.50374 9.57916 5.08486 9.74628 6.99921C9.90726 8.83978 8.75898 9.67748 7.96031 9.74722C7.32874 9.80257 6.5342 9.41907 6.46242 8.59571C6.40094 7.88823 6.66955 7.79181 6.60389 7.04023C6.48706 5.70214 5.32031 5.54627 4.68158 5.60164C3.90854 5.66934 2.506 6.57165 2.70285 8.81927C2.90072 11.0864 5.07425 12.8776 7.92342 12.6285C10.9981 12.3598 13.1389 9.9656 13.2998 6.60754C13.2983 6.42965 13.3358 6.25361 13.4095 6.09177L13.4105 6.08769C13.4436 6.01733 13.4824 5.94977 13.5264 5.88568C13.592 5.78722 13.6761 5.67855 13.7848 5.5596C13.7857 5.55653 13.7857 5.55653 13.7878 5.55653C13.8667 5.46732 13.9621 5.37093 14.0697 5.26737C15.4128 4.00001 20.2499 1.01107 24.8246 1.95748C24.9212 1.97821 25.0086 2.02965 25.0737 2.10412C25.1387 2.1786 25.1779 2.27211 25.1855 2.3707Z" fill="url(#paint0_linear_dark)"/>
+<path d="M36.5366 7.08005V17.9294C36.5366 17.9443 36.5306 17.9587 36.5201 17.9692C36.5095 17.9798 36.4952 17.9858 36.4802 17.9858H34.1692C34.1544 17.9858 34.1399 17.9798 34.1294 17.9692C34.1188 17.9587 34.1128 17.9443 34.1128 17.9294V7.08005C34.1128 7.06661 34.1183 7.0537 34.1277 7.0442C34.1372 7.03466 34.1502 7.0293 34.1636 7.0293H36.4858C36.4994 7.0293 36.5121 7.03466 36.5218 7.0442C36.5312 7.0537 36.5366 7.06661 36.5366 7.08005Z" fill="#FFFFFF"/>
+<path d="M54.6594 3.16064C54.6475 3.16064 54.6361 3.16541 54.6276 3.17386C54.619 3.18232 54.6143 3.1938 54.6143 3.20577V5.1512C54.6143 5.16465 54.6195 5.17756 54.629 5.18708C54.6385 5.1966 54.6518 5.20194 54.6651 5.20194H59.2982V17.929C59.2982 17.944 59.3043 17.9583 59.3148 17.9689C59.3252 17.9795 59.3395 17.9854 59.3547 17.9854H61.7612C61.7764 17.9854 61.7906 17.9795 61.8011 17.9689C61.8115 17.9583 61.8177 17.944 61.8177 17.929V5.20194H66.079C66.0952 5.20194 66.1113 5.19542 66.1227 5.18377C66.1346 5.17214 66.1412 5.15637 66.1412 5.13991V3.20577C66.1412 3.1938 66.136 3.18232 66.1275 3.17386C66.1194 3.16541 66.1075 3.16064 66.0957 3.16064H54.6594Z" fill="#FFFFFF"/>
+<path d="M55.5025 17.9238C55.5025 17.9403 55.4964 17.9561 55.4845 17.9677C55.4731 17.9793 55.457 17.9859 55.4408 17.9859H53.1862C53.1696 17.9859 53.1539 17.9793 53.1421 17.9677C53.1307 17.9561 53.124 17.9403 53.124 17.9238V11.6026C53.1221 11.2949 53.0975 10.9876 53.0509 10.6835C52.8928 9.59515 52.4869 8.86209 51.0332 8.86209H50.971C50.5295 8.87823 50.0984 9.0001 49.7139 9.21734C49.213 9.48111 48.7877 9.86951 48.4795 10.3451C48.5251 10.6967 48.5474 11.0508 48.5474 11.4052V18.0648C48.5474 18.0798 48.5413 18.0941 48.5308 18.1047C48.5204 18.1152 48.5061 18.1212 48.4909 18.1212H46.2702C46.2537 18.1212 46.2379 18.1147 46.2264 18.103C46.2148 18.0914 46.2082 18.0756 46.2082 18.0592V12.2511C46.2082 11.2191 46.2702 10.1139 45.7574 9.4993C45.5446 9.26909 45.2806 9.09248 44.9868 8.98367C44.6928 8.87495 44.3776 8.83711 44.0663 8.87334C43.6339 8.89252 43.2099 9 42.8206 9.18914C42.5567 9.29947 42.316 9.45823 42.1104 9.65715C41.8676 9.88745 41.6889 10.177 41.5919 10.4974V17.9238C41.5919 17.9403 41.5853 17.9561 41.5738 17.9677C41.5622 17.9793 41.5464 17.9859 41.5298 17.9859H39.2752C39.2589 17.9859 39.2431 17.9793 39.2314 17.9677C39.2198 17.9561 39.2134 17.9403 39.2134 17.9238V7.15345C39.2134 7.1385 39.2192 7.12416 39.2298 7.11357C39.2403 7.10303 39.2548 7.0971 39.2696 7.0971H40.2335C40.4214 7.09644 40.6046 7.15568 40.7566 7.26621C40.9086 7.37673 41.0216 7.53273 41.079 7.71171C41.1241 7.86962 41.1804 8.00497 41.2029 8.07262C42.1567 7.24347 43.3836 6.79748 44.6469 6.82079C45.1341 6.78685 45.6229 6.85735 46.0807 7.0275C46.5385 7.19765 46.9549 7.46361 47.3017 7.80757C47.464 8.00136 47.6092 8.20892 47.7356 8.42788C48.2175 7.91609 48.8019 7.51232 49.4509 7.24309C50.0999 6.97385 50.7987 6.84529 51.5009 6.8659C52.6958 6.8659 55.4745 7.2719 55.4745 11.0443L55.5025 17.9238Z" fill="#FFFFFF"/>
+<path d="M88.5546 18.0137H86.0802C86.0684 18.0143 86.0565 18.0121 86.0461 18.0072C86.0351 18.0023 86.0256 17.9948 86.0185 17.9855C85.5001 17.2637 84.3949 15.5382 84.2767 15.4085L84.2259 15.3239C83.837 14.8108 82.9184 13.6322 81.6893 13.3672L80.7592 14.3315V17.9404C80.7592 17.9463 80.7583 17.9521 80.7559 17.9576C80.754 17.9631 80.7502 17.9681 80.7464 17.9723C80.7421 17.9765 80.7369 17.9798 80.7317 17.982C80.726 17.9843 80.7203 17.9855 80.7146 17.9855H78.4149C78.3992 17.9841 78.385 17.9769 78.3745 17.9654C78.3641 17.954 78.3584 17.9389 78.3584 17.9234V2.96899C78.3584 2.95403 78.3641 2.93969 78.375 2.92912C78.3855 2.91854 78.3997 2.9126 78.4149 2.9126H80.7592C80.7716 2.9126 80.783 2.91735 80.7915 2.92581C80.8 2.93427 80.8048 2.94575 80.8048 2.95772V11.4161L85.314 6.7922H85.3529H87.9289C88.0025 6.7922 88.0362 6.7922 88.0642 6.84295C88.0927 6.89371 88.0642 6.93881 88.0642 6.98956L83.3186 11.8108C84.3726 12.3725 85.2789 13.1764 85.962 14.1566L86.0128 14.2243C86.1704 14.4273 87.9403 16.9536 88.6111 17.8953C88.6268 17.9027 88.6392 17.9161 88.6448 17.9325C88.6505 17.9489 88.6496 17.967 88.642 17.9827C88.6344 17.9983 88.6211 18.0104 88.605 18.0162C88.5884 18.0221 88.5703 18.0211 88.5546 18.0137Z" fill="#FFFFFF"/>
+<path d="M36.7733 4.11377C36.7789 4.4024 36.6987 4.68617 36.5426 4.92898C36.3864 5.17178 36.1617 5.36262 35.8968 5.47723C35.6318 5.59184 35.339 5.62503 35.0552 5.57257C34.7715 5.52011 34.5098 5.38439 34.3032 5.18266C34.0969 4.98093 33.9551 4.72234 33.896 4.43975C33.8369 4.15719 33.8633 3.8634 33.9716 3.59583C34.08 3.32825 34.2654 3.09897 34.5043 2.93714C34.7433 2.77533 35.0249 2.6883 35.3136 2.68711C35.503 2.68488 35.6911 2.72 35.8671 2.79051C36.043 2.86099 36.2033 2.96546 36.3388 3.09793C36.4744 3.23042 36.5826 3.38831 36.6571 3.56261C36.7317 3.7369 36.7712 3.9242 36.7733 4.11377Z" fill="#FFFFFF"/>
+<path d="M70.9317 6.56689C67.6118 6.56689 65.5547 8.77174 65.5547 12.3243C65.5547 15.8768 67.6118 18.0816 70.9317 18.0816C74.2517 18.0816 76.3429 15.8711 76.3429 12.3186C76.3429 8.76609 74.2517 6.56689 70.9317 6.56689ZM73.0795 15.3016C72.7909 15.5672 72.4524 15.7724 72.0835 15.9051C71.7151 16.0378 71.3234 16.0953 70.9317 16.0741C68.3899 16.0741 67.8658 13.9652 67.8658 12.2058C67.8658 9.75291 68.8632 8.55743 70.9317 8.55743C73.0002 8.55743 73.9868 9.81491 73.9868 12.3074C73.9981 13.6663 73.6881 14.6757 73.0795 15.296V15.3016Z" fill="#FFFFFF"/>
+<path d="M98.958 14.5853C98.9072 14.5232 98.7999 14.5853 98.7496 14.5853L96.7594 14.8841C96.7257 14.8848 96.693 14.8952 96.665 14.9143C96.637 14.9333 96.6147 14.96 96.6018 14.9913C96.3853 15.349 96.0848 15.6484 95.7259 15.8636C95.3675 16.0788 94.962 16.2033 94.5443 16.2262C94.0026 16.3028 93.4495 16.228 92.9477 16.01C92.4449 15.7921 92.0129 15.4395 91.6981 14.9913C91.3478 14.5388 91.1289 13.9982 91.0667 13.4293V13.3898L96.8102 12.6004C97.1649 12.5591 97.5048 12.4357 97.8034 12.2399C98.1016 12.0441 98.3503 11.7814 98.5293 11.4726C98.696 11.1539 98.7852 10.8006 98.79 10.4412C98.7947 10.0817 98.7154 9.72613 98.5578 9.40307C98.0232 8.24334 97.0623 7.33448 95.875 6.86556C95.038 6.54663 94.135 6.44399 93.2482 6.56723C92.3613 6.69043 91.5201 7.03548 90.8018 7.57043C90.1447 8.09493 89.6154 8.76177 89.2531 9.52071C88.8909 10.2796 88.7053 11.1109 88.7105 11.9519C88.683 12.4986 88.7134 13.0468 88.8012 13.5871C89.2014 15.8991 90.8863 18.2336 93.834 18.2336C97.3515 18.2336 98.6988 16.0683 98.9466 14.7713C98.9803 14.7319 99.0197 14.6304 98.958 14.5853ZM91.6307 9.66247C91.897 9.33095 92.2284 9.0574 92.6049 8.85862C92.9809 8.65984 93.3935 8.54001 93.8174 8.5065C94.2077 8.42992 94.6102 8.44839 94.9919 8.56024C95.3736 8.67214 95.7226 8.87414 96.0098 9.14931C96.2358 9.3619 96.4262 9.60944 96.5738 9.88238C96.6161 9.9703 96.6384 10.0667 96.6384 10.1643C96.6384 10.262 96.6161 10.3584 96.5738 10.4463C96.5354 10.5365 96.4741 10.6152 96.3958 10.6746C96.3179 10.7339 96.2254 10.7718 96.1285 10.7846L90.8806 11.5177C90.9618 10.8397 91.2291 10.1974 91.653 9.66247H91.6307Z" fill="#FFFFFF"/>
+<path d="M110.325 11.2078V17.9238C110.325 17.9403 110.319 17.9561 110.307 17.9677C110.296 17.9793 110.279 17.9859 110.263 17.9859H108.008C107.993 17.9859 107.979 17.9799 107.968 17.9694C107.958 17.9588 107.952 17.9444 107.952 17.9295V12.3413C107.952 12.3413 107.952 11.4165 107.907 10.5763C107.899 10.2948 107.835 10.0177 107.719 9.76123C107.603 9.50472 107.437 9.2738 107.231 9.082C107.017 8.91341 106.771 8.79164 106.508 8.7246C106.245 8.65757 105.971 8.64679 105.703 8.69289C104.637 8.83033 103.664 9.3687 102.981 10.1985V17.9238C102.981 17.9403 102.974 17.9561 102.963 17.9677C102.951 17.9793 102.935 17.9859 102.919 17.9859H100.664C100.648 17.9859 100.632 17.9793 100.621 17.9677C100.609 17.9561 100.602 17.9403 100.602 17.9238V6.95046C100.602 6.93403 100.609 6.91822 100.621 6.90659C100.632 6.89496 100.648 6.88845 100.664 6.88845H102.552C102.569 6.88845 102.585 6.89496 102.596 6.90659C102.608 6.91822 102.615 6.93403 102.615 6.95046V8.02188C103.567 7.15783 104.796 6.65853 106.081 6.6121C107.163 6.54445 110.325 6.60645 110.325 11.2078Z" fill="#FFFFFF"/>
+</g>
+<defs>
+<linearGradient id="paint0_linear_dark" x1="22.7129" y1="5.92105" x2="4.29862" y2="16.3638" gradientUnits="userSpaceOnUse">
+<stop stop-color="#0CC5FF"/>
+<stop offset="1" stop-color="#007FFF"/>
+</linearGradient>
+<clipPath id="clip0_dark">
+<rect width="110" height="19" fill="white" transform="translate(0.5 0.913574)"/>
+</clipPath>
+</defs>
+</svg></template>
+
+<script>
+/* ===== THUMBNAILS ===== */
+const thumbLayouts = {
+    'cover':   'cover',
+    'what':    'steps',
+    'why':     'grid2',
+    'pillars': 'grid3',
+    'product': 'split',
+    'story':   'grid3',
+    'demo':    'split',
+    'status':  'grid3',
+    'support': 'grid3',
+    'closing': 'cover',
+};
+const slides = [...document.querySelectorAll('.slide')];
+const sidebar = document.getElementById('sidebar');
+const prog = document.getElementById('prog');
+const footNum = document.getElementById('footNum');
+const footLabel = document.getElementById('footLabel');
+let cur = 0;
+
+const mk = (cls, style) => { const d = document.createElement('div'); d.className = cls; d.style.cssText = style || ''; return d; };
+function buildThumb(type) {
+    const inner = mk('thumb-inner' + (type === 'cover' ? ' cover-type' : ''));
+    const ln = (w, c) => { const l = mk('thumb-line', `width:${w}; background:${c || 'rgba(255,255,255,.28)'}`); inner.appendChild(l); return l; };
+    const blk = (h, c, parent) => { const b = mk('thumb-block', `height:${h}; flex:1; background:${c || 'rgba(255,255,255,.14)'}`); (parent || inner).appendChild(b); return b; };
+    const row = (n, h, c) => { const r = mk('thumb-row'); for (let i = 0; i < n; i++) blk(h, c, r); inner.appendChild(r); return r; };
+    switch (type) {
+        case 'cover': ln('70%', '#5aa6ff'); ln('50%'); break;
+        case 'stack': ln('60%', '#5aa6ff'); ln('90%'); ln('85%'); ln('80%'); break;
+        case 'grid2': ln('50%', '#5aa6ff'); row(2, '10px'); break;
+        case 'grid3': ln('50%', '#5aa6ff'); row(3, '10px'); break;
+        case 'split': { const r = mk('thumb-row'); r.style.flex = '1'; blk('100%', 'rgba(90,166,255,.5)', r); blk('100%', undefined, r); inner.appendChild(r); break; }
+        case 'table': ln('50%', '#5aa6ff'); row(1, '4px'); row(1, '4px'); row(1, '4px'); break;
+        case 'phones': ln('45%', '#5aa6ff'); { const r = mk('thumb-row'); r.style.justifyContent = 'center'; for (let i = 0; i < 3; i++) { const p = mk('thumb-block', 'width:6px; height:12px; border-radius:1.5px; background:rgba(90,166,255,.5); margin:0 1px;'); r.appendChild(p); } inner.appendChild(r); break; }
+        case 'steps': ln('50%', '#5aa6ff'); { const r = mk('thumb-row'); r.style.alignItems = 'center'; for (let i = 0; i < 3; i++) { blk('8px', 'rgba(90,166,255,.45)', r); if (i < 2) { const a = mk('thumb-block', 'width:3px; height:2px; background:rgba(255,255,255,.35); flex:none;'); r.appendChild(a); } } inner.appendChild(r); break; }
+        default: ln('60%', '#5aa6ff'); ln('85%'); ln('75%');
+    }
+    return inner;
+}
+slides.forEach((s, k) => {
+    const thumb = mk('nav-thumb');
+    thumb.appendChild(buildThumb(thumbLayouts[s.dataset.section] || 'stack'));
+    const lab = mk('nav-label'); lab.textContent = (String(k + 1).padStart(2, '0')) + ' · ' + (s.dataset.label || s.dataset.section);
+    thumb.appendChild(lab);
+    thumb.addEventListener('click', () => go(k));
+    sidebar.appendChild(thumb);
+});
+const thumbs = [...sidebar.children];
+
+/* ===== STEPPED REVEAL ===== */
+const reduceMotion = matchMedia('(prefers-reduced-motion:reduce)').matches;
+const stepTimers = new Map();
+function playSteps(slide) {
+    if (!slide.hasAttribute('data-steps')) return;
+    const steps = [...slide.querySelectorAll('[data-step]')];
+    if (!steps.length) return;
+    const MAX = steps.reduce((m, e) => Math.max(m, +e.dataset.step), 0);
+    const replayBtn = slide.querySelector('[data-replay]');
+    (stepTimers.get(slide) || []).forEach(clearTimeout);
+    const timers = [];
+    let c = 0;
+    const render = () => {
+        steps.forEach(e => e.classList.toggle('on', +e.dataset.step <= c));
+        if (replayBtn) replayBtn.classList.toggle('show', c >= MAX);
+    };
+    render();
+    const start = reduceMotion ? 0 : 500, gap = reduceMotion ? 0 : 1050;
+    for (let s = 1; s <= MAX; s++) timers.push(setTimeout(() => { c = s; render(); }, start + (s - 1) * gap));
+    stepTimers.set(slide, timers);
+}
+document.querySelectorAll('[data-replay]').forEach(btn =>
+    btn.addEventListener('click', (e) => { e.stopPropagation(); playSteps(btn.closest('.slide')); }));
+
+/* ===== PAGING ===== */
+const DECK_CONTEXT = footLabel.textContent;
+function go(n) {
+    cur = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach((s, k) => s.classList.toggle('active', k === cur));
+    thumbs.forEach((t, k) => t.classList.toggle('active', k === cur));
+    prog.style.width = ((cur + 1) / slides.length * 100) + '%';
+    const pad = x => String(x).padStart(2, '0');
+    footNum.textContent = pad(cur + 1) + ' / ' + pad(slides.length);
+    footLabel.textContent = slides[cur].dataset.group || DECK_CONTEXT;
+    thumbs[cur].scrollIntoView({ block: 'nearest' });
+    playSteps(slides[cur]);
+    slides[cur].querySelectorAll('iframe[data-autoplay]').forEach((f) => {
+        if (f.contentWindow) { try { f.contentWindow.postMessage({ type: 'deck-play' }, '*'); } catch (_) {} }
+    });
+    document.dispatchEvent(new CustomEvent('slidechange', { detail: { index: cur, slide: slides[cur] } }));
+}
+
+/* ===== AUTO-HIDE RAIL ===== */
+const railEl = document.querySelector('.sidebar-nav');
+const hotzone = document.getElementById('railHotzone');
+let railTimer = null;
+function railPeek(on) {
+    clearTimeout(railTimer);
+    if (on) railEl.classList.add('peek');
+    else railTimer = setTimeout(() => railEl.classList.remove('peek'), 260);
+}
+[hotzone, railEl].forEach(el => {
+    el.addEventListener('mouseenter', () => railPeek(true));
+    el.addEventListener('mouseleave', () => railPeek(false));
+});
+
+/* ===== CLICK / TAP PAGING ===== */
+const INTERACTIVE_SEL = 'a[href], button, input, select, textarea, summary, label, iframe, video, audio, [onclick], [role="button"], .demo-btn, .sidebar-nav, .nav-thumb, [data-replay], [contenteditable]';
+document.querySelector('.deck').addEventListener('click', (e) => {
+    if (e.target.closest(INTERACTIVE_SEL)) return;
+    const x = e.clientX / window.innerWidth;
+    if (x < 0.5) go(cur - 1); else go(cur + 1);
+});
+
+/* ===== KEYBOARD ===== */
+document.addEventListener('keydown', (e) => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    if (['ArrowRight','ArrowDown','PageDown',' '].includes(e.key)) { e.preventDefault(); go(cur + 1); }
+    else if (['ArrowLeft','ArrowUp','PageUp'].includes(e.key)) { e.preventDefault(); go(cur - 1); }
+    else if (e.key === 'Home') { e.preventDefault(); go(0); }
+    else if (e.key === 'End') { e.preventDefault(); go(slides.length - 1); }
+    else if (e.key === 'r' || e.key === 'R') { go(0); }
+    else if (/^[1-9]$/.test(e.key)) { go(parseInt(e.key, 10) - 1); }
+});
+
+/* ===== KEYBOARD HINT ===== */
+const kbdHint = document.getElementById('kbdHint');
+setTimeout(() => kbdHint.classList.add('show'), 500);
+setTimeout(() => kbdHint.classList.remove('show'), 3200);
+
+/* ===== FOOTER LOGO ===== */
+document.getElementById('footLogo').innerHTML = document.getElementById('imtokenLogoTpl').innerHTML;
+
+go(0);
+</script>
+
+</body>
+</html>

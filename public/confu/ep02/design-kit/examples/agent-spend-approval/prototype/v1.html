@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Agent 消费审批 · v1</title>
+<style>
+  :root{
+    --bg-top:#F9FDFF; --bg-bot:#FFFFFF;
+    --card:#FFFFFF; --line:#E8ECF0; --line-strong:#D5DCE3;
+    --ink:#0B1220; --ink-2:#3C4757; --ink-3:#6B7684; --ink-4:#98A2AE;
+    --primary:#007FFF; --primary-press:#006FE0; --primary-tint:rgba(0,127,255,.08);
+    --agent:#A78BFA; --agent-tint:rgba(167,139,250,.12);
+    --ok:#059669; --ok-tint:rgba(5,150,105,.08);
+    --warn:#D97706; --warn-tint:rgba(217,119,6,.08);
+    --danger:#DC2626; --danger-tint:rgba(220,38,38,.07);
+    --r-sm:12px; --r-md:16px;
+    --f-head:"Plus Jakarta Sans","Noto Sans CJK SC","PingFang SC",system-ui,sans-serif;
+    --f-body:"Inter","Noto Sans CJK SC","PingFang SC",system-ui,sans-serif;
+    --f-mono:"JetBrains Mono","SFMono-Regular",Menlo,Consolas,monospace;
+    --t-fast:150ms; --t-normal:240ms; --t-soft:360ms; --t-hero:500ms;
+    --ease:cubic-bezier(.2,.7,.2,1);
+    --shadow-float:0 8px 24px rgba(0,0,0,.08);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:var(--f-body); color:var(--ink); font-size:14px; line-height:1.5;
+    background:linear-gradient(180deg,var(--bg-top),var(--bg-bot));
+    -webkit-font-smoothing:antialiased; display:flex; justify-content:center;
+  }
+  button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+  .app{width:100%;max-width:430px;min-height:100%;position:relative;display:flex;flex-direction:column}
+  .mono{font-family:var(--f-mono);font-feature-settings:"tnum" 1}
+  svg.i{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;flex:none}
+  svg.i.sm{width:16px;height:16px}
+  svg.i.lg{width:24px;height:24px}
+
+  /* ---------- top bar ---------- */
+  .bar{height:56px;display:flex;align-items:center;gap:8px;padding:0 16px;flex:none}
+  .bar h1{font-family:var(--f-head);font-weight:600;font-size:16px;flex:1}
+  .icon-btn{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;color:var(--ink-2);border:1px solid transparent;transition:background var(--t-fast),border-color var(--t-fast)}
+  .icon-btn:hover{background:#fff;border-color:var(--line)}
+  .icon-btn:focus-visible,.btn:focus-visible,.link:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+  .demo-btn{font-size:12px;color:var(--ink-4);padding:6px 8px;border-radius:8px}
+  .demo-btn:hover{color:var(--ink-2)}
+  .log-dot{position:relative}
+  .log-dot[data-count]::after{content:attr(data-count);position:absolute;top:-2px;right:-6px;min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:var(--ink);color:#fff;font-size:10px;line-height:16px;font-family:var(--f-mono)}
+
+  /* ---------- screens ---------- */
+  .screen{display:none;flex:1;flex-direction:column;padding:0 16px 16px}
+  .screen.on{display:flex;animation:enter var(--t-normal) var(--ease)}
+  @keyframes enter{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r-md)}
+  .sec{padding:16px}
+  .sec + .sec{border-top:1px solid var(--line)}
+
+  /* agent row */
+  .agent{display:flex;align-items:center;gap:12px}
+  .agent-mark{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:var(--agent-tint);color:#7C5FE6;border:1px solid rgba(167,139,250,.35)}
+  .agent-name{font-weight:500;font-size:14px;display:flex;align-items:center;gap:6px}
+  .agent-tag{font-size:11px;color:#7C5FE6;border:1px solid rgba(167,139,250,.45);border-radius:6px;padding:0 6px;line-height:18px}
+  .agent-sub{font-size:12px;color:var(--ink-3)}
+  .agent-time{margin-left:auto;font-size:12px;color:var(--ink-4)}
+
+  /* amount hero */
+  .k{font-size:12px;color:var(--ink-3);letter-spacing:.01em}
+  .amount{display:flex;align-items:baseline;gap:8px;margin-top:4px}
+  .amount .n{font-family:var(--f-mono);font-size:32px;font-weight:500;letter-spacing:-.02em;color:var(--ink);line-height:1.15}
+  .amount .u{font-family:var(--f-mono);font-size:16px;color:var(--ink-3)}
+  .payee{margin-top:12px;display:flex;align-items:center;gap:8px;font-size:14px;color:var(--ink-2)}
+  .payee .addr{font-family:var(--f-mono);font-size:12px;color:var(--ink-3)}
+  .chip{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--ink-2);border:1px solid var(--line);border-radius:8px;padding:2px 8px;line-height:18px}
+
+  /* after-approve block */
+  .after-h{display:flex;align-items:center;justify-content:space-between}
+  .after-h .t{font-family:var(--f-head);font-weight:600;font-size:14px}
+  .pair{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+  .pair .v{font-family:var(--f-mono);font-size:20px;line-height:1.3;margin-top:2px}
+  .pair .v small{font-size:12px;color:var(--ink-3);margin-left:4px}
+  .v.warn{color:var(--warn)}
+  .v .from{color:var(--ink-4);font-size:14px;margin-right:6px}
+
+  /* meter */
+  .meter{margin-top:16px}
+  .track{position:relative;height:8px;border-radius:4px;background:#F1F4F7}
+  .seg{position:absolute;top:0;bottom:0;transition:width var(--t-soft) var(--ease),left var(--t-soft) var(--ease)}
+  .seg.used{left:0;background:var(--ink-2);border-radius:4px 0 0 4px}
+  .seg.req{background:repeating-linear-gradient(135deg,#9AA6B4 0 3px,#B9C2CC 3px 6px)}
+  .seg.over{background:var(--warn);border-radius:0 4px 4px 0}
+  .cap{position:absolute;top:-4px;bottom:-4px;width:1.5px;background:var(--ink)}
+  .meter-legend{display:flex;justify-content:space-between;margin-top:8px;font-size:12px;color:var(--ink-3)}
+  .meter-legend .mono{color:var(--ink-2)}
+
+  /* detail rows */
+  .rows{display:flex;flex-direction:column}
+  .row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;font-size:14px}
+  .row .l{display:flex;align-items:center;gap:8px;color:var(--ink-3)}
+  .row .r{color:var(--ink-2)}
+  .row .r.mono{font-size:13px}
+
+  .scope{display:flex;gap:8px;align-items:flex-start;font-size:13px;color:var(--ink-2);background:#F6F8FA;border:1px solid var(--line);border-radius:var(--r-sm);padding:12px}
+  .scope svg{color:var(--ink-3);margin-top:1px}
+
+  /* banner */
+  .banner{display:none;align-items:center;gap:8px;border-radius:var(--r-sm);padding:10px 12px;font-size:13px;margin-bottom:12px;border:1px solid}
+  .banner.on{display:flex;animation:enter var(--t-normal) var(--ease)}
+  .banner.warn{background:var(--warn-tint);border-color:rgba(217,119,6,.3);color:#8A4B04}
+  .banner .grow{flex:1}
+  .banner .link{font-weight:500;color:var(--primary);padding:4px 6px;border-radius:6px;display:inline-flex;align-items:center;gap:4px}
+
+  /* actions */
+  .spacer{flex:1;min-height:16px}
+  .actions{display:flex;flex-direction:column;gap:8px;padding-top:12px}
+  .btn{height:52px;border-radius:14px;font-size:15px;font-weight:500;display:flex;align-items:center;justify-content:center;gap:8px;transition:background var(--t-fast),transform var(--t-fast),opacity var(--t-fast),border-color var(--t-fast)}
+  .btn:active{transform:scale(.985)}
+  .btn.primary{background:var(--primary);color:#fff}
+  .btn.primary:hover{background:var(--primary-press)}
+  .btn.primary .mono{font-size:15px}
+  .btn.ghost{border:1px solid var(--line-strong);background:#fff;color:var(--ink)}
+  .btn.ghost:hover{border-color:var(--ink-4)}
+  .btn[disabled]{opacity:.4;cursor:not-allowed;transform:none}
+  .fine{font-size:12px;color:var(--ink-4);text-align:center;margin-top:4px}
+
+  /* result */
+  .res-top{padding:24px 0 20px}
+  .badge{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;border:1px solid}
+  .badge.ok{background:var(--ok-tint);color:var(--ok);border-color:rgba(5,150,105,.25)}
+  .badge.no{background:#F6F8FA;color:var(--ink-2);border-color:var(--line)}
+  .badge.fail{background:var(--danger-tint);color:var(--danger);border-color:rgba(220,38,38,.25)}
+  .badge.wait{background:var(--primary-tint);color:var(--primary);border-color:rgba(0,127,255,.25)}
+  .res-title{font-family:var(--f-head);font-weight:600;font-size:20px;margin-top:16px}
+  .res-sub{font-size:14px;color:var(--ink-3);margin-top:4px}
+  .steps{display:flex;flex-direction:column;gap:0}
+  .step{display:flex;gap:12px;align-items:flex-start;padding:8px 0}
+  .step .dot{width:20px;height:20px;border-radius:6px;display:grid;place-items:center;border:1px solid var(--line-strong);color:var(--ink-4);flex:none;margin-top:1px}
+  .step.done .dot{background:var(--ink);border-color:var(--ink);color:#fff}
+  .step.now .dot{border-color:var(--primary);color:var(--primary)}
+  .step .st{font-size:14px}
+  .step.todo .st{color:var(--ink-4)}
+  .step .ss{font-size:12px;color:var(--ink-3)}
+
+  .big-line{display:flex;align-items:baseline;gap:6px}
+  .big-line .n{font-family:var(--f-mono);font-size:20px}
+  .big-line .d{font-family:var(--f-mono);font-size:14px;color:var(--ink-3)}
+  .status-pill{font-size:12px;border-radius:6px;padding:0 8px;line-height:20px;border:1px solid}
+  .status-pill.ok{color:var(--ok);border-color:rgba(5,150,105,.3);background:var(--ok-tint)}
+  .status-pill.warn{color:var(--warn);border-color:rgba(217,119,6,.3);background:var(--warn-tint)}
+  .status-pill.fail{color:var(--danger);border-color:rgba(220,38,38,.3);background:var(--danger-tint)}
+  .status-pill.neutral{color:var(--ink-2);border-color:var(--line);background:#F6F8FA}
+  .status-pill.wait{color:var(--primary);border-color:rgba(0,127,255,.3);background:var(--primary-tint)}
+
+  /* log */
+  .log-list{display:flex;flex-direction:column}
+  .log-item{display:grid;grid-template-columns:48px 1fr auto;gap:12px;padding:14px 16px;align-items:start}
+  .log-item + .log-item{border-top:1px solid var(--line)}
+  .log-time{font-family:var(--f-mono);font-size:12px;color:var(--ink-3);padding-top:2px}
+  .log-act{font-size:14px;font-weight:500}
+  .log-meta{font-size:12px;color:var(--ink-3);margin-top:2px}
+  .log-meta .ag{color:#7C5FE6}
+  .log-amt{text-align:right}
+  .log-amt .mono{font-size:14px}
+  .log-amt .status-pill{display:inline-block;margin-top:4px}
+  .log-item.fresh{animation:fresh var(--t-hero) var(--ease)}
+  @keyframes fresh{from{background:var(--primary-tint)}to{background:transparent}}
+  .empty{padding:48px 24px;text-align:center;color:var(--ink-3)}
+  .empty .badge{margin:0 auto 16px}
+  .empty .et{font-size:16px;color:var(--ink);font-weight:500}
+  .empty .es{font-size:13px;margin-top:4px}
+  .section-k{font-size:12px;color:var(--ink-3);margin:8px 4px 8px}
+
+  /* demo sheet */
+  .scrim{position:fixed;inset:0;background:rgba(11,18,32,.18);opacity:0;pointer-events:none;transition:opacity var(--t-normal)}
+  .scrim.on{opacity:1;pointer-events:auto}
+  .sheet{position:fixed;left:50%;bottom:0;width:100%;max-width:430px;transform:translate(-50%,100%);transition:transform var(--t-soft) var(--ease);
+    background:rgba(255,255,255,.86);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--line);border-bottom:0;border-radius:16px 16px 0 0;box-shadow:var(--shadow-float);padding:16px 16px 24px}
+  .sheet.on{transform:translate(-50%,0)}
+  .sheet h2{font-family:var(--f-head);font-weight:600;font-size:14px}
+  .sheet p{font-size:12px;color:var(--ink-3);margin-top:2px}
+  .toggle-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--line);font-size:14px}
+  .toggle{width:44px;height:26px;border-radius:13px;background:#DDE3E9;position:relative;transition:background var(--t-fast)}
+  .toggle::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:10px;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.15);transition:transform var(--t-fast) var(--ease)}
+  .toggle[aria-checked="true"]{background:var(--ink)}
+  .toggle[aria-checked="true"]::after{transform:translateX(18px)}
+  .sheet .btn{margin-top:16px;height:44px;font-size:14px;width:100%}
+
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-bot" viewBox="0 0 24 24"><path d="M12 8V4H8"/><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M2 14h2M20 14h2M15 13v2M9 13v2"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M3 12h.01M3 18h.01M3 6h.01M8 12h13M8 18h13M8 6h13"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
+  <symbol id="i-wallet" viewBox="0 0 24 24"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/></symbol>
+  <symbol id="i-gauge" viewBox="0 0 24 24"><path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></symbol>
+  <symbol id="i-wifi-off" viewBox="0 0 24 24"><path d="M12 20h.01M8.5 16.43a5 5 0 0 1 7 0M2 8.82a15 15 0 0 1 4.17-2.65M10.66 5c4.01-.36 8.14.9 11.34 3.76M16.85 11.25a10 10 0 0 1 2.22 1.68M5 13a10 10 0 0 1 5.24-2.76M2 2l20 20"/></symbol>
+  <symbol id="i-rotate" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4M12 17h.01"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="m12 19-7-7 7-7M19 12H5"/></symbol>
+  <symbol id="i-hourglass" viewBox="0 0 24 24"><path d="M5 22h14M5 2h14M17 22v-4.17a2 2 0 0 0-.59-1.42L12 12l-4.41 4.41A2 2 0 0 0 7 17.83V22M7 2v4.17a2 2 0 0 0 .59 1.42L12 12l4.41-4.41A2 2 0 0 0 17 6.17V2"/></symbol>
+  <symbol id="i-inbox" viewBox="0 0 24 24"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11"/></symbol>
+</svg>
+
+<div class="app" id="app">
+
+  <!-- ============ 1. 审批卡片 ============ -->
+  <section class="screen on" id="scr-card" aria-labelledby="t-card">
+    <div class="bar" style="margin:0 -16px">
+      <h1 id="t-card">待你审批</h1>
+      <button class="demo-btn" data-act="demo" aria-label="演示控制">演示</button>
+      <button class="icon-btn log-dot" id="log-btn-card" data-act="log" aria-label="今日日志"><svg class="i"><use href="#i-list"/></svg></button>
+    </div>
+
+    <div class="banner warn" id="offline-banner" role="status">
+      <svg class="i sm"><use href="#i-wifi-off"/></svg>
+      <span class="grow">网络已断开。恢复后才能批准或拒绝。</span>
+      <button class="link" data-act="retry-net"><svg class="i sm"><use href="#i-rotate"/></svg>重试</button>
+    </div>
+
+    <article class="card">
+      <div class="sec">
+        <div class="agent">
+          <div class="agent-mark"><svg class="i"><use href="#i-bot"/></svg></div>
+          <div>
+            <div class="agent-name">Trading Agent <span class="agent-tag">Agent</span></div>
+            <div class="agent-sub">请求一笔超出今日预算的付款</div>
+          </div>
+          <div class="agent-time mono" id="req-time">14:32</div>
+        </div>
+      </div>
+
+      <div class="sec">
+        <div class="k">请求金额</div>
+        <div class="amount"><span class="n">24</span><span class="u">USDT</span></div>
+        <div class="payee">
+          <span>付给 Kaito 行情数据 API</span>
+          <span class="chip"><svg class="i sm"><use href="#i-shield"/></svg>白名单</span>
+        </div>
+        <div class="payee" style="margin-top:4px"><span class="addr">0x7a3F…9c21</span></div>
+      </div>
+
+      <div class="sec">
+        <div class="after-h">
+          <span class="t">批准后</span>
+          <span class="status-pill warn">超出预算</span>
+        </div>
+        <div class="pair">
+          <div>
+            <div class="k">今日支出</div>
+            <div class="v"><span class="from">82 →</span>106<small>USDT</small></div>
+          </div>
+          <div>
+            <div class="k">超出每日预算</div>
+            <div class="v warn">+6<small>USDT</small></div>
+          </div>
+        </div>
+        <div class="meter" aria-hidden="true">
+          <div class="track" id="card-track">
+            <div class="seg used" id="c-used"></div>
+            <div class="seg req" id="c-req"></div>
+            <div class="seg over" id="c-over"></div>
+            <div class="cap" id="c-cap"></div>
+          </div>
+          <div class="meter-legend"><span>已用 <span class="mono">82</span> · 本笔 <span class="mono">24</span></span><span>预算 <span class="mono">100</span></span></div>
+        </div>
+      </div>
+
+      <div class="sec" style="padding-top:8px;padding-bottom:8px">
+        <div class="rows">
+          <div class="row"><span class="l"><svg class="i sm"><use href="#i-gauge"/></svg>每日预算</span><span class="r mono">100 USDT</span></div>
+          <div class="row"><span class="l"><svg class="i sm"><use href="#i-wallet"/></svg>今日已用</span><span class="r mono">82 USDT</span></div>
+          <div class="row"><span class="l"><svg class="i sm"><use href="#i-clock"/></svg>请求有效期</span><span class="r">今晚 24:00 前</span></div>
+        </div>
+      </div>
+    </article>
+
+    <div class="spacer"></div>
+
+    <div class="scope">
+      <svg class="i sm"><use href="#i-info"/></svg>
+      <span>只对这一笔生效。每日预算仍是 100 USDT，之后的超额请求还会再问你。</span>
+    </div>
+
+    <div class="actions">
+      <button class="btn primary" id="btn-approve" data-act="approve">仅批准这一笔 · <span class="mono">24 USDT</span></button>
+      <button class="btn ghost" id="btn-reject" data-act="reject">拒绝</button>
+    </div>
+  </section>
+
+  <!-- ============ 2. 结果页 ============ -->
+  <section class="screen" id="scr-result" aria-live="polite">
+    <div class="bar" style="margin:0 -16px">
+      <h1 id="res-bar">结果</h1>
+      <button class="demo-btn" data-act="demo">演示</button>
+      <button class="icon-btn log-dot" data-act="log" aria-label="今日日志"><svg class="i"><use href="#i-list"/></svg></button>
+    </div>
+    <div id="res-body" style="display:flex;flex-direction:column;flex:1"></div>
+  </section>
+
+  <!-- ============ 3. 日志 ============ -->
+  <section class="screen" id="scr-log">
+    <div class="bar" style="margin:0 -16px">
+      <button class="icon-btn" data-act="back" aria-label="返回"><svg class="i"><use href="#i-back"/></svg></button>
+      <h1>今日日志</h1>
+      <button class="demo-btn" data-act="demo">演示</button>
+    </div>
+    <div id="log-body"></div>
+  </section>
+
+  <div class="scrim" id="scrim" data-act="demo-close"></div>
+  <div class="sheet" id="sheet" role="dialog" aria-label="演示控制">
+    <h2>演示控制</h2>
+    <p>用来走通离线、失败等状态。正式产品里没有这个面板。</p>
+    <div class="toggle-row"><span>模拟离线</span><button class="toggle" id="tg-offline" role="switch" aria-checked="false" data-act="tg-offline"></button></div>
+    <div class="toggle-row"><span>下一次链上确认失败</span><button class="toggle" id="tg-fail" role="switch" aria-checked="false" data-act="tg-fail"></button></div>
+    <button class="btn ghost" data-act="reset">重置为初始请求</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  const BUDGET = 100, USED0 = 82, REQ = 24, AGENT = 'Trading Agent', PAYEE = 'Kaito 行情数据 API';
+  const CONFIRM_MS = 1400;
+
+  const S = {
+    screen:'card', prev:'card',
+    status:'pending',        // pending | confirming | approved | failed | rejected
+    used:USED0,
+    offline:false, failNext:false,
+    log:[],                  // {id, time, action, amount, agent, status}
+    freshId:null,
+    lock:false               // 防重入：一次动作在处理中时拒绝一切新动作
+  };
+
+  const $ = s => document.querySelector(s);
+  const pad = n => String(n).padStart(2,'0');
+  const now = () => { const d = new Date(); return pad(d.getHours())+':'+pad(d.getMinutes()); };
+  const icon = (id, cls='') => `<svg class="i ${cls}"><use href="#i-${id}"/></svg>`;
+
+  /* ---------- meter ---------- */
+  function paintMeter(prefix, used, req, show){
+    // 刻度以 max(106, budget) 为满宽，预算线落在 100 的位置
+    const scale = Math.max(USED0 + REQ, BUDGET);
+    const pct = v => (v/scale*100)+'%';
+    const inBudget = Math.max(0, Math.min(req, BUDGET - used));
+    const over = show ? Math.max(0, used + req - BUDGET) : 0;
+    const el = id => document.getElementById(prefix+id);
+    el('used').style.width = pct(used);
+    el('req').style.left = pct(used);
+    el('req').style.width = show ? pct(inBudget) : '0%';
+    el('over').style.left = pct(used + inBudget);
+    el('over').style.width = pct(over);
+    el('cap').style.left = pct(BUDGET);
+  }
+
+  /* ---------- log ---------- */
+  function writeLog(entry){
+    const i = S.log.findIndex(e => e.id === entry.id);
+    if (i >= 0) S.log[i] = Object.assign({}, S.log[i], entry);
+    else S.log.unshift(entry);
+    S.freshId = entry.id;
+  }
+  const pill = st => ({
+    '确认中':'<span class="status-pill wait">确认中</span>',
+    '已完成':'<span class="status-pill ok">已完成</span>',
+    '失败':'<span class="status-pill fail">网络失败</span>',
+    '已拒绝':'<span class="status-pill neutral">未付款</span>'
+  })[st] || '';
+
+  function renderLog(){
+    const body = $('#log-body');
+    if (!S.log.length){
+      body.innerHTML = `<div class="card"><div class="empty">
+        <div class="badge no">${icon('inbox')}</div>
+        <div class="et">今天还没有动作</div>
+        <div class="es">你批准或拒绝的每一笔都会记在这里</div></div></div>`;
+      return;
+    }
+    body.innerHTML = `<div class="section-k">今天 · ${S.log.length} 条</div><div class="card log-list">` +
+      S.log.map(e => `<div class="log-item ${e.id===S.freshId?'fresh':''}">
+        <div class="log-time">${e.time}</div>
+        <div><div class="log-act">${e.action}</div>
+          <div class="log-meta"><span class="ag">${e.agent}</span> · 付给 ${PAYEE}</div></div>
+        <div class="log-amt"><div class="mono">${e.amount} USDT</div>${pill(e.status)}</div>
+      </div>`).join('') + `</div>`;
+    S.freshId = null;
+  }
+
+  /* ---------- result ---------- */
+  function spendBlock(title, used, note, tone){
+    const over = Math.max(0, used - BUDGET);
+    return `<div class="card"><div class="sec">
+        <div class="after-h"><span class="t">${title}</span>${tone}</div>
+        <div class="big-line" style="margin-top:12px"><span class="n">${used}</span><span class="d">/ ${BUDGET} USDT</span>
+          ${over?`<span class="status-pill warn" style="margin-left:auto">超出 ${over}</span>`:''}</div>
+        <div class="meter"><div class="track">
+          <div class="seg used" id="r-used"></div><div class="seg req" id="r-req"></div>
+          <div class="seg over" id="r-over"></div><div class="cap" id="r-cap"></div></div></div>
+      </div>
+      <div class="sec" style="padding-top:12px;padding-bottom:12px"><div class="scope" style="background:none;border:0;padding:0">${icon('info','sm')}<span>${note}</span></div></div>
+    </div>`;
+  }
+
+  function renderResult(){
+    const b = $('#res-body');
+    let html = '', meterUsed = Math.min(S.used, BUDGET), meterReq = Math.max(0, S.used - BUDGET), meterShow = true;
+
+    if (S.status === 'confirming'){
+      $('#res-bar').textContent = '处理中';
+      html = `<div class="res-top"><div class="badge wait">${icon('hourglass','lg')}</div>
+        <div class="res-title">等待链上确认</div>
+        <div class="res-sub">已提交 <span class="mono">24 USDT</span> 给 ${PAYEE}，通常几秒内完成。</div></div>
+        <div class="card"><div class="sec steps">
+          <div class="step done"><div class="dot">${icon('check','sm')}</div><div><div class="st">你已批准这一笔</div><div class="ss">${S.log[0]?S.log[0].time:''} · 已写入日志</div></div></div>
+          <div class="step now"><div class="dot">2</div><div><div class="st">链上确认</div><div class="ss">确认前今日支出仍按 82 计</div></div></div>
+          <div class="step todo"><div class="dot">3</div><div><div class="st">完成，支出更新为 106</div></div></div>
+        </div></div>
+        <div class="spacer"></div>
+        <div class="fine">可以离开此页，结果会记在日志里</div>
+        <div class="actions"><button class="btn ghost" data-act="log">查看日志</button></div>`;
+      meterUsed = USED0;
+    }
+    else if (S.status === 'approved'){
+      $('#res-bar').textContent = '已完成';
+      html = `<div class="res-top"><div class="badge ok">${icon('check','lg')}</div>
+        <div class="res-title">已批准这一笔</div>
+        <div class="res-sub"><span class="mono">24 USDT</span> 已付给 ${PAYEE}。</div></div>
+        ${spendBlock('今日支出', S.used, '每日预算仍是 100 USDT，没有被修改。Agent 下一笔超额请求仍需你批准。', '<span class="status-pill ok">已完成</span>')}
+        <div class="spacer"></div>
+        <div class="actions"><button class="btn primary" data-act="log">查看日志</button></div>`;
+    }
+    else if (S.status === 'rejected'){
+      $('#res-bar').textContent = '已拒绝';
+      html = `<div class="res-top"><div class="badge no">${icon('x','lg')}</div>
+        <div class="res-title">已拒绝，没有付款</div>
+        <div class="res-sub">${AGENT} 会收到拒绝，这笔 <span class="mono">24 USDT</span> 不会支付。</div></div>
+        ${spendBlock('今日支出', S.used, '支出和预算都没有变化。', '<span class="status-pill neutral">未变化</span>')}
+        <div class="spacer"></div>
+        <div class="actions"><button class="btn primary" data-act="log">查看日志</button></div>`;
+    }
+    else if (S.status === 'failed'){
+      $('#res-bar').textContent = '未完成';
+      html = `<div class="res-top"><div class="badge fail">${icon('alert','lg')}</div>
+        <div class="res-title">网络失败，这笔还没有付出</div>
+        <div class="res-sub">没有扣款。重试不会重复批准，日志里只保留这一条。</div></div>
+        ${spendBlock('今日支出', S.used, '今晚 24:00 前都可以回来重试；过期后这笔请求自动作废。', '<span class="status-pill fail">未支付</span>')}
+        <div class="spacer"></div>
+        <div class="actions">
+          <button class="btn primary" data-act="approve">${icon('rotate','sm')}重试批准 · <span class="mono">24 USDT</span></button>
+          <button class="btn ghost" data-act="later">稍后处理</button>
+        </div>`;
+    }
+    b.innerHTML = html;
+    if (S.status !== 'confirming') paintMeter('r-', meterUsed, meterReq, meterShow);
+  }
+
+  /* ---------- card ---------- */
+  function renderCard(){
+    const handled = S.status === 'approved' || S.status === 'rejected' || S.status === 'confirming';
+    const blocked = S.offline || handled || S.lock;
+    $('#btn-approve').disabled = blocked;
+    $('#btn-reject').disabled = blocked || S.status === 'failed';
+    $('#offline-banner').classList.toggle('on', S.offline);
+    paintMeter('c-', USED0, REQ, true);
+  }
+
+  function renderBadges(){
+    document.querySelectorAll('.log-dot').forEach(b => {
+      if (S.log.length) b.setAttribute('data-count', S.log.length); else b.removeAttribute('data-count');
+    });
+  }
+
+  function go(screen){
+    if (screen !== S.screen){ S.prev = S.screen; S.screen = screen; }
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('on'));
+    const el = document.getElementById('scr-'+screen);
+    void el.offsetWidth; el.classList.add('on');
+    render();
+  }
+
+  function render(){
+    renderCard(); renderBadges();
+    if (S.screen === 'result') renderResult();
+    if (S.screen === 'log') renderLog();
+    $('#tg-offline').setAttribute('aria-checked', S.offline);
+    $('#tg-fail').setAttribute('aria-checked', S.failNext);
+  }
+
+  /* ---------- actions ---------- */
+  function approve(){
+    // 幂等：只有 pending / failed 可以进入批准；处理中一律忽略
+    if (S.lock || S.offline) return;
+    if (S.status !== 'pending' && S.status !== 'failed') return;
+    S.lock = true;
+    S.status = 'confirming';
+    writeLog({id:'req-1', time:now(), action:'批准一次', amount:REQ, agent:AGENT, status:'确认中'});
+    go('result');
+    setTimeout(() => {
+      if (S.failNext){
+        S.failNext = false;
+        S.status = 'failed';
+        writeLog({id:'req-1', status:'失败'});
+      } else {
+        S.status = 'approved';
+        S.used = USED0 + REQ;
+        writeLog({id:'req-1', time:now(), status:'已完成'});
+      }
+      S.lock = false;
+      render();
+    }, CONFIRM_MS);
+  }
+
+  function reject(){
+    if (S.lock || S.offline || S.status !== 'pending') return;
+    S.lock = true;
+    S.status = 'rejected';
+    writeLog({id:'req-1', time:now(), action:'拒绝', amount:REQ, agent:AGENT, status:'已拒绝'});
+    S.lock = false;
+    go('result');
+  }
+
+  function reset(){
+    Object.assign(S, {status:'pending', used:USED0, offline:false, failNext:false, log:[], lock:false, freshId:null});
+    closeDemo(); go('card');
+  }
+
+  const openDemo = () => { $('#scrim').classList.add('on'); $('#sheet').classList.add('on'); };
+  const closeDemo = () => { $('#scrim').classList.remove('on'); $('#sheet').classList.remove('on'); };
+
+  document.addEventListener('click', e => {
+    const t = e.target.closest('[data-act]'); if (!t) return;
+    const a = t.dataset.act;
+    if (a === 'approve') approve();
+    else if (a === 'reject') reject();
+    else if (a === 'log') go('log');
+    else if (a === 'back') go(S.status === 'pending' ? 'card' : (S.prev === 'log' ? 'card' : S.prev));
+    else if (a === 'later') go('card');
+    else if (a === 'retry-net'){ S.offline = navigator.onLine === false; render(); }
+    else if (a === 'demo') openDemo();
+    else if (a === 'demo-close') closeDemo();
+    else if (a === 'tg-offline'){ S.offline = !S.offline; render(); }
+    else if (a === 'tg-fail'){ S.failNext = !S.failNext; render(); }
+    else if (a === 'reset') reset();
+  });
+  window.addEventListener('offline', () => { S.offline = true; render(); });
+  window.addEventListener('online',  () => { S.offline = false; render(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDemo(); });
+
+  { const d = new Date(Date.now() - 60000); $('#req-time').textContent = pad(d.getHours())+':'+pad(d.getMinutes()); }
+  // 暴露给自动化验收脚本（只读）
+  window.__proto = { state: () => JSON.parse(JSON.stringify(S)), setOffline:v=>{S.offline=v;render();}, setFailNext:v=>{S.failNext=v;render();}, reset };
+  render();
+})();
+</script>
+</body>
+</html>
