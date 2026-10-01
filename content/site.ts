@@ -55,7 +55,8 @@ export const sections: Section[] = [
     title: '项目追踪',
     en: 'Projects',
     desc: '正在进行的设计项目：当前阶段、最新产出和相关链接。',
-    status: 'soon',
+    href: '/projects/',
+    status: 'open',
     icon: 'projects',
   },
   {

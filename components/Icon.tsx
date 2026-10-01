@@ -3,6 +3,7 @@ import type { ReactElement } from 'react'
 type Name =
   | 'team' | 'system' | 'assets' | 'projects' | 'toolbox'
   | 'arrow' | 'arrowUpRight' | 'download' | 'lock' | 'slides' | 'flow' | 'github'
+  | 'alert' | 'check' | 'question' | 'quote' | 'link'
 
 const paths: Record<Name, ReactElement> = {
   team: (<><circle cx="9" cy="8" r="3.2" /><path d="M3.5 19c.6-3 2.8-4.8 5.5-4.8s4.9 1.8 5.5 4.8" /><circle cx="17" cy="9" r="2.4" /><path d="M16 14.4c2.3.1 4 1.6 4.5 4.1" /></>),
@@ -16,6 +17,11 @@ const paths: Record<Name, ReactElement> = {
   lock: (<><rect x="5" y="10.5" width="14" height="9.5" rx="2.5" /><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5" /></>),
   slides: (<><rect x="3.5" y="4.5" width="17" height="12" rx="2.5" /><path d="M12 16.5v3.5" /><path d="M8.5 20h7" /><path d="M10 8.5l4 2-4 2z" /></>),
   flow: (<><circle cx="6" cy="6" r="2.2" /><circle cx="18" cy="18" r="2.2" /><path d="M8.2 6H14a3.5 3.5 0 0 1 0 7h-4a3.5 3.5 0 0 0 0 7h5.8" /></>),
+  alert: (<><path d="M12 4.5l8.5 15h-17z" /><path d="M12 10v4" /><path d="M12 17v.01" /></>),
+  check: (<><path d="M5 12.5l4.5 4.5L19 7.5" /></>),
+  question: (<><circle cx="12" cy="12" r="8.5" /><path d="M9.6 9.6a2.5 2.5 0 0 1 4.8.9c0 1.6-2.4 2.2-2.4 3.6" /><path d="M12 17v.01" /></>),
+  quote: (<><path d="M9.5 7.5H6.5a2 2 0 0 0-2 2v2.5a2 2 0 0 0 2 2h2v1.5a2 2 0 0 1-2 2" /><path d="M19.5 7.5h-3a2 2 0 0 0-2 2v2.5a2 2 0 0 0 2 2h2v1.5a2 2 0 0 1-2 2" /></>),
+  link: (<><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1" /><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" /></>),
   github: (<><path d="M9 19c-4 1.3-4-2-5.5-2.5M14.5 21v-3.2c0-.9.1-1.3-.5-1.9 2.2-.3 4.5-1.1 4.5-5a3.9 3.9 0 0 0-1-2.7 3.6 3.6 0 0 0-.1-2.7s-.9-.3-2.8 1a9.7 9.7 0 0 0-5 0C7.7 5.2 6.8 5.5 6.8 5.5a3.6 3.6 0 0 0-.1 2.7 3.9 3.9 0 0 0-1 2.7c0 3.9 2.3 4.7 4.5 5-.6.6-.6 1.2-.5 1.9V21" /></>),
 }
 

@@ -33,7 +33,7 @@ export default function Home() {
           <div className="block-head">
             <p className="eyebrow">SECTIONS</p>
             <h2 id="sec-title">五个板块</h2>
-            <p className="sub">设计师工具箱已经开放，其余板块会陆续上线。</p>
+            <p className="sub">设计师工具箱和项目追踪已经开放，其余板块会陆续上线。</p>
           </div>
           <div className="sections">
             {sections.map((s) => {

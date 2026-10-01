@@ -2,7 +2,7 @@
 
 imToken 设计团队的主页：团队、设计系统、素材库、项目追踪和设计师工具箱。
 
-目前开放的是 **设计师工具箱**（Confu 分享 EP01、EP02，以及文案管理工作流），其余板块会陆续上线。
+目前开放的是 **设计师工具箱**（Confu 分享 EP01、EP02，以及文案管理工作流）和 **项目追踪**（Agentic Wallet），其余板块会陆续上线。
 
 ## 本地运行
 
@@ -20,11 +20,15 @@ npm run build      # 生产构建（Vercel 同样执行这一步）
 app/                  页面（Next.js App Router）
   page.tsx            首页
   toolbox/page.tsx    设计师工具箱
+  projects/page.tsx   项目追踪（项目列表）
+  projects/agentic-wallet/page.tsx  Agentic Wallet：内测十个问题 + 要做的十件事
   globals.css         视觉体系（沿用「我是主理人」DESIGN.md 的浅色玻璃风格，做了简化）
 components/           导航、页脚、图标
 content/              所有文字内容，改内容只改这里
   site.ts             网站信息与五个板块
   toolbox.ts          Confu 各期与工作流
+  projects.ts         项目追踪列表
+  agentic-wallet.ts   Agentic Wallet 页面的全部卡片内容
 public/
   confu/ep01/         EP01 演示文稿（index.html）与资料包
   confu/ep02/         EP02 演示文稿、Claude Design 专题页、资料包
@@ -62,6 +66,10 @@ python3 sources/tool-atlas/build.py
 ```
 
 它会重新生成 `public/toolbox/atlas/index.html`，并把网站导航、logo 文件一起带上。工具箱页面上的入口卡片文字在 `content/toolbox.ts` 的 `atlas` 里。
+
+**在项目追踪里加一个项目**
+
+在 `content/projects.ts` 里追加一项；如果它有自己的页面，在 `app/projects/<slug>/page.tsx` 新建。Agentic Wallet 的卡片文字全部在 `content/agentic-wallet.ts`。
 
 **开放一个新板块**
 
