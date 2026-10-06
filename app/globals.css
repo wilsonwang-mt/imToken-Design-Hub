@@ -907,7 +907,8 @@ a.sv-link:hover { transform: translateY(-2px); box-shadow: 0 0 0 1px rgba(0, 127
 .sv-lens-r p { font-size: 16px; line-height: 1.75; color: var(--navy); }
 
 .sv-layers { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
-.sv-toolbar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px 16px; margin: -8px 0 4px; }
+.sv-toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 12px; margin: -8px 0 4px; }
+.sv-toolbar .sv-legend { margin-left: auto; }
 .sv-toggle { display: inline-flex; align-items: center; gap: 8px; font: inherit; font-size: 14px; font-weight: 500; color: var(--navy); background: rgba(255, 255, 255, 0.6); border: 0; box-shadow: 0 0 0 1px rgba(17, 29, 74, 0.08); padding: 6px 14px; border-radius: 999px; cursor: pointer; }
 .sv-toggle i { width: 14px; height: 14px; border-radius: 4px; box-shadow: inset 0 0 0 1.5px rgba(17, 29, 74, 0.3); }
 .sv-toggle.on { color: var(--blue-deep); background: #fff; box-shadow: 0 0 0 1.5px var(--blue); }
@@ -985,8 +986,56 @@ a.sv-link:hover { transform: translateY(-2px); box-shadow: 0 0 0 1px rgba(0, 127
 .sv-dropped p { font-size: 13px; line-height: 1.6; color: var(--secondary); margin-top: 2px; }
 .sv-cats-note { font-size: 13px; color: var(--secondary); margin-top: 16px; }
 
+/* taglines · revision */
+.sv-revise { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+.sv-issues, .sv-principles { padding: 24px 28px; }
+.sv-issues h3, .sv-principles h3 { display: flex; align-items: center; gap: 8px; font-size: 17px; margin-bottom: 8px; }
+.sv-issues h3 svg { color: #b45309; }
+.sv-principles h3 svg { color: #059669; }
+.sv-issues ol, .sv-principles ol { list-style: none; padding: 0; margin: 0; counter-reset: sv; }
+.sv-issues li, .sv-principles li { counter-increment: sv; position: relative; padding: 12px 0 12px 30px; border-top: 1px dashed rgba(17, 29, 74, 0.08); font-size: 14px; line-height: 1.7; color: var(--text); }
+.sv-issues li:first-child, .sv-principles li:first-child { border-top: 0; }
+.sv-issues li::before, .sv-principles li::before { content: counter(sv); position: absolute; left: 0; top: 14px; width: 20px; height: 20px; border-radius: 6px; display: grid; place-items: center; font-size: 12px; font-weight: 700; color: #fff; }
+.sv-issues li::before { background: #d97706; }
+.sv-principles li::before { background: #059669; }
+.sv-principles b { display: block; font-size: 15px; color: var(--navy); }
+.sv-principles p { font-size: 14px; line-height: 1.7; color: var(--text-2); margin-top: 2px; }
+
+.sv-card h3.sv-h-en { font-size: 24px; letter-spacing: 0; }
+.sv-idea { flex: 1; font-size: 14px; line-height: 1.7; color: var(--text-2); margin-top: 14px; }
+.sv-more { margin-top: 12px; border-top: 1px solid rgba(17, 29, 74, 0.06); padding-top: 10px; }
+.sv-more summary { cursor: pointer; font-size: 13px; font-weight: 700; color: var(--kc); list-style: none; display: flex; align-items: center; gap: 6px; }
+.sv-more summary::-webkit-details-marker { display: none; }
+.sv-more summary::before { content: '+'; display: grid; place-items: center; width: 16px; height: 16px; border-radius: 5px; font-size: 13px; line-height: 1; color: #fff; background: var(--kc); }
+.sv-more[open] summary::before { content: '−'; }
+.sv-more .sv-notes { margin-top: 10px; }
+.sv-nocn { font-size: 13px; color: var(--secondary); margin-top: 6px; }
+.sv-rev { margin-top: 14px; padding: 10px 12px; border-radius: 12px; background: rgba(17, 29, 74, 0.035); }
+.sv-rev span { display: block; font-size: 12px; font-weight: 700; color: var(--navy); }
+.sv-rev p { font-size: 13px; line-height: 1.65; color: var(--text-2); margin-top: 2px; }
+
+.sv-white { padding: 24px 28px; margin-bottom: 8px; background: linear-gradient(120deg, rgba(0, 127, 255, 0.08), rgba(167, 139, 250, 0.12)); }
+.sv-white p { font-size: 16px; line-height: 1.8; color: var(--navy); margin-top: 8px; }
+.sv-bgroup { margin-top: 32px; }
+.sv-bgroup > h3 { font-size: 20px; font-weight: 900; padding-bottom: 12px; margin-bottom: 16px; border-bottom: 1px solid rgba(17, 29, 74, 0.08); }
+.sv-bench { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.sv-bm { display: flex; flex-direction: column; padding: 20px 22px; border-radius: 20px; transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease); }
+a.sv-bm:hover { transform: translateY(-2px); box-shadow: 0 0 0 1px rgba(0, 127, 255, 0.25), 0 20px 48px -20px rgba(17, 29, 74, 0.28); }
+.sv-bm-brand { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 12px; font-weight: 700; color: var(--secondary); }
+.sv-bm-brand svg { color: var(--blue); flex-shrink: 0; }
+.sv-bm-line { display: block; font-size: 18px; font-weight: 700; line-height: 1.45; color: var(--navy); margin-top: 10px; quotes: '“' '”'; }
+.sv-bm-note { display: block; font-size: 12px; line-height: 1.5; color: var(--secondary); margin-top: 6px; }
+.sv-bm p { font-size: 14px; line-height: 1.7; color: var(--text-2); margin-top: 12px; padding-top: 12px; border-top: 1px dashed rgba(17, 29, 74, 0.08); }
+
+.sv-decided { margin-top: 22px; padding-top: 18px; border-top: 1px solid rgba(17, 29, 74, 0.06); }
+.sv-decided h4 { font-size: 13px; font-weight: 700; color: #059669; margin: 0 0 8px; }
+.sv-decided ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+.sv-decided li { display: flex; gap: 8px; font-size: 14px; line-height: 1.6; color: var(--navy); }
+.sv-decided li svg { flex-shrink: 0; margin-top: 4px; color: #059669; }
+
 @media (max-width: 1023px) {
-  .sv-message, .sv-progress, .sv-lean, .sv-method, .sv-lens { grid-template-columns: 1fr; }
+  .sv-message, .sv-progress, .sv-lean, .sv-method, .sv-lens, .sv-revise { grid-template-columns: 1fr; }
+  .sv-bench { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .sv-story, .sv-cards, .sv-pipe, .sv-links { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .sv-pipe li::after { display: none; }
   .sv-gram { grid-template-columns: 160px 1fr; gap: 8px 16px; }
@@ -998,7 +1047,8 @@ a.sv-link:hover { transform: translateY(-2px); box-shadow: 0 0 0 1px rgba(0, 127
   .sv-message-in, .sv-aud, .sv-lean-a, .sv-rounds, .sv-redlines, .sv-open { padding: 20px; }
   .sv-message-q { font-size: 26px; }
   .sv-paths li { grid-template-columns: 1fr; gap: 2px; }
-  .sv-story, .sv-cards, .sv-pipe, .sv-links, .sv-lean-cards, .sv-dropped ul { grid-template-columns: 1fr; }
+  .sv-story, .sv-cards, .sv-pipe, .sv-links, .sv-lean-cards, .sv-dropped ul, .sv-bench { grid-template-columns: 1fr; }
+  .sv-issues, .sv-principles, .sv-white { padding: 20px; }
   .sv-grammar { padding: 4px 20px; }
   .sv-gram { grid-template-columns: 1fr; gap: 6px; }
   .sv-timeline { padding: 6px 18px; }

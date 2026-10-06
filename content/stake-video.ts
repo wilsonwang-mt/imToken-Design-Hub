@@ -64,7 +64,8 @@ export const milestones: { date: string; title: string; note: string; state: Mil
   { date: '10/01', title: '故事线与剧本确定', note: '剧本 V2：45 秒逐镜头剧本、15 秒短版、旁白位置', state: 'done' },
   { date: '10/02', title: '固定机位与第一批镜头', note: '客厅空间布局和 4 个机位；夜间生成第一批视频', state: 'done' },
   { date: '10/05', title: '视觉语法定稿', note: '计数器只显示增量；小 ETH 的位置和大小规则', state: 'done' },
-  { date: '10/06', title: 'v9 – v12', note: '日历年份 2022→2026；Bulu 形象修正（只保留鳍变成的手，表面改回光滑清晰）；4K 母版', state: 'now' },
+  { date: '10/06', title: 'v9 – v12', note: '日历年份 2022→2026；Bulu 形象修正（只保留鳍变成的手，表面改回光滑清晰）；4K 母版', state: 'done' },
+  { date: '10/07', title: '宣传语中文修订', note: '线上调研竞品，按中文 Mkt 的写法重写宣传语', state: 'now' },
   { date: '10/08', title: '集中宣发', note: '垂直媒体 PR、主视频、App Push 全量推送', state: 'next' },
   { date: '10/12–16', title: '系列视频与物料', note: '主片之后的系列内容', state: 'next' },
   { date: '10/19', title: '衔接 Lido 活动', note: '和 Lido 活动的叙事衔接', state: 'next' },
@@ -74,7 +75,7 @@ export const open = [
   '三屏手机界面（行情、质押页、片尾页）合成进片子，出 v13',
   '合规确认：幻想气泡、常驻风险提示、界面里的「安全」字样',
   '语言版本（中文 / 英文 / 繁中）与 9:16、1:1 竖版',
-  '宣传语：还在头脑风暴，见「宣传语提案」',
+  '宣传语：中文修订版已出，当前倾向和待回答的问题见「宣传语提案」',
 ]
 
 export interface StakeLink {
@@ -88,7 +89,7 @@ export interface StakeLink {
 export const links: StakeLink[] = [
   {
     title: '宣传语提案',
-    desc: '两轮头脑风暴的全部提案，一张卡一个，按类别分组，中英双语。',
+    desc: '中文修订版：一张卡一个提案，按类别分组，中英双语，附竞品对照和写作原则。',
     href: '/projects/stake-video/taglines/',
     note: '本站',
     internal: true,

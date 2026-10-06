@@ -4,13 +4,17 @@ import Icon from '@/components/Icon'
 import StakeDocs from '@/components/StakeDocs'
 import StakeTaglines from '@/components/StakeTaglines'
 import { Ambient, Footer, Nav } from '@/components/Chrome'
-import { bossLens, categories, dropped, leaning, method, redLines, stats, taglines } from '@/content/stake-taglines'
+import {
+  benchmarkGroups, benchmarks, bossLens, decisions, dropped, leaning, method, principles, redLines, stats, taglines, v1Issues, whitespace,
+} from '@/content/stake-taglines'
 
 export const metadata: Metadata = {
   title: '宣传语提案 · Stake 视频制作',
-  description: 'imToken Stake 宣传语头脑风暴：一张卡一个提案，按类别分组，中英双语。',
+  description: 'imToken Stake 宣传语中文修订版：一张卡一个提案，按类别分组，中英双语，附竞品对照和写作原则。',
   robots: { index: false, follow: false },
 }
+
+const groups = Object.keys(benchmarkGroups) as (keyof typeof benchmarkGroups)[]
 
 export default function StakeTaglinesPage() {
   const byId = new Map(taglines.map((t) => [t.id, t]))
@@ -32,18 +36,19 @@ export default function StakeTaglinesPage() {
           <p className="eyebrow">BRAINSTORM · imToken Stake</p>
           <h1 className="h1-page">
             宣传语提案
-            <span className="aw-h1-sub">一张卡一个提案，按类别分组，中英双语</span>
+            <span className="aw-h1-sub">中文修订版 · 一张卡一个提案，中英双语</span>
           </h1>
           <p className="lead aw-lead">
-            还在头脑风暴，这里不是定稿，是一张想法地图：两轮发散的全部提案，连同同事提出的主题，按讲故事的角度分成几类。每张卡写清思路、和片子的契合点、风险，以及适合用在哪里。
+            宣传语是 Mkt 对外的活动主题，先要是地道的简体中文，再要像专业 Mkt 写的。这一版先看了竞品怎么说，再对照上一版逐条找问题，中文先写、重新起稿，最后由中文和合规两路终审。还在讨论阶段，卡片上的「当前倾向」只是讨论的起点。
           </p>
           <StakeDocs active="taglines" />
           <div className="aw-jump">
-            <span className="status open"><i />头脑风暴 · 第二轮</span>
-            <a href="#boss">双重价值视角</a>
+            <span className="status open"><i />中文修订版 · 10/07</span>
+            <a href="#revise">这一版怎么改的</a>
             <a href="#cards">全部提案</a>
+            <a href="#bench">竞品怎么说</a>
             <a href="#leaning">当前倾向</a>
-            <a href="#method">怎么产出的</a>
+            <a href="#method">方法与红线</a>
           </div>
         </section>
 
@@ -54,6 +59,36 @@ export default function StakeTaglinesPage() {
               <span>{s.label}</span>
             </div>
           ))}
+        </section>
+
+        {/* ───────── Revise ───────── */}
+        <section id="revise" className="wrap block tight" aria-labelledby="revise-title">
+          <div className="block-head">
+            <p className="eyebrow">REVISION</p>
+            <h2 id="revise-title">这一版怎么改的</h2>
+            <p className="sub">上一版是中英文一起写的，很多中文读起来像从英文翻过来。下面先列上一版的问题，再列这一版写作时守的规矩。</p>
+          </div>
+          <div className="sv-revise">
+            <div className="glass sv-issues">
+              <h3><Icon name="alert" size={18} />上一版的问题</h3>
+              <ol>
+                {v1Issues.map((x) => (
+                  <li key={x}>{x}</li>
+                ))}
+              </ol>
+            </div>
+            <div className="glass sv-principles">
+              <h3><Icon name="check" size={18} />这一版的写作原则</h3>
+              <ol>
+                {principles.map((p) => (
+                  <li key={p.title}>
+                    <b>{p.title}</b>
+                    <p>{p.desc}</p>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          </div>
         </section>
 
         {/* ───────── Boss lens ───────── */}
@@ -83,10 +118,38 @@ export default function StakeTaglinesPage() {
             <p className="eyebrow">PROPOSALS · {taglines.length}</p>
             <h2 id="cards-title">全部提案</h2>
             <p className="sub">
-              点类别可以筛选。卡片上的标签：「当前倾向」只是讨论起点；「双重价值」表示体现了上面那个视角；合规风险按中文主标和副标一起评估。
+              点类别可以筛选。主标统一不加句末标点；改自上一版的卡片写明了原句和改动理由；合规风险按中文主标和副标一起评估。
             </p>
           </div>
           <StakeTaglines />
+        </section>
+
+        {/* ───────── Benchmarks ───────── */}
+        <section id="bench" className="wrap block" aria-labelledby="bench-title">
+          <div className="block-head">
+            <p className="eyebrow">BENCHMARK · {benchmarks.length}</p>
+            <h2 id="bench-title">竞品怎么说</h2>
+            <p className="sub">每条原文都打开链接核对过；不是页面主标的（页面描述、帮助文档、文章转引等），卡片上用小字注明。点卡片可以打开原页面。</p>
+          </div>
+          <div className="glass sv-white">
+            <span className="v-cap">还没人占住的位置</span>
+            <p>{whitespace}</p>
+          </div>
+          {groups.map((g) => (
+            <div key={g} className="sv-bgroup">
+              <h3>{benchmarkGroups[g]}</h3>
+              <div className="sv-bench">
+                {benchmarks.filter((b) => b.group === g).map((b) => (
+                  <a key={b.brand} href={b.url} target="_blank" rel="noopener" className="glass sv-bm">
+                    <span className="sv-bm-brand">{b.brand}<Icon name="arrowUpRight" size={14} /></span>
+                    <q className="sv-bm-line">{b.line}</q>
+                    {b.note && <small className="sv-bm-note">{b.note}</small>}
+                    <p>{b.takeaway}</p>
+                  </a>
+                ))}
+              </div>
+            </div>
+          ))}
         </section>
 
         {/* ───────── Leaning ───────── */}
@@ -113,6 +176,14 @@ export default function StakeTaglinesPage() {
                   ) : null
                 })}
               </ul>
+              <div className="sv-decided">
+                <h4>已经定了（10/07）</h4>
+                <ul>
+                  {decisions.map((d) => (
+                    <li key={d}><Icon name="check" size={14} />{d}</li>
+                  ))}
+                </ul>
+              </div>
             </div>
             <div className="glass sv-open">
               <h3><Icon name="question" size={18} />需要回答的问题</h3>
@@ -129,7 +200,7 @@ export default function StakeTaglinesPage() {
         <section id="method" className="wrap block" aria-labelledby="method-title">
           <div className="block-head">
             <p className="eyebrow">METHOD</p>
-            <h2 id="method-title">怎么产出的</h2>
+            <h2 id="method-title">方法与红线</h2>
           </div>
           <div className="sv-method">
             <div className="glass sv-rounds">
@@ -163,7 +234,7 @@ export default function StakeTaglinesPage() {
           </div>
           {dropped.length > 0 && (
             <details className="glass sv-dropped">
-              <summary>没有做成卡片的 {dropped.length} 条候选，以及原因</summary>
+              <summary>上一版不再保留的 {dropped.length} 条，以及原因</summary>
               <ul>
                 {dropped.map((d) => (
                   <li key={`${d.cn}-${d.en}`}>
@@ -175,7 +246,6 @@ export default function StakeTaglinesPage() {
               </ul>
             </details>
           )}
-          <p className="sv-cats-note">分类：{categories.map((c) => c.title).join(' · ')}</p>
         </section>
       </main>
       <Footer />
