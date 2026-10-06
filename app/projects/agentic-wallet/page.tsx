@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import Icon from '@/components/Icon'
 import AgenticActions from '@/components/AgenticActions'
+import AgenticDocs from '@/components/AgenticDocs'
 import { Ambient, Footer, Nav } from '@/components/Chrome'
 import {
   decisions, fixLabel, funnel, headline, meta, metrics, ownerless, problemKinds, problems, sources,
@@ -33,6 +34,7 @@ export default function AgenticWallet() {
             <span className="aw-h1-sub">从 Trading Agent 到 Agentic Wallet</span>
           </h1>
           <p className="lead aw-lead">{meta.lead}</p>
+          <AgenticDocs active="preread" />
           <div className="aw-jump">
             <span className="status open"><i />{meta.status}</span>
             <a href="#problems">内测发现的十个问题</a>
