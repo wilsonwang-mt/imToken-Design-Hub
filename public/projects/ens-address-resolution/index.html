@@ -3,8 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Prototype — 转账地址解析 Tooltip v1.13 · imToken UXD</title>
+<title>Prototype — 转账地址解析 Tooltip v2.0 · imToken UXD</title>
 <style>
+/* v2.0 变更（Wilson 决定）：Part 1 拆成两个 Prototype 区，各自一台手机 + 一个场景面板，上下排列。
+   Prototype 1「常见场景」：面板顶部两个大 Tab（粘贴哈希地址 / 输入 ENS 域名），切 Tab 自动播放该 Tab 的第一个场景；
+   Prototype 2「专项信息识别 · 边界 · 异常」：平铺场景卡片。场景卡片 = 白底 1px --deep08 r12，左侧 22 高 Tag 风格 pill，
+   标题 14 Medium + 12 meta，右侧 chevron；hover 抬升、选中态蓝描边 + 浅蓝底。「重播」与「自动播放全部」已删除。
+   技术上：手机 DOM 由 <template id="phoneTpl"> 克隆，createProto(container, config) 返回可实例化的状态机（独立 el / state / timers），
+   两个实例互不干扰；#scene=N 直达时在 N 所属的 Prototype 手机上播放并选中对应 Tab / 卡片；skin=s2 对两台都生效。Part 2 不动。 */
 /* v1.12 变更（Wilson 决定）：Warning / High risk 时「More address info (N)」默认收起，点击整行展开——但不提供手动收起：
    展开/收起是页面内次级信息的模式，tooltip 不适合复杂交互。点击后入口行本身消失（高度/透明度 160ms 过渡后 display:none），
    折叠区在原位置展开（160ms 高度过渡），分割线仍在区域一与区域二之间；展开后没有 ∧、不可再点收起。看完直接点空白处 / Esc 关闭。
@@ -234,11 +240,14 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
 .ver{position:fixed;right:16px;top:12px;z-index:50;font-family:var(--mono);font-size:11px;line-height:16px;color:var(--deep60);background:#fff;border:1px solid var(--deep08);border-radius:8px;padding:4px 8px}
 
 /* ============================================================
-   4. Panel 420
+   4. Panel 420 — v2.0：两个 Prototype 区（各自一台手机 + 一个场景面板，上下排列）
+      Prototype 1 面板顶部两个大 Tab（粘贴哈希地址 / 输入 ENS 域名）；Prototype 2 平铺场景卡片
+      场景卡片：白底 · 1px --deep08 · r12 · padding 12 14 · 左 22 高 Tag 风格 pill · 标题 14 Medium · 12 meta · 右 chevron
+                hover 抬升（阴影 + translateY(-1px)）· 选中态蓝色描边 + 浅蓝底
+      「重播」/「自动播放全部」已删除；状态机日志改为每个面板底部一个可折叠 <details>（默认收起）
    ============================================================ */
 .panel{width:420px;flex:0 0 auto;background:#fff;border-radius:16px;padding:20px 20px 16px;box-shadow:0 1px 2px rgba(17,29,74,.06),0 8px 24px rgba(17,29,74,.06)}
-.panel h1{font-size:18px;font-weight:600;line-height:24px}
-.panel .sub{font-size:12px;line-height:16px;color:var(--deep60);margin-top:4px}
+.panel .panel-cap{font-size:12px;line-height:16px;font-weight:500;color:var(--deep60);margin-bottom:10px}
 .row{display:flex;align-items:center;gap:10px;margin-top:14px;flex-wrap:wrap}
 .row .lbl{font-size:12px;color:var(--deep60);width:32px}
 .seg{display:inline-flex;background:var(--deep08);border-radius:10px;padding:3px;gap:2px}
@@ -249,48 +258,53 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
 .btn{padding:8px 14px;border-radius:10px;background:var(--blue);color:#fff;font-size:13px;font-weight:500}
 .btn.ghost{background:var(--deep08);color:var(--deep)}
 .btn.ghost.is-on{background:var(--deep);color:#fff}
-.switch{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--deep);cursor:pointer}
-.switch input{appearance:none;width:34px;height:20px;border-radius:10px;background:var(--deep20);position:relative;transition:background 160ms var(--ease);cursor:pointer}
-.switch input::after{content:"";position:absolute;left:2px;top:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform 160ms var(--ease)}
-.switch input:checked{background:var(--blue)}
-.switch input:checked::after{transform:translateX(14px)}
-/* v1.4: 场景按 01 口径分 5 类（A 区域一·判断辅助信息 → B 专项信息 → C 地址标记 → D ENS → E Unhappy Path），
-   点击场景行原地展开解释卡（解析维度 / 解析类型 / 展示规则 / 为什么左侧这样显示），同一时刻只展开当前激活场景 */
-.cats{margin-top:14px;display:flex;flex-direction:column;gap:10px}
-.cat{background:var(--page);border-radius:12px;padding:10px 8px 6px}
-.cat-head{display:flex;align-items:flex-start;gap:10px;padding:0 4px 8px}
-.cat-key{flex:0 0 22px;height:22px;border-radius:7px;background:var(--deep);color:#fff;font-family:var(--mono);font-size:11px;font-weight:600;line-height:22px;text-align:center}
-.cat-title{font-size:13px;font-weight:600;line-height:18px;display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}
-.cat-title .cat-dim{font-family:var(--mono);font-size:10px;font-weight:500;color:var(--blue);letter-spacing:.2px}
-.cat-sub{margin-top:2px;font-size:12px;line-height:16px;color:var(--deep60)}
-.scenes{list-style:none;display:flex;flex-direction:column;gap:2px}
-.scene-btn{display:flex;align-items:center;gap:10px;width:100%;padding:7px 10px;border-radius:10px;text-align:left;transition:background 120ms var(--ease)}
-.scene-btn:hover{background:#fff}
-.scene-btn.is-on{background:var(--blue20)}
-.scene-btn .num{font-family:var(--mono);font-size:11px;color:var(--deep60);width:20px;flex:0 0 auto}
-.scene-btn .name{font-size:13px;line-height:17px;flex:1 1 auto}
-.scene-btn .meta{font-size:11px;color:var(--deep60);white-space:nowrap}
-/* explain card: grid-template-rows 0fr → 1fr，160ms --ease；左侧 3px --blue20 边 */
-.scene-ex{display:grid;grid-template-rows:0fr;transition:grid-template-rows 160ms var(--ease)}
-.scene-ex > div{overflow:hidden;min-height:0}
-.scene.is-open .scene-ex{grid-template-rows:1fr}
-.ex-card{margin:4px 2px 6px;background:#fff;border-left:3px solid var(--blue20);border-radius:10px;padding:10px 12px 8px;box-shadow:0 1px 2px rgba(17,29,74,.05);opacity:0;transition:opacity 160ms var(--ease)}
-.scene.is-open .ex-card{opacity:1}
-.ex-head{display:flex;justify-content:space-between;gap:8px;font-family:var(--mono);font-size:10px;line-height:14px;color:var(--deep40);margin-bottom:4px}
-.ex-row{padding:6px 0;border-top:1px solid var(--deep08)}
-.ex-row:first-of-type{border-top:0;padding-top:2px}
-.ex-k{font-size:11px;line-height:15px;font-weight:600;color:var(--deep60)}
-.ex-v{margin-top:2px;font-size:12px;line-height:17px;color:var(--deep);word-break:break-word}
-.ex-v code{font-family:var(--mono);font-size:11px;background:var(--deep08);padding:0 4px;border-radius:4px}
-.dot{width:8px;height:8px;border-radius:50%;flex:0 0 auto;background:var(--deep20)}
-.dot.lv-info{background:#9598AB}.dot.lv-warning{background:var(--warn)}.dot.lv-high{background:var(--risk)}.dot.lv-none{background:transparent;border:1px solid var(--deep20)}.dot.lv-error{background:#000}
-.log-wrap{margin-top:14px;border-top:1px solid var(--deep08);padding-top:12px}
-.log-head{font-size:12px;font-weight:500;color:var(--deep60);display:flex;justify-content:space-between}
-.log-head .state{font-family:var(--mono);color:var(--deep)}
+/* v2.0: Prototype 区块（Part 1 glass 卡内的子块，带小标题），由 PROTOS 渲染 */
+.protos{display:flex;flex-direction:column}
+.proto{padding-top:36px;margin-top:36px;border-top:1px solid var(--deep08)}
+.proto:first-child{padding-top:0;margin-top:0;border-top:0}
+.proto-head{margin-bottom:20px}
+.proto-head .eyebrow{font-family:var(--mono);font-size:11px;line-height:16px;letter-spacing:.4px;color:var(--blue);margin-bottom:6px}
+.proto-head h3{font-size:22px;font-weight:700;line-height:30px;letter-spacing:-.2px;color:var(--deep)}
+.proto-head .sub{font-size:13px;line-height:19px;color:var(--deep60);margin-top:4px}
+/* v2.0: Tab 分段控件（大而清楚）——Prototype 1 顶部 */
+.tabs{display:flex;gap:4px;padding:4px;border-radius:14px;background:var(--deep08)}
+.tab{flex:1 1 0;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;gap:8px;font-size:15px;font-weight:600;line-height:20px;color:var(--deep60);transition:background 160ms var(--ease),color 160ms var(--ease),box-shadow 160ms var(--ease)}
+.tab:hover{color:var(--deep)}
+.tab[aria-selected="true"]{background:#fff;color:var(--deep);box-shadow:0 1px 3px rgba(17,29,74,.12),0 4px 12px rgba(17,29,74,.06)}
+.tab .cnt{font-family:var(--mono);font-size:11px;font-weight:600;line-height:18px;min-width:18px;padding:0 5px;border-radius:6px;background:rgba(17,29,74,.06);color:var(--deep60);text-align:center}
+.tab[aria-selected="true"] .cnt{background:var(--blue20);color:var(--blue)}
+.tab:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.tab-panel[hidden]{display:none}
+/* v2.0: 场景卡片列表 */
+.scenes{list-style:none;display:flex;flex-direction:column;gap:8px}
+.tabs + .scenes, .tabs + .tab-panel[hidden] + .scenes{margin-top:12px}
+.scene-card{display:flex;align-items:center;gap:12px;width:100%;padding:12px 14px;border-radius:12px;background:#fff;border:1px solid var(--deep08);text-align:left;box-shadow:0 1px 2px rgba(17,29,74,.04);transition:transform 160ms var(--ease),box-shadow 160ms var(--ease),border-color 160ms var(--ease),background 160ms var(--ease)}
+.scene-card:hover{transform:translateY(-1px);border-color:var(--deep20);box-shadow:0 6px 16px rgba(17,29,74,.10),0 1px 2px rgba(17,29,74,.06)}
+.scene-card:active{transform:translateY(0)}
+.scene-card.is-on{border-color:var(--blue);background:#F0F7FF;box-shadow:inset 0 0 0 1px var(--blue)}
+.scene-card:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.scene-card .lv-pill{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;height:22px;min-width:68px;padding:0 8px;border-radius:7px;font-size:11px;font-weight:500;line-height:1;white-space:nowrap;background:var(--deep08);color:var(--deep60)}
+.scene-card .lv-pill.lv-warning{background:var(--warn20);color:var(--warn)}
+.scene-card .lv-pill.lv-high{background:var(--risk20);color:var(--risk)}
+.scene-card .lv-pill.lv-none{background:transparent;border:1px dashed var(--deep20);color:var(--deep40)}
+.scene-card .lv-pill.lv-error{background:var(--deep);color:#fff}
+.scene-card .scene-text{flex:1 1 auto;min-width:0}
+.scene-card .name{display:block;font-size:14px;font-weight:500;line-height:20px;color:var(--deep)}
+.scene-card .meta{display:block;margin-top:2px;font-size:12px;line-height:16px;color:var(--deep60)}
+.scene-card .chev{flex:0 0 auto;width:16px;height:16px;color:var(--deep40);transition:transform 160ms var(--ease),color 160ms var(--ease)}
+.scene-card:hover .chev{transform:translateX(2px);color:var(--deep)}
+.scene-card.is-on .chev{color:var(--blue)}
+/* v2.0: 状态机日志——每个面板底部一个可折叠 details，默认收起 */
+.log-wrap{margin-top:14px;border-top:1px solid var(--deep08);padding-top:10px}
+.log-wrap summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:500;color:var(--deep60);padding:2px 0}
+.log-wrap summary::-webkit-details-marker{display:none}
+.log-wrap .log-title::before{content:"▸";display:inline-block;width:12px;font-size:10px;color:var(--deep40)}
+.log-wrap[open] .log-title::before{content:"▾"}
+.log-wrap .state{font-family:var(--mono);color:var(--deep)}
 .log{list-style:none;margin-top:8px;font-family:var(--mono);font-size:11px;line-height:18px;color:var(--deep);max-height:150px;overflow:auto;background:var(--page);border-radius:8px;padding:8px 10px}
 .log li{display:flex;gap:10px}
 .log .t{color:var(--deep60);width:62px;flex:0 0 auto}
-.hint{margin-top:10px;font-size:11px;line-height:15px;color:var(--deep60)}
+.hint{margin-top:24px;font-size:11px;line-height:15px;color:var(--deep60)}
 .hint code{font-family:var(--mono);background:var(--deep08);padding:0 4px;border-radius:4px}
 
 /* ============================================================
@@ -400,7 +414,7 @@ html,body{background:var(--hub-ground)}
 </style>
 </head>
 <body class="skin-s1">
-<div class="ver" id="ver">v1.13</div>
+<div class="ver" id="ver">v2.0</div>
 <!-- ===================== INTRO · 解析对象与信息架构（2026-10-08 团队讨论口径） ===================== -->
 
 <div class="ambient" aria-hidden="true"><i class="b1"></i><i class="b2"></i><i class="b3"></i></div>
@@ -417,13 +431,13 @@ html,body{background:var(--hub-ground)}
       <div class="part-head">
         <p class="eyebrow">Part 1 · Prototype</p>
         <h2 id="part1-title">Prototype 与场景切换</h2>
-        <p class="sub">左侧是 imToken 转账页的可操作原型：输入地址 → 解析 → Tag 出现 → Tooltip 自动唤起。右侧按五类场景切换，每一类的标题下写了这一类的展示原则。</p>
+        <p class="sub">两组可操作的 imToken 转账页原型：输入地址 → 解析 → Tag 出现 → Tooltip 自动唤起。每组一台手机 + 一个场景面板，点卡片即可切换场景。Prototype 1 收录最常见的地址解析，按「粘贴哈希地址 / 输入 ENS 域名」分两组；Prototype 2 收录特定网络的专项信息、多信息同现与无法解析。</p>
       </div>
-<div class="stage">
 
-  <!-- ===================== PHONE ===================== -->
+      <!-- v2.0: 手机 DOM 模板——由 createProto() 克隆两份；脚本用 data-ref 取引用，id 由实例前缀（p1- / p2-）生成，避免重复 id -->
+      <template id="phoneTpl">
   <div class="phone">
-    <div class="screen" id="screen">
+    <div class="screen" data-ref="screen">
       <div class="statusbar">
         <span class="time">9:41</span>
         <span class="sb" aria-hidden="true">
@@ -435,51 +449,51 @@ html,body{background:var(--hub-ground)}
 
       <div class="nav">
         <svg class="back" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M12.5 4.5 7 10l5.5 5.5" stroke="#111D4A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        <div class="title" id="navTitle">ETH Transfer</div>
-        <div class="subtitle" id="navSub">Ethereum</div>
+        <div class="title" data-ref="navTitle">ETH Transfer</div>
+        <div class="subtitle" data-ref="navSub">Ethereum</div>
         <svg class="scan" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M2.5 7V4.5a2 2 0 0 1 2-2H7M13 2.5h2.5a2 2 0 0 1 2 2V7M17.5 13v2.5a2 2 0 0 1-2 2H13M7 17.5H4.5a2 2 0 0 1-2-2V13M2.5 10h15" stroke="#111D4A" stroke-width="1.5" stroke-linecap="round"/></svg>
       </div>
 
       <div class="to-label">To</div>
 
       <!-- address input -->
-      <div class="addr" id="addr">
-        <div class="addr-text" id="addrText"><span class="ph" id="addrPh">Ethereum address</span><span id="addrVal"></span><span class="caret" id="caret" hidden></span></div>
-        <div class="tagslot" id="tagSlot">
-          <span class="spinner" id="spinner" hidden aria-label="Resolving"></span>
-          <button class="tag" id="tag" hidden aria-expanded="false" aria-controls="tooltip" type="button"></button>
+      <div class="addr" data-ref="addr">
+        <div class="addr-text" data-ref="addrText"><span class="ph" data-ref="addrPh">Ethereum address</span><span data-ref="addrVal"></span><span class="caret" data-ref="caret" hidden></span></div>
+        <div class="tagslot" data-ref="tagSlot">
+          <span class="spinner" data-ref="spinner" hidden aria-label="Resolving"></span>
+          <button class="tag" data-ref="tag" hidden aria-expanded="false" type="button"></button>
         </div>
         <svg class="addrbook" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="9.25" stroke="#111D4A" stroke-width="1.5"/><circle cx="10" cy="8" r="3" stroke="#111D4A" stroke-width="1.5"/><path d="M4.2 16.2c1.2-2.4 3.3-3.7 5.8-3.7s4.6 1.3 5.8 3.7" stroke="#111D4A" stroke-width="1.5" stroke-linecap="round"/></svg>
       </div>
 
       <!-- tooltip (popover) -->
-      <div class="tooltip-wrap" id="tooltipWrap" hidden>
-        <div class="tt" id="tooltip" role="dialog" aria-live="polite" aria-label="Address info" tabindex="-1" data-level="" data-expanded="false">
-          <div class="tt-arrow" id="ttArrow"><svg width="30" height="11" viewBox="0 0 30 11"><path d="M0 11 15 0l15 11z" fill="#fff"/></svg></div>
-          <div id="ttContent"></div>
+      <div class="tooltip-wrap" data-ref="tooltipWrap" hidden>
+        <div class="tt" data-ref="tooltip" role="dialog" aria-live="polite" aria-label="Address info" tabindex="-1" data-level="" data-expanded="false">
+          <div class="tt-arrow" data-ref="ttArrow"><svg width="30" height="11" viewBox="0 0 30 11"><path d="M0 11 15 0l15 11z" fill="#fff"/></svg></div>
+          <div data-ref="ttContent"></div>
         </div>
       </div>
 
       <!-- everything below the input -->
-      <div class="below" id="below">
-        <div class="addbar" id="addbar">
+      <div class="below" data-ref="below">
+        <div class="addbar" data-ref="addbar">
           <svg class="ic" viewBox="0 0 18 18" fill="none" aria-hidden="true"><circle cx="7" cy="5.5" r="3" stroke="#007FFF" stroke-width="1.5"/><path d="M1.5 15.5c.6-3 2.9-4.7 5.5-4.7 1 0 1.9.2 2.7.6M13.5 9.5v6M10.5 12.5h6" stroke="#007FFF" stroke-width="1.5" stroke-linecap="round"/></svg>
           <span class="txt">Add to address book</span>
           <svg class="chev" viewBox="0 0 17 18" fill="none" aria-hidden="true"><path d="m6.5 4.5 4.5 4.5-4.5 4.5" stroke="#007FFF" stroke-width="1.125" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </div>
 
-        <div class="amount-group" id="amountGroup">
+        <div class="amount-group" data-ref="amountGroup">
           <div class="amount-title">Amount</div>
-          <div class="balance" id="balance">0.2005 ETH</div>
+          <div class="balance" data-ref="balance">0.2005 ETH</div>
           <div class="amount-card">
-            <div class="amt filled" id="amount">0.01</div>
+            <div class="amt filled" data-ref="amount">0.01</div>
             <div class="divider"></div>
             <div class="memo">Memo</div>
           </div>
           <div class="fee-title">Miner Fee</div>
           <div class="fee-card">
-            <div class="usd" id="feeUsd">$0.01</div>
-            <div class="range" id="feeRange">0.000001523 ETH- 0.000002356 ETH</div>
+            <div class="usd" data-ref="feeUsd">$0.01</div>
+            <div class="range" data-ref="feeRange">0.000001523 ETH- 0.000002356 ETH</div>
             <div class="std">Standard <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="m6 3.5 4.5 4.5L6 12.5" stroke="#111D4A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
           </div>
           <div class="est">
@@ -491,67 +505,52 @@ html,body{background:var(--hub-ground)}
       </div>
 
       <div class="bottom">
-        <button class="next" id="nextBtn" type="button">Next</button>
+        <button class="next" data-ref="nextBtn" type="button">Next</button>
         <div class="home-ind"></div>
       </div>
 
       <!-- S3 Alert -->
-      <div class="alert-overlay" id="alert" hidden>
-        <div class="alert" role="alertdialog" aria-labelledby="alertTitle">
-          <h2 id="alertTitle">Unable to resolve this name on Ethereum</h2>
+      <div class="alert-overlay" data-ref="alert" hidden>
+        <div class="alert" role="alertdialog" data-ref="alertBox">
+          <h2 data-ref="alertTitle">Unable to resolve this name on Ethereum</h2>
           <p>Please switch to the correct network or change the domain.</p>
-          <button class="ok" id="alertOk" type="button">Understand</button>
+          <button class="ok" data-ref="alertOk" type="button">Understand</button>
         </div>
       </div>
     </div>
   </div>
+      </template>
 
-  <!-- ===================== PANEL ===================== -->
-  <aside class="panel">
-    <h1>场景选择器</h1>
-    <p class="sub">转账地址解析 Tooltip v1 · 依据 P1 IA 矩阵 §3 顺序 / §4 状态机 / §6 动效 · 场景按 01 口径分 5 类</p>
-
-    <!-- 2026-10-08 Wilson：隐藏 S1/S2 切换与对比入口（代码保留，仅隐藏） -->
-    <div class="row" id="skinRow" hidden>
-      <span class="lbl">皮肤</span>
-      <div class="seg" role="radiogroup" aria-label="皮肤">
-        <button type="button" class="is-on" data-skin="s1" role="radio" aria-checked="true">S1 · 极简版</button>
-        <button type="button" data-skin="s2" role="radio" aria-checked="false">S2 · 身份头+条件列</button>
+      <!-- 2026-10-08 Wilson：隐藏 S1/S2 切换与对比入口（代码保留，仅隐藏）——皮肤是页面级的，对两台手机都生效 -->
+      <div class="row" id="skinRow" hidden>
+        <span class="lbl">皮肤</span>
+        <div class="seg" role="radiogroup" aria-label="皮肤">
+          <button type="button" class="is-on" data-skin="s1" role="radio" aria-checked="true">S1 · 极简版</button>
+          <button type="button" data-skin="s2" role="radio" aria-checked="false">S2 · 身份头+条件列</button>
+        </div>
+        <button type="button" class="btn ghost" id="compareBtn" aria-pressed="false" hidden>对比 S1 / S2</button>
       </div>
-    </div>
-    <div class="skin-note" id="skinNote" hidden>S2 · Converge「身份头 + 条件列」（Figma 3205:14148）：Condition 行单色字形 ≤3（chain / info；v1.9 起 Transaction Record 改用标题 + 正文，不再用 history 字形）· Identity 首字母头像 · hex 等宽 0x 后首 4 / 末 4 加重 · 容器与折叠规则同 S1</div>
+      <div class="skin-note" id="skinNote" hidden>S2 · Converge「身份头 + 条件列」（Figma 3205:14148）：Condition 行单色字形 ≤3（chain / info；v1.9 起 Transaction Record 改用标题 + 正文，不再用 history 字形）· Identity 首字母头像 · hex 等宽 0x 后首 4 / 末 4 加重 · 容器与折叠规则同 S1</div>
 
-    <div class="row">
-      <button type="button" class="btn" id="replay">重播</button>
-      <button type="button" class="btn ghost" id="compareBtn" aria-pressed="false" hidden>对比 S1 / S2</button>
-      <label class="switch"><input type="checkbox" id="autoplay"> 自动播放全部（每场景 6s）</label>
-    </div>
+      <!-- v2.0: 两个 Prototype 区由 PROTOS 渲染（各自一台手机 + 一个场景面板） -->
+      <div class="protos" id="protos"></div>
 
-    <!-- v1.4: 5 个类别卡（A–E），每类下的场景行点击后原地展开解释卡；由 CATS / EXPLAIN 渲染 -->
-    <div class="cats" id="sceneList"></div>
+      <p class="hint">直达：<code>#scene=10&amp;step=expanded</code>（scene = 1…16 · step = typed / resolving / shown / expanded / dismissed · 场景属于哪个 Prototype 就在哪台手机上播放并选中对应 Tab / 卡片）· 点手机空白处只关闭该台的 tooltip · 点 Tag 再次唤起（回到默认收起态） · Esc 关闭 · 折叠入口点击展开、展开后不可收起 · C08「Transaction Record」只在 Tag = Info 时出现在区域一（分割线以上，左侧色条 + 正文，不带标题）；Warning / High risk 时不显示、不进折叠区</p>
 
-    <div class="log-wrap">
-      <div class="log-head"><span>状态机日志</span><span class="state" id="stateNow">idle</span></div>
-      <ol class="log" id="log"></ol>
-    </div>
-    <p class="hint">直达：<code>#scene=10&amp;step=expanded</code>（scene = 1…16 · step = typed / resolving / shown / expanded / dismissed）· 点手机空白处关闭 · 点 Tag 再次唤起（回到默认收起态） · Esc 关闭 · 折叠入口点击展开、展开后不可收起 · C08「Transaction Record」只在 Tag = Info 时出现在区域一（分割线以上，左侧色条 + 正文，不带标题）；Warning / High risk 时不显示、不进折叠区</p>
-  </aside>
-
-  <!-- ===================== COMPARE (S1 | S2, static) ===================== -->
-  <section class="compare" id="compare" aria-label="S1 / S2 对比">
-    <div class="compare-col skin-s1" id="cmpS1">
-      <h3>S1 · 极简版</h3>
-      <div class="cap" id="cmpCapS1"></div>
-      <div class="tt" id="cmpTtS1" data-level="" data-expanded="false"><div class="tt-arrow" id="cmpArrowS1"><svg width="30" height="11" viewBox="0 0 30 11"><path d="M0 11 15 0l15 11z" fill="#fff"/></svg></div><div id="cmpContentS1"></div></div>
-    </div>
-    <div class="compare-col skin-s2" id="cmpS2">
-      <h3>S2 · 身份头 + 条件列</h3>
-      <div class="cap" id="cmpCapS2"></div>
-      <div class="tt" id="cmpTtS2" data-level="" data-expanded="false"><div class="tt-arrow" id="cmpArrowS2"><svg width="30" height="11" viewBox="0 0 30 11"><path d="M0 11 15 0l15 11z" fill="#fff"/></svg></div><div id="cmpContentS2"></div></div>
-    </div>
-    <div class="compare-empty" id="cmpEmpty" hidden>当前场景无 tooltip（无 context 或走 S3 Alert）</div>
-  </section>
-</div>
+      <!-- ===================== COMPARE (S1 | S2, static · 隐藏，跟随最近操作的那台手机) ===================== -->
+      <section class="compare" id="compare" aria-label="S1 / S2 对比">
+        <div class="compare-col skin-s1" id="cmpS1">
+          <h3>S1 · 极简版</h3>
+          <div class="cap" id="cmpCapS1"></div>
+          <div class="tt" id="cmpTtS1" data-level="" data-expanded="false"><div class="tt-arrow" id="cmpArrowS1"><svg width="30" height="11" viewBox="0 0 30 11"><path d="M0 11 15 0l15 11z" fill="#fff"/></svg></div><div id="cmpContentS1"></div></div>
+        </div>
+        <div class="compare-col skin-s2" id="cmpS2">
+          <h3>S2 · 身份头 + 条件列</h3>
+          <div class="cap" id="cmpCapS2"></div>
+          <div class="tt" id="cmpTtS2" data-level="" data-expanded="false"><div class="tt-arrow" id="cmpArrowS2"><svg width="30" height="11" viewBox="0 0 30 11"><path d="M0 11 15 0l15 11z" fill="#fff"/></svg></div><div id="cmpContentS2"></div></div>
+        </div>
+        <div class="compare-empty" id="cmpEmpty" hidden>当前场景无 tooltip（无 context 或走 S3 Alert）</div>
+      </section>
     </div>
   </section>
 
@@ -696,8 +695,8 @@ var REDUCED = (typeof window.matchMedia === 'function') && window.matchMedia('(p
 var TIMING = {
   char: 30, charFast: 12, pause: 1000, resolve: 750,
   tagToTip: 160, tipIn: 160, tipOut: REDUCED ? 0 : 120, infoAuto: 4000,
-  fold: REDUCED ? 0 : 160,   // v1.12: 入口行 32→0 / 折叠区 0fr→1fr 的过渡时长（= --d-fold），过渡结束后入口行 display:none
-  autoplay: 6000, autoExpand: 3200
+  fold: REDUCED ? 0 : 160    // v1.12: 入口行 32→0 / 折叠区 0fr→1fr 的过渡时长（= --d-fold），过渡结束后入口行 display:none
+  // v2.0: autoplay / autoExpand 已删除（「自动播放全部」开关移除）
 };
 
 /* ---------- context registry (IA §3, verbatim copy) ---------- */
@@ -771,19 +770,19 @@ var SCENES = [
   { n:16, title:'Warning × 2 · warning 地址 + ENS 零宽字符', meta:'C06 + C07 + C10 · 两条 warning 叠放', chain:'eth', input:'alíce.eth', ctx:[{id:'C10', hex:HEX.s11},{id:'C06'},{id:'C07'}] }
 ];
 
-/* ---------- DOM ---------- */
+/* ---------- DOM (page-level) ---------- */
 function $(id){ return document.getElementById(id); }
-var el = {
-  screen:$('screen'), navTitle:$('navTitle'), navSub:$('navSub'),
-  addr:$('addr'), addrPh:$('addrPh'), addrVal:$('addrVal'), caret:$('caret'),
-  spinner:$('spinner'), tag:$('tag'), wrap:$('tooltipWrap'), tt:$('tooltip'), ttArrow:$('ttArrow'), ttContent:$('ttContent'),
-  addbar:$('addbar'), amountGroup:$('amountGroup'), balance:$('balance'), amount:$('amount'), feeUsd:$('feeUsd'), feeRange:$('feeRange'),
-  next:$('nextBtn'), alert:$('alert'), alertOk:$('alertOk'),
-  sceneList:$('sceneList'), replay:$('replay'), autoplay:$('autoplay'), log:$('log'), stateNow:$('stateNow'), skinNote:$('skinNote'),
+// v2.0: 页面级引用只剩皮肤 / 对比视图 / Prototype 容器；手机与面板的引用在各实例的 inst.el 里
+//       （手机由 <template id="phoneTpl"> 克隆，data-ref → el[ref]，id = 实例前缀 + ref）
+var G = {
+  protos:$('protos'), skinNote:$('skinNote'),
   compare:$('compare'), compareBtn:$('compareBtn'), cmpS1:$('cmpS1'), cmpS2:$('cmpS2'), cmpEmpty:$('cmpEmpty'),
   cmpTtS1:$('cmpTtS1'), cmpTtS2:$('cmpTtS2'), cmpContentS1:$('cmpContentS1'), cmpContentS2:$('cmpContentS2'),
   cmpArrowS1:$('cmpArrowS1'), cmpArrowS2:$('cmpArrowS2'), cmpCapS1:$('cmpCapS1'), cmpCapS2:$('cmpCapS2')
 };
+var SKIN = 's1', COMPARE = false;   // 皮肤 / 对比视图是页面级的（对两台手机都生效）
+var INSTANCES = [];                 // v2.0: createProto() 实例（p1 / p2）
+var activeInst = null;              // 最近 prepare() 过的实例——对比视图跟随它
 
 /* ---------- timers (looked up at call time so tests can fake them) ---------- */
 function makeTimerSet(){
@@ -793,26 +792,7 @@ function makeTimerSet(){
     clearAll: function(){ ids.forEach(function(id){ window.clearTimeout(id); }); ids = []; }
   };
 }
-var T = makeTimerSet();   // scene timers
-var A = makeTimerSet();   // autoplay timers
-
-/* ---------- state ---------- */
-var state = {
-  sceneIndex: -1, scene: null, phase:'idle', level:'none',
-  tooltipVisible:false, expanded:false, frozen:false, sceneStart:0, log:[], skin:'s1',
-  model:null, compare:false
-};
-
 function now(){ return Date.now(); }
-function log(name){
-  var t = (now() - state.sceneStart) / 1000;
-  state.log.push({ t:t, name:name });
-  var li = document.createElement('li');
-  li.innerHTML = '<span class="t">+' + t.toFixed(2) + 's</span><span>' + escapeHTML(name) + '</span>';
-  el.log.appendChild(li);
-  el.log.scrollTop = el.log.scrollHeight;
-  el.stateNow.textContent = name;
-}
 function escapeHTML(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
 
 /* ---------- model: sort contexts, split 区域一 (risk + record) / 区域二 (rest), compute level ---------- */
@@ -957,248 +937,59 @@ function tooltipHTML(m, skin, ids){
   }
   return html;
 }
-function renderTooltip(m){
-  el.ttContent.innerHTML = tooltipHTML(m, state.skin);
-  el.tt.dataset.level = m.level;
-  el.tt.dataset.expanded = 'false';
-  el.tt.dataset.folded = m.folded ? 'true' : 'false';
-  el.tt.dataset.skin = state.skin;
-  state.expanded = false;
-  var more = $('ttMore');
-  if (more) more.addEventListener('click', function(ev){ ev.stopPropagation(); expand(); });   // v1.12: 单向展开
-  updateCompare();
-}
-
-/* ---------- compare view (static S1 | S2 of the current scene) ---------- */
+/* ---------- compare view (static S1 | S2 · 跟随 activeInst 的当前场景；入口已隐藏，代码保留) ---------- */
 function setStaticExpanded(tt, more, fold, expanded){
   tt.dataset.expanded = expanded ? 'true' : 'false';
   if (more) more.setAttribute('aria-expanded', expanded ? 'true' : 'false');
   if (fold) fold.setAttribute('aria-hidden', expanded ? 'false' : 'true');
 }
-function updateCompare(){
-  if (!state.compare) return;
-  var m = state.model;
-  var has = !!(m && m.level !== 'none' && state.scene && !state.scene.unresolved);
-  el.cmpEmpty.hidden = has;
-  el.cmpS1.hidden = !has; el.cmpS2.hidden = !has;
+function updateCompare(inst){
+  if (!COMPARE) return;
+  if (inst && inst !== activeInst) return;   // 只跟随最近操作的那台手机
+  var a = activeInst, st = a && a.state, m = st && st.model;
+  var has = !!(m && m.level !== 'none' && st.scene && !st.scene.unresolved);
+  G.cmpEmpty.hidden = has;
+  G.cmpS1.hidden = !has; G.cmpS2.hidden = !has;
   if (!has) return;
   var w = TAG_W[m.level] || 38, left = Math.round(296 - w / 2 - 15) + 'px';
-  var cap = 'scene ' + state.scene.n + ' · ' + m.level + (m.folded ? (state.expanded ? ' · expanded' : ' · collapsed') : '');
-  [['s1', el.cmpTtS1, el.cmpContentS1, el.cmpArrowS1, el.cmpCapS1], ['s2', el.cmpTtS2, el.cmpContentS2, el.cmpArrowS2, el.cmpCapS2]].forEach(function(r){
+  var cap = 'scene ' + st.scene.n + ' · ' + m.level + (m.folded ? (st.expanded ? ' · expanded' : ' · collapsed') : '');
+  [['s1', G.cmpTtS1, G.cmpContentS1, G.cmpArrowS1, G.cmpCapS1], ['s2', G.cmpTtS2, G.cmpContentS2, G.cmpArrowS2, G.cmpCapS2]].forEach(function(r){
     var skin = r[0], tt = r[1], content = r[2], arrow = r[3], capEl = r[4];
     var ids = { more:'cmpMore-' + skin, fold:'cmpFold-' + skin };
     content.innerHTML = tooltipHTML(m, skin, ids);
     tt.dataset.level = m.level; tt.dataset.folded = m.folded ? 'true' : 'false';
     arrow.style.left = left;
     capEl.textContent = cap;
-    setStaticExpanded(tt, $(ids.more), $(ids.fold), state.expanded);
+    setStaticExpanded(tt, $(ids.more), $(ids.fold), st.expanded);
     var more = $(ids.more);
-    // v1.12: 静态展开态不渲染入口行（从 DOM 移除）；收起态的入口行点击 → 单向展开（同时作用于 live tooltip）
+    // v1.12: 静态展开态不渲染入口行（从 DOM 移除）；收起态的入口行点击 → 单向展开（同时作用于该实例的 live tooltip）
     if (more){
-      if (state.expanded) more.parentNode.removeChild(more);
-      else more.addEventListener('click', function(ev){ ev.stopPropagation(); expand(); });
+      if (st.expanded) more.parentNode.removeChild(more);
+      else more.addEventListener('click', function(ev){ ev.stopPropagation(); a.expand(); });
     }
   });
 }
 function setCompare(on){
-  state.compare = !!on;
-  el.compare.classList.toggle('on', state.compare);
-  el.compareBtn.classList.toggle('is-on', state.compare);
-  el.compareBtn.setAttribute('aria-pressed', state.compare ? 'true' : 'false');
-  if (state.compare) updateCompare();
+  COMPARE = !!on;
+  G.compare.classList.toggle('on', COMPARE);
+  G.compareBtn.classList.toggle('is-on', COMPARE);
+  G.compareBtn.setAttribute('aria-pressed', COMPARE ? 'true' : 'false');
+  if (COMPARE) updateCompare();
 }
 
-/* ---------- view helpers ---------- */
-function applyChain(key){
-  var c = CHAINS[key];
-  el.navTitle.textContent = c.title; el.navSub.textContent = c.sub; el.addrPh.textContent = c.ph;
-  el.balance.textContent = c.balance; el.amount.textContent = c.amount; el.feeUsd.textContent = c.feeUsd; el.feeRange.textContent = c.feeRange;
-}
-function setInput(text){
-  el.addrVal.textContent = text;
-  el.addrPh.hidden = text.length > 0;
-  el.addr.classList.toggle('tall', Array.from(text).length > 27);   // 2-line hex → 72 high (P0-A B1)
-}
-function setAddbar(show){
-  el.addbar.hidden = !show;
-  el.amountGroup.classList.toggle('no-bar', !show);
-}
-function setTag(level){
-  if (level === 'none'){ el.tag.hidden = true; el.tag.textContent = ''; el.tag.className = 'tag'; return; }
-  el.tag.hidden = false;
-  el.tag.textContent = TAG_TEXT[level];
-  el.tag.className = 'tag lv-' + level;
-  el.tag.setAttribute('aria-expanded', 'false');
-}
-function positionArrow(){
-  // arrow center = tag center. tag right edge is 296px from popover left; width from layout or fallback.
-  var w = el.tag.offsetWidth || TAG_W[state.level] || 38;
-  var center = 296 - w / 2;
-  el.ttArrow.style.left = Math.round(center - 15) + 'px';
-}
-function setNext(on){ el.next.classList.toggle('on', !!on); }
-
-/* ---------- tooltip visibility ---------- */
-var autoHideId = null;
-function showTooltip(reason){
-  if (state.level === 'none' || state.tooltipVisible) return;
-  el.wrap.classList.remove('out');
-  el.wrap.hidden = false;
-  positionArrow();
-  void el.wrap.offsetWidth; // reflow so the transition runs
-  el.wrap.classList.add('in');
-  state.tooltipVisible = true;
-  el.tag.setAttribute('aria-expanded', 'true');
-  // v1.12: 重新唤起 = 状态重置——折叠态 tooltip 回到默认收起（不是手动收起；入口行随之恢复）
-  if (el.tt.dataset.folded === 'true' && state.expanded) collapse();
-  log('tooltip shown' + (reason ? ' (' + reason + ')' : '') + (el.tt.dataset.folded === 'true' ? (state.expanded ? ' · expanded' : ' · collapsed') : ''));
-  if (state.level === 'info' && !state.frozen){
-    autoHideId = T.set(function(){ hideTooltip('auto 4s'); }, TIMING.infoAuto);
-  }
-}
-function hideTooltip(reason){
-  if (!state.tooltipVisible) return;
-  if (autoHideId !== null){ window.clearTimeout(autoHideId); autoHideId = null; }
-  state.tooltipVisible = false;
-  el.tag.setAttribute('aria-expanded', 'false');
-  el.wrap.classList.remove('in');
-  el.wrap.classList.add('out');
-  log('dismissed' + (reason ? ' (' + reason + ')' : ''));
-  T.set(function(){ el.wrap.hidden = true; el.wrap.classList.remove('out'); }, TIMING.tipOut);
-}
-// v1.12 (Wilson): fold entry is ONE-WAY. Clicking「More address info (N)」expands 区域二 in place and the entry row itself
-//   disappears (32→0 / opacity 0 over --d-fold, then hidden = display:none). No ∧, no manual collapse — the user closes the
-//   tooltip by tapping outside / Esc. collapse() is NOT exposed: it only runs implicitly as a state reset when the tooltip is
-//   re-rendered or re-invoked (tag click → back to the default collapsed state).
-//   instant = skip the entry-row transition (deep-link / skin re-render); silent = no log line (skin re-render)
-function expand(instant, silent){
-  if (el.tt.dataset.folded !== 'true' || state.expanded) return;
-  state.expanded = true;
-  el.tt.dataset.expanded = 'true';
-  var more = $('ttMore'), fold = $('ttFold');
-  if (fold) fold.setAttribute('aria-hidden', 'false');
-  if (more){
-    more.setAttribute('aria-expanded', 'true');
-    more.disabled = true; more.setAttribute('aria-hidden', 'true'); more.tabIndex = -1;
-    if (document.activeElement === more){ try { el.tt.focus({ preventScroll: true }); } catch (e) { el.tt.focus(); } }   // keyboard: focus hands over to the dialog
-    if (instant || TIMING.fold === 0) more.hidden = true;
-    else T.set(function(){ if (state.expanded && $('ttMore') === more) more.hidden = true; }, TIMING.fold);
-  }
-  if (!silent) log('expanded (More address info → entry row removed, no collapse)');
-  updateCompare();
-}
-function collapse(){   // internal state reset only (re-render / re-invoke) — never a user action
-  if (!state.expanded) return;
-  state.expanded = false;
-  el.tt.dataset.expanded = 'false';
-  var more = $('ttMore'), fold = $('ttFold');
-  if (fold) fold.setAttribute('aria-hidden', 'true');
-  if (more){
-    more.hidden = false; more.disabled = false; more.removeAttribute('aria-hidden'); more.removeAttribute('tabindex');
-    more.setAttribute('aria-expanded', 'false');
-  }
-  updateCompare();
-}
-
-/* ---------- scene flow ---------- */
-function resetView(){
-  T.clearAll(); autoHideId = null;
-  state.phase = 'idle'; state.level = 'none'; state.tooltipVisible = false; state.expanded = false; state.frozen = false; state.model = null;
-  state.log = []; el.log.innerHTML = '';
-  el.wrap.hidden = true; el.wrap.classList.remove('in', 'out');
-  el.ttContent.innerHTML = '';
-  el.spinner.hidden = true; setTag('none'); el.caret.hidden = true;
-  el.alert.hidden = true;
-  setInput(''); setNext(false);
-  updateCompare();
-}
-function prepare(index, instant){
-  var scene = SCENES[index];
-  resetView();
-  state.sceneIndex = index; state.scene = scene; state.sceneStart = now();
-  state.model = buildModel(scene);
-  applyChain(scene.chain);
-  setAddbar(!scene.ctx.some(function(c){ return c.id === 'C09' || c.id === 'C01'; }));
-  setActiveScene(index);   // v1.4: by data-i (DOM order is categorical, not global)
-  if (!instant && window.history && typeof history.replaceState === 'function'){
-    try { history.replaceState(null, '', '#scene=' + scene.n); } catch (e) {}
-  }
-  log('idle');
-  return scene;
-}
-function resolveNow(scene){
-  el.spinner.hidden = true;
-  el.caret.hidden = true;
-  if (scene.unresolved){
-    state.phase = 'error'; log('unresolved → S3 Alert'); el.alert.hidden = false; return;
-  }
-  var m = state.model; state.level = m.level; setNext(true);
-  if (m.level === 'none'){ state.phase = 'resolved'; log('resolved(none) → S2 no tag'); return; }
-  setTag(m.level); renderTooltip(m);
-  state.phase = 'resolved'; log('resolved(' + m.level + ') → tag "' + TAG_TEXT[m.level] + '"');
-}
-function play(index){
-  var scene = prepare(index, false);
-  var chars = Array.from(scene.input);
-  var per = chars.length > 30 ? TIMING.charFast : TIMING.char;
-  var i = 0;
-  state.phase = 'typing'; log('typing (' + chars.length + ' chars, ' + per + 'ms/char' + (/​/.test(scene.input) ? ', contains U+200B' : '') + ')');
-  el.caret.hidden = false;
-  function step(){
-    i++; setInput(chars.slice(0, i).join(''));
-    if (i < chars.length) T.set(step, per);
-    else { state.phase = 'paused'; log('pause ' + TIMING.pause + 'ms'); T.set(resolving, TIMING.pause); }
-  }
-  function resolving(){
-    state.phase = 'resolving'; log('resolving (spinner ' + TIMING.resolve + 'ms)');
-    el.spinner.hidden = false;
-    T.set(function(){
-      resolveNow(scene);
-      if (state.phase === 'resolved' && state.level !== 'none'){
-        T.set(function(){ showTooltip('auto'); }, TIMING.tagToTip);
-      }
-    }, TIMING.resolve);
-  }
-  T.set(step, per);
-  scheduleAutoplay();
-}
-function jumpTo(index, step){
-  var scene = prepare(index, true);
-  state.frozen = true;
-  var order = ['idle','typed','resolving','dismissed','shown','expanded'];
-  var k = order.indexOf(step); if (k < 0) k = order.indexOf('shown');
-  if (k >= 1){ setInput(scene.input); state.phase = 'typed'; log('typing (instant)'); el.caret.hidden = false; }
-  if (k === 2){ el.spinner.hidden = false; state.phase = 'resolving'; log('resolving'); return; }
-  if (k >= 3){ resolveNow(scene); }
-  if (k >= 4 && state.level !== 'none'){ showTooltip('instant'); }
-  if (k >= 5) expand(true);   // v1.12: instant — entry row removed without the 160ms transition
-  if (k === 3 && state.level !== 'none') log('(tooltip not shown — jump to dismissed)');
-}
-function scheduleAutoplay(){
-  A.clearAll();
-  if (!el.autoplay.checked) return;
-  if (state.model && state.model.folded) A.set(function(){ expand(); }, TIMING.autoExpand);
-  A.set(function(){ play((state.sceneIndex + 1) % SCENES.length); }, TIMING.autoplay);
-}
-
-/* ---------- panel: 5 categories (v1.4, order = 01 section priority; 区域一 first, Unhappy Path last) ---------- */
-var CATS = [
-  { key:'A', title:'区域一 · 判断辅助信息', dim:'分割线以上',
-    sub:'交易历史只在 Tag = Info 时出现；Warning / High risk 常显、区域二折叠且不自动消失。',
-    scenes:[1, 2, 10, 11, 12, 16] },
-  { key:'B', title:'专项信息识别', dim:'区域二 ① · 优先级最高',
-    sub:'特定网络的地址解析：label 标识这是哪个网络的地址（Cosmos / Tron / TON bounceable…），同一地址只属一个网络，这类条目只有一条，排 Address info 最前。',
-    scenes:[7, 8, 9, 15] },
-  { key:'C', title:'地址标记', dim:'区域二 ②',
-    sub:'地址本与我的钱包同时命中时两条都显示，地址本在前；标记只回答「这是谁」，不做风险判断。',
-    scenes:[3, 4, 14] },
-  { key:'D', title:'ENS 解析', dim:'区域二 ③',
-    sub:'正向解析展示地址全文供核对（等宽单行、首尾加重）；反向解析展示关联的单个域名；永远排在列表最后。',
-    scenes:[5, 6] },
-  { key:'E', title:'Unhappy Path', dim:'不进 Tooltip',
-    sub:'无法解析 / 当前链无记录不进 Tooltip，走现有 Alert；解析中只显示 spinner。',
-    scenes:[13] }
+/* ---------- panel: v2.0 两个 Prototype 区（取代 v1.4 的 5 类 CATS）----------
+   p1「常见场景」：两个 Tab（粘贴哈希地址 / 输入 ENS 域名），各 Tab 内按最常见到最不常见排序
+   p2「专项信息识别 · 边界 · 异常」：平铺列表，无 Tab */
+var PROTOS = [
+  { key:'p1', eyebrow:'Prototype 1 · 常见的地址解析', title:'常见场景', sub:'按最常见到最不常见排序',
+    tabs:[
+      { key:'hash', label:'粘贴哈希地址', scenes:[1, 2, 3, 4, 14, 6, 12] },
+      { key:'ens',  label:'输入 ENS 域名', scenes:[5, 10, 11, 16] }
+    ] },
+  { key:'p2', eyebrow:'Prototype 2 · 专项信息、边界与异常', title:'专项信息识别 · 边界 · 异常', sub:'特定网络的地址解析、多信息同现、无法解析',
+    scenes:[7, 8, 9, 15, 13] }
 ];
+
 /* 每个场景的解释卡（口径来自 01 section + 场景数据）：dim 解析维度 / type 解析类型 / rule 展示规则 / why 为什么左侧这样显示 */
 var EXPLAIN = {
   1:  { dim:'区域一无内容（无风险条目、未检测到无交易记录）· 区域二无命中。',
@@ -1269,78 +1060,354 @@ var EXPLAIN = {
 var EX_KEYS = [['dim','解析维度'], ['type','解析类型'], ['rule','展示规则'], ['why','为什么左侧这样显示']];
 
 function levelOf(scene){ return scene.unresolved ? 'error' : buildModel(scene).level; }
-CATS.forEach(function(cat){
-  var sec = document.createElement('section');
-  sec.className = 'cat'; sec.dataset.cat = cat.key; sec.setAttribute('aria-label', cat.key + ' · ' + cat.title);
-  sec.innerHTML = '<div class="cat-head"><div><div class="cat-title">' + escapeHTML(cat.title) + '<span class="cat-dim">' + escapeHTML(cat.dim) + '</span></div><div class="cat-sub">' + escapeHTML(cat.sub) + '</div></div></div><ol class="scenes"></ol>';
-  var ol = sec.querySelector('.scenes');
-  cat.scenes.forEach(function(n, j){
-    var i = SCENES.findIndex(function(s){ return s.n === n; }); if (i < 0) return;
-    var s = SCENES[i], lv = levelOf(s), ex = EXPLAIN[n] || {}, local = cat.key + (j + 1);
-    var li = document.createElement('li');
-    li.className = 'scene'; li.dataset.n = String(n); li.dataset.local = local;
-    li.innerHTML =
-      /* v1.5 Wilson：面板简化——不再展开解释卡、不显示编号与 context 代码（解释内容保留在 EXPLAIN，后续搬到 Figma） */
-      '<button type="button" class="scene-btn" data-i="' + i + '" data-n="' + n + '" aria-pressed="false">' +
-        '<span class="dot lv-' + lv + '"></span><span class="name">' + escapeHTML(s.title) + '</span>' +
-      '</button>';
-    ol.appendChild(li);
-  });
-  el.sceneList.appendChild(sec);
-});
-// 同一时刻只展开当前激活场景；切换时上一张收起（grid-template-rows 过渡）
-function setActiveScene(index){
-  Array.prototype.forEach.call(el.sceneList.querySelectorAll('.scene'), function(li){
-    var b = li.querySelector('.scene-btn');
-    var on = parseInt(b.dataset.i, 10) === index;
-    li.classList.toggle('is-open', on);
-    b.classList.toggle('is-on', on);
-    b.setAttribute('aria-pressed', on ? 'true' : 'false');
-  });
+function protoScenes(cfg){ return cfg.tabs ? cfg.tabs.reduce(function(a, t){ return a.concat(t.scenes); }, []) : cfg.scenes.slice(); }
+var PILL_TEXT = { info:'Info', warning:'Warning', high:'High risk', none:'无 Tag', error:'Alert' };
+var CARD_CHEV = '<svg class="chev" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="m6 3.5 4.5 4.5L6 12.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+// v2.0 场景卡片：左 Tag 风格 pill（Info 灰 / Warning 橙 / High risk 红 / 无 Tag 虚线 / Alert 黑）+ 标题 14 Medium + 12 meta + 右 chevron
+function sceneCardHTML(n, tabKey){
+  var i = SCENES.findIndex(function(s){ return s.n === n; }); if (i < 0) return '';
+  var s = SCENES[i], lv = levelOf(s);
+  return '<li class="scene" data-n="' + n + '"' + (tabKey ? ' data-tab="' + tabKey + '"' : '') + '>' +
+    '<button type="button" class="scene-card" data-i="' + i + '" data-n="' + n + '" aria-pressed="false">' +
+      '<span class="lv-pill lv-' + lv + '">' + PILL_TEXT[lv] + '</span>' +
+      '<span class="scene-text"><span class="name">' + escapeHTML(s.title) + '</span><span class="meta">' + escapeHTML(s.meta) + '</span></span>' +
+      CARD_CHEV +
+    '</button></li>';
 }
-el.sceneList.addEventListener('click', function(ev){
-  var b = ev.target.closest('.scene-btn'); if (!b) return;
-  play(parseInt(b.dataset.i, 10));
-});
-el.replay.addEventListener('click', function(){ play(state.sceneIndex < 0 ? 0 : state.sceneIndex); });
-el.autoplay.addEventListener('change', function(){
-  if (el.autoplay.checked) play(state.sceneIndex < 0 ? 0 : state.sceneIndex); else A.clearAll();
-});
+
+/* ============================================================
+   v2.0: createProto(container, cfg) — 一台手机 + 一个场景面板 + 自己的状态机
+   返回实例 { key, root, el, state, scenes, play, jumpTo, expand, showTooltip, hideTooltip, setTab, rerender, getState, has, firstIndex }
+   两个实例互不干扰：各自的 el / state / 计时器 / tooltip / addbar / nav；hash 由 prepare() 写入（用户点击时）
+   ============================================================ */
+function createProto(container, cfg){
+  var key = cfg.key;
+  var el = {};
+  var T = makeTimerSet();          // 本实例的场景计时器
+  var autoHideId = null;
+  var state = {
+    key:key, sceneIndex:-1, scene:null, phase:'idle', level:'none',
+    tooltipVisible:false, expanded:false, frozen:false, sceneStart:0, log:[], model:null,
+    tab: cfg.tabs ? cfg.tabs[0].key : null, started:false
+  };
+  var inst = { key:key, config:cfg, state:state, el:el, scenes:protoScenes(cfg) };
+
+  /* ---- DOM: section.proto > .proto-head + .stage( phone clone + aside.panel ) ---- */
+  var sec = document.createElement('section');
+  sec.className = 'proto'; sec.id = 'proto-' + key; sec.dataset.proto = key; sec.setAttribute('aria-labelledby', 'proto-' + key + '-title');
+  sec.innerHTML = '<div class="proto-head"><p class="eyebrow">' + escapeHTML(cfg.eyebrow) + '</p><h3 id="proto-' + key + '-title">' + escapeHTML(cfg.title) + '</h3><p class="sub">' + escapeHTML(cfg.sub) + '</p></div><div class="stage"></div>';
+  var stage = sec.querySelector('.stage');
+  stage.appendChild(document.importNode($('phoneTpl').content, true));
+  var panel = document.createElement('aside');
+  panel.className = 'panel'; panel.setAttribute('aria-label', cfg.title + ' · 场景');
+  var ph = '';
+  if (cfg.tabs){
+    ph += '<div class="tabs" role="tablist" aria-label="输入方式">' + cfg.tabs.map(function(t){
+      return '<button type="button" class="tab" role="tab" id="' + key + '-tab-' + t.key + '" data-tab="' + t.key + '" aria-selected="false" aria-controls="' + key + '-panel-' + t.key + '">' + escapeHTML(t.label) + '<span class="cnt">' + t.scenes.length + '</span></button>';
+    }).join('') + '</div>';
+    ph += cfg.tabs.map(function(t){
+      return '<ol class="scenes tab-panel" role="tabpanel" id="' + key + '-panel-' + t.key + '" data-tab-panel="' + t.key + '" aria-labelledby="' + key + '-tab-' + t.key + '" hidden>' + t.scenes.map(function(n){ return sceneCardHTML(n, t.key); }).join('') + '</ol>';
+    }).join('');
+  } else {
+    ph += '<div class="panel-cap">' + cfg.scenes.length + ' 个场景 · 依次点击查看</div><ol class="scenes">' + cfg.scenes.map(function(n){ return sceneCardHTML(n); }).join('') + '</ol>';
+  }
+  ph += '<details class="log-wrap"><summary><span class="log-title">状态机日志</span><span class="state" data-ref="stateNow">idle</span></summary><ol class="log" data-ref="log"></ol></details>';
+  panel.innerHTML = ph;
+  stage.appendChild(panel);
+  Array.prototype.forEach.call(sec.querySelectorAll('[data-ref]'), function(node){ el[node.dataset.ref] = node; node.id = key + '-' + node.dataset.ref; });
+  el.root = sec; el.panel = panel; el.stage = stage;
+  el.tag.setAttribute('aria-controls', el.tooltip.id);
+  el.alertBox.setAttribute('aria-labelledby', el.alertTitle.id);
+  container.appendChild(sec);
+  inst.root = sec;
+
+  function moreEl(){ return el.ttContent.querySelector('.tt-more'); }
+  function foldEl(){ return el.ttContent.querySelector('.tt-fold'); }
+  function indexOfN(n){ return SCENES.findIndex(function(s){ return s.n === n; }); }
+  function has(n){ return inst.scenes.indexOf(n) >= 0; }
+  function firstIndex(){ return indexOfN(inst.scenes[0]); }
+
+  /* ---- log ---- */
+  function log(name){
+    var t = (now() - state.sceneStart) / 1000;
+    state.log.push({ t:t, name:name });
+    var li = document.createElement('li');
+    li.innerHTML = '<span class="t">+' + t.toFixed(2) + 's</span><span>' + escapeHTML(name) + '</span>';
+    el.log.appendChild(li);
+    el.log.scrollTop = el.log.scrollHeight;
+    el.stateNow.textContent = name;
+  }
+
+  /* ---- tooltip render ---- */
+  function renderTooltip(m){
+    el.ttContent.innerHTML = tooltipHTML(m, SKIN, { more: key + '-ttMore', fold: key + '-ttFold' });
+    el.tooltip.dataset.level = m.level;
+    el.tooltip.dataset.expanded = 'false';
+    el.tooltip.dataset.folded = m.folded ? 'true' : 'false';
+    el.tooltip.dataset.skin = SKIN;
+    state.expanded = false;
+    var more = moreEl();
+    if (more) more.addEventListener('click', function(ev){ ev.stopPropagation(); expand(); });   // v1.12: 单向展开
+    updateCompare(inst);
+  }
+  function rerender(){   // 皮肤切换：保持场景 + 展开态，只重绘 tooltip
+    if (!(state.model && state.level !== 'none' && el.ttContent.innerHTML)) return;
+    var wasExpanded = state.expanded;
+    renderTooltip(state.model);
+    if (wasExpanded) expand(true, true);   // v1.12: re-render keeps the expanded (entry-row-removed) state, instantly + silently
+    if (state.sceneStart) log('skin → ' + SKIN.toUpperCase() + ' (re-rendered' + (wasExpanded ? ', expanded kept' : '') + ')');
+  }
+
+  /* ---- view helpers ---- */
+  function applyChain(k){
+    var c = CHAINS[k];
+    el.navTitle.textContent = c.title; el.navSub.textContent = c.sub; el.addrPh.textContent = c.ph;
+    el.balance.textContent = c.balance; el.amount.textContent = c.amount; el.feeUsd.textContent = c.feeUsd; el.feeRange.textContent = c.feeRange;
+  }
+  function setInput(text){
+    el.addrVal.textContent = text;
+    el.addrPh.hidden = text.length > 0;
+    el.addr.classList.toggle('tall', Array.from(text).length > 27);   // 2-line hex → 72 high (P0-A B1)
+  }
+  function setAddbar(show){
+    el.addbar.hidden = !show;
+    el.amountGroup.classList.toggle('no-bar', !show);
+  }
+  function setTag(level){
+    if (level === 'none'){ el.tag.hidden = true; el.tag.textContent = ''; el.tag.className = 'tag'; return; }
+    el.tag.hidden = false;
+    el.tag.textContent = TAG_TEXT[level];
+    el.tag.className = 'tag lv-' + level;
+    el.tag.setAttribute('aria-expanded', 'false');
+  }
+  function positionArrow(){
+    // arrow center = tag center. tag right edge is 296px from popover left; width from layout or fallback.
+    var w = el.tag.offsetWidth || TAG_W[state.level] || 38;
+    var center = 296 - w / 2;
+    el.ttArrow.style.left = Math.round(center - 15) + 'px';
+  }
+  function setNext(on){ el.nextBtn.classList.toggle('on', !!on); }
+
+  /* ---- tooltip visibility ---- */
+  function showTooltip(reason){
+    if (state.level === 'none' || state.tooltipVisible) return;
+    el.tooltipWrap.classList.remove('out');
+    el.tooltipWrap.hidden = false;
+    positionArrow();
+    void el.tooltipWrap.offsetWidth; // reflow so the transition runs
+    el.tooltipWrap.classList.add('in');
+    state.tooltipVisible = true;
+    el.tag.setAttribute('aria-expanded', 'true');
+    // v1.12: 重新唤起 = 状态重置——折叠态 tooltip 回到默认收起（不是手动收起；入口行随之恢复）
+    if (el.tooltip.dataset.folded === 'true' && state.expanded) collapse();
+    log('tooltip shown' + (reason ? ' (' + reason + ')' : '') + (el.tooltip.dataset.folded === 'true' ? (state.expanded ? ' · expanded' : ' · collapsed') : ''));
+    if (state.level === 'info' && !state.frozen){
+      autoHideId = T.set(function(){ hideTooltip('auto 4s'); }, TIMING.infoAuto);
+    }
+  }
+  function hideTooltip(reason){
+    if (!state.tooltipVisible) return;
+    if (autoHideId !== null){ window.clearTimeout(autoHideId); autoHideId = null; }
+    state.tooltipVisible = false;
+    el.tag.setAttribute('aria-expanded', 'false');
+    el.tooltipWrap.classList.remove('in');
+    el.tooltipWrap.classList.add('out');
+    log('dismissed' + (reason ? ' (' + reason + ')' : ''));
+    T.set(function(){ el.tooltipWrap.hidden = true; el.tooltipWrap.classList.remove('out'); }, TIMING.tipOut);
+  }
+  // v1.12 (Wilson): fold entry is ONE-WAY. Clicking「More address info (N)」expands 区域二 in place and the entry row itself
+  //   disappears (32→0 / opacity 0 over --d-fold, then hidden = display:none). No ∧, no manual collapse — the user closes the
+  //   tooltip by tapping outside / Esc. collapse() is NOT exposed: it only runs implicitly as a state reset when the tooltip is
+  //   re-rendered or re-invoked (tag click → back to the default collapsed state).
+  //   instant = skip the entry-row transition (deep-link / skin re-render); silent = no log line (skin re-render)
+  function expand(instant, silent){
+    if (el.tooltip.dataset.folded !== 'true' || state.expanded) return;
+    state.expanded = true;
+    el.tooltip.dataset.expanded = 'true';
+    var more = moreEl(), fold = foldEl();
+    if (fold) fold.setAttribute('aria-hidden', 'false');
+    if (more){
+      more.setAttribute('aria-expanded', 'true');
+      more.disabled = true; more.setAttribute('aria-hidden', 'true'); more.tabIndex = -1;
+      if (document.activeElement === more){ try { el.tooltip.focus({ preventScroll: true }); } catch (e) { el.tooltip.focus(); } }   // keyboard: focus hands over to the dialog
+      if (instant || TIMING.fold === 0) more.hidden = true;
+      else T.set(function(){ if (state.expanded && moreEl() === more) more.hidden = true; }, TIMING.fold);
+    }
+    if (!silent) log('expanded (More address info → entry row removed, no collapse)');
+    updateCompare(inst);
+  }
+  function collapse(){   // internal state reset only (re-render / re-invoke) — never a user action
+    if (!state.expanded) return;
+    state.expanded = false;
+    el.tooltip.dataset.expanded = 'false';
+    var more = moreEl(), fold = foldEl();
+    if (fold) fold.setAttribute('aria-hidden', 'true');
+    if (more){
+      more.hidden = false; more.disabled = false; more.removeAttribute('aria-hidden'); more.removeAttribute('tabindex');
+      more.setAttribute('aria-expanded', 'false');
+    }
+    updateCompare(inst);
+  }
+
+  /* ---- scene flow ---- */
+  function resetView(){
+    T.clearAll(); autoHideId = null;
+    state.phase = 'idle'; state.level = 'none'; state.tooltipVisible = false; state.expanded = false; state.frozen = false; state.model = null;
+    state.log = []; el.log.innerHTML = '';
+    el.tooltipWrap.hidden = true; el.tooltipWrap.classList.remove('in', 'out');
+    el.ttContent.innerHTML = '';
+    el.spinner.hidden = true; setTag('none'); el.caret.hidden = true;
+    el.alert.hidden = true;
+    setInput(''); setNext(false);
+  }
+  function prepare(index, instant){
+    var scene = SCENES[index];
+    var writeHash = !instant && state.started;   // 首次自动播放不写 hash；用户点击（卡片 / Tab）才写
+    resetView();
+    activeInst = inst; state.started = true;
+    state.sceneIndex = index; state.scene = scene; state.sceneStart = now();
+    state.model = buildModel(scene);
+    applyChain(scene.chain);
+    setAddbar(!scene.ctx.some(function(c){ return c.id === 'C09' || c.id === 'C01'; }));
+    setActiveScene(index);
+    if (writeHash && window.history && typeof history.replaceState === 'function'){
+      try { history.replaceState(null, '', '#scene=' + scene.n); } catch (e) {}
+    }
+    updateCompare(inst);
+    log('idle');
+    return scene;
+  }
+  function resolveNow(scene){
+    el.spinner.hidden = true;
+    el.caret.hidden = true;
+    if (scene.unresolved){
+      state.phase = 'error'; log('unresolved → S3 Alert'); el.alert.hidden = false; return;
+    }
+    var m = state.model; state.level = m.level; setNext(true);
+    if (m.level === 'none'){ state.phase = 'resolved'; log('resolved(none) → S2 no tag'); return; }
+    setTag(m.level); renderTooltip(m);
+    state.phase = 'resolved'; log('resolved(' + m.level + ') → tag "' + TAG_TEXT[m.level] + '"');
+  }
+  function play(index){
+    var scene = prepare(index, false);
+    var chars = Array.from(scene.input);
+    var per = chars.length > 30 ? TIMING.charFast : TIMING.char;
+    var i = 0;
+    state.phase = 'typing'; log('typing (' + chars.length + ' chars, ' + per + 'ms/char' + (/​/.test(scene.input) ? ', contains U+200B' : '') + ')');
+    el.caret.hidden = false;
+    function step(){
+      i++; setInput(chars.slice(0, i).join(''));
+      if (i < chars.length) T.set(step, per);
+      else { state.phase = 'paused'; log('pause ' + TIMING.pause + 'ms'); T.set(resolving, TIMING.pause); }
+    }
+    function resolving(){
+      state.phase = 'resolving'; log('resolving (spinner ' + TIMING.resolve + 'ms)');
+      el.spinner.hidden = false;
+      T.set(function(){
+        resolveNow(scene);
+        if (state.phase === 'resolved' && state.level !== 'none'){
+          T.set(function(){ showTooltip('auto'); }, TIMING.tagToTip);
+        }
+      }, TIMING.resolve);
+    }
+    T.set(step, per);
+  }
+  function jumpTo(index, step){
+    var scene = prepare(index, true);
+    state.frozen = true;
+    var order = ['idle','typed','resolving','dismissed','shown','expanded'];
+    var k = order.indexOf(step); if (k < 0) k = order.indexOf('shown');
+    if (k >= 1){ setInput(scene.input); state.phase = 'typed'; log('typing (instant)'); el.caret.hidden = false; }
+    if (k === 2){ el.spinner.hidden = false; state.phase = 'resolving'; log('resolving'); return; }
+    if (k >= 3){ resolveNow(scene); }
+    if (k >= 4 && state.level !== 'none'){ showTooltip('instant'); }
+    if (k >= 5) expand(true);   // v1.12: instant — entry row removed without the 160ms transition
+    if (k === 3 && state.level !== 'none') log('(tooltip not shown — jump to dismissed)');
+  }
+
+  /* ---- panel: tabs + cards ---- */
+  function setTab(tabKey, silent){
+    if (!cfg.tabs) return;
+    var t = cfg.tabs.filter(function(x){ return x.key === tabKey; })[0]; if (!t) return;
+    state.tab = tabKey;
+    Array.prototype.forEach.call(panel.querySelectorAll('.tab'), function(b){
+      var on = b.dataset.tab === tabKey; b.setAttribute('aria-selected', on ? 'true' : 'false'); b.tabIndex = on ? 0 : -1;
+    });
+    Array.prototype.forEach.call(panel.querySelectorAll('.tab-panel'), function(p){ p.hidden = p.dataset.tabPanel !== tabKey; });
+    if (!silent){ var i = indexOfN(t.scenes[0]); if (i >= 0) play(i); }   // 切 Tab 自动播放该 Tab 的第一个场景
+  }
+  function setActiveScene(index){
+    var n = SCENES[index] ? SCENES[index].n : -1;
+    Array.prototype.forEach.call(panel.querySelectorAll('.scene-card'), function(b){
+      var on = parseInt(b.dataset.i, 10) === index;
+      b.classList.toggle('is-on', on);
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+    // 直达 / 代码调用：场景在另一个 Tab 里 → 静默切到那个 Tab（不触发自动播放）
+    if (cfg.tabs){ var li = panel.querySelector('.scene[data-n="' + n + '"]'); if (li && li.dataset.tab !== state.tab) setTab(li.dataset.tab, true); }
+  }
+  panel.addEventListener('click', function(ev){
+    var tab = ev.target.closest('.tab');
+    if (tab){ setTab(tab.dataset.tab); return; }
+    var b = ev.target.closest('.scene-card'); if (!b) return;
+    play(parseInt(b.dataset.i, 10));
+  });
+  panel.addEventListener('keydown', function(ev){   // Tab 列表左右键切换
+    var tab = ev.target.closest('.tab'); if (!tab || !cfg.tabs) return;
+    if (ev.key !== 'ArrowLeft' && ev.key !== 'ArrowRight') return;
+    var keys = cfg.tabs.map(function(t){ return t.key; }), k = keys.indexOf(state.tab);
+    var next = keys[(k + (ev.key === 'ArrowRight' ? 1 : keys.length - 1)) % keys.length];
+    ev.preventDefault(); setTab(next); panel.querySelector('.tab[data-tab="' + next + '"]').focus();
+  });
+
+  /* ---- phone interactions (scoped to this phone) ---- */
+  el.tag.addEventListener('click', function(ev){
+    ev.stopPropagation();
+    if (state.tooltipVisible) hideTooltip('tag click'); else showTooltip('tag click');
+  });
+  el.screen.addEventListener('click', function(ev){   // 点这台手机的空白处只关闭这台的 tooltip
+    if (ev.target.closest('.tt') || ev.target.closest('.tag')) return;
+    if (state.tooltipVisible) hideTooltip('click outside');
+  });
+  el.tooltip.addEventListener('click', function(ev){ ev.stopPropagation(); });
+  el.alertOk.addEventListener('click', function(ev){ ev.stopPropagation(); el.alert.hidden = true; log('alert dismissed (Understand)'); });
+
+  if (cfg.tabs) setTab(state.tab, true);
+
+  inst.play = play; inst.jumpTo = jumpTo; inst.expand = expand; inst.showTooltip = showTooltip; inst.hideTooltip = hideTooltip;
+  inst.setTab = setTab; inst.rerender = rerender; inst.has = has; inst.firstIndex = firstIndex;
+  inst.getState = function(){
+    return { key:key, phase:state.phase, level:state.level, tooltipVisible:state.tooltipVisible, expanded:state.expanded, sceneIndex:state.sceneIndex,
+             log:state.log.slice(), skin:SKIN, compare:COMPARE, tab:state.tab, started:state.started };
+  };
+  return inst;
+}
+
+PROTOS.forEach(function(cfg){ INSTANCES.push(createProto(G.protos, cfg)); });
+function ownerOf(n){ for (var i = 0; i < INSTANCES.length; i++) if (INSTANCES[i].has(n)) return INSTANCES[i].key; return null; }
+function instanceOf(n){ var k = ownerOf(n); return k ? INSTANCES.filter(function(x){ return x.key === k; })[0] : INSTANCES[0]; }
+
+/* ---------- skin (page-level; re-renders every instance) ---------- */
 Array.prototype.forEach.call(document.querySelectorAll('.seg [data-skin]'), function(b){
   b.addEventListener('click', function(){ setSkin(b.dataset.skin); });
 });
 function setSkin(skin){
   if (skin !== 's1' && skin !== 's2') skin = 's1';
-  var changed = state.skin !== skin;
-  state.skin = skin;
+  var changed = SKIN !== skin;
+  SKIN = skin;
   document.body.classList.remove('skin-s1', 'skin-s2');
   document.body.classList.add('skin-' + skin);
   Array.prototype.forEach.call(document.querySelectorAll('.seg [data-skin]'), function(b){
     var on = b.dataset.skin === skin; b.classList.toggle('is-on', on); b.setAttribute('aria-checked', on ? 'true' : 'false');
   });
-  el.skinNote.hidden = skin !== 's2';
-  // keep current scene + state: re-render the tooltip in the new skin, preserving expanded
-  if (changed && state.model && state.level !== 'none' && el.ttContent.innerHTML){
-    var wasExpanded = state.expanded;
-    renderTooltip(state.model);
-    if (wasExpanded) expand(true, true);   // v1.12: re-render keeps the expanded (entry-row-removed) state, instantly + silently
-    if (state.sceneStart) log('skin → ' + skin.toUpperCase() + ' (re-rendered' + (wasExpanded ? ', expanded kept' : '') + ')');
-  }
+  G.skinNote.hidden = skin !== 's2';
+  if (changed) INSTANCES.forEach(function(i){ i.rerender(); });   // keep each phone's scene + expanded state, re-render in the new skin
 }
-el.compareBtn.addEventListener('click', function(){ setCompare(!state.compare); });
-
-/* ---------- phone interactions ---------- */
-el.tag.addEventListener('click', function(ev){
-  ev.stopPropagation();
-  if (state.tooltipVisible) hideTooltip('tag click'); else showTooltip('tag click');
+G.compareBtn.addEventListener('click', function(){ setCompare(!COMPARE); });
+document.addEventListener('keydown', function(ev){
+  if (ev.key !== 'Escape') return;
+  INSTANCES.forEach(function(i){ if (i.state.tooltipVisible) i.hideTooltip('Esc'); });
 });
-el.screen.addEventListener('click', function(ev){
-  if (ev.target.closest('.tt') || ev.target.closest('.tag')) return;
-  if (state.tooltipVisible) hideTooltip('click outside');
-});
-el.tt.addEventListener('click', function(ev){ ev.stopPropagation(); });
-el.alertOk.addEventListener('click', function(ev){ ev.stopPropagation(); el.alert.hidden = true; log('alert dismissed (Understand)'); });
-document.addEventListener('keydown', function(ev){ if (ev.key === 'Escape' && state.tooltipVisible) hideTooltip('Esc'); });
 
 /* ---------- boot: hash / data-init ---------- */
 function parseInit(){
@@ -1349,22 +1416,39 @@ function parseInit(){
   src.split('&').forEach(function(kv){ var p = kv.split('='); if (p[0]) out[decodeURIComponent(p[0])] = decodeURIComponent(p[1] || ''); });
   return out;
 }
+// #scene=N：N 属于哪个 Prototype 就在哪台手机上播放（并选中对应 Tab / 卡片）；另一台手机首次 boot 时播放自己的第一个场景
+// step / instant=1：目标手机直达该 step（冻结）；另一台也以冻结方式停在自己第一个场景的 shown 态（截图 / 测试可复现）
 function boot(){
   var q = parseInit();
   if (q.skin) setSkin(q.skin);
   if (q.compare === '1') setCompare(true);
   var idx = q.scene ? SCENES.findIndex(function(s){ return String(s.n) === String(q.scene); }) : -1;
   if (idx < 0) idx = 0;
-  if (q.step || q.instant === '1') jumpTo(idx, q.step || 'shown'); else play(idx);
+  var instant = !!(q.step || q.instant === '1');
+  var target = instanceOf(SCENES[idx].n);
+  INSTANCES.forEach(function(inst){
+    if (inst === target){ if (instant) inst.jumpTo(idx, q.step || 'shown'); else inst.play(idx); }
+    else if (!inst.state.started){ if (instant) inst.jumpTo(inst.firstIndex(), 'shown'); else inst.play(inst.firstIndex()); }
+  });
+  activeInst = target;   // 直达的那台是「当前」实例（对比视图跟随它）
+  updateCompare();
 }
 window.addEventListener('hashchange', function(){ var q = parseInit(); if (q.scene) boot(); });
 
 /* ---------- public API (for tests / console) ---------- */
 window.proto = {
-  SCENES: SCENES, CTX: CTX, TIMING: TIMING, CATS: CATS, EXPLAIN: EXPLAIN,
-  play: play, jumpTo: jumpTo, expand: expand, /* v1.12: collapse / toggleFold removed — fold is one-way */ showTooltip: showTooltip, hideTooltip: hideTooltip, setSkin: setSkin, setCompare: setCompare,
+  SCENES: SCENES, CTX: CTX, TIMING: TIMING, PROTOS: PROTOS, EXPLAIN: EXPLAIN,
   buildModel: buildModel, tooltipHTML: tooltipHTML, hexHTML: hexHTML,
-  getState: function(){ return { phase:state.phase, level:state.level, tooltipVisible:state.tooltipVisible, expanded:state.expanded, sceneIndex:state.sceneIndex, log:state.log.slice(), skin:state.skin, compare:state.compare }; }
+  p1: INSTANCES[0], p2: INSTANCES[1], instances: INSTANCES,
+  ownerOf: ownerOf, instanceOf: instanceOf,
+  // 按全局 SCENES 下标分发到所属实例（返回该实例）
+  play: function(index){ var i = instanceOf(SCENES[index].n); i.play(index); return i; },
+  jumpTo: function(index, step){ var i = instanceOf(SCENES[index].n); i.jumpTo(index, step); return i; },
+  expand: function(){ if (activeInst) activeInst.expand(); },   /* v1.12: collapse / toggleFold removed — fold is one-way */
+  showTooltip: function(r){ if (activeInst) activeInst.showTooltip(r); }, hideTooltip: function(r){ if (activeInst) activeInst.hideTooltip(r); },
+  setSkin: setSkin, setCompare: setCompare,
+  active: function(){ return activeInst; },
+  getState: function(){ return activeInst ? activeInst.getState() : null; }
 };
 
 boot();
