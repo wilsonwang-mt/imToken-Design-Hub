@@ -3,9 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Prototype — 转账地址解析 Tooltip v1.11 · imToken UXD</title>
+<title>Prototype — 转账地址解析 Tooltip v1.12 · imToken UXD</title>
 <style>
-/* v1.2 变更（Wilson 决定）：已删除「观察钱包」场景与「反向解析多域名」场景（当前均无该解析能力）。
+/* v1.12 变更（Wilson 决定）：Warning / High risk 时「More address info (N)」默认收起，点击整行展开——但不提供手动收起：
+   展开/收起是页面内次级信息的模式，tooltip 不适合复杂交互。点击后入口行本身消失（高度/透明度 160ms 过渡后 display:none），
+   折叠区在原位置展开（160ms 高度过渡），分割线仍在区域一与区域二之间；展开后没有 ∧、不可再点收起。看完直接点空白处 / Esc 关闭。
+   收起只在 tooltip 重新渲染 / 重新唤起时作为「状态重置」隐式发生（再次点 Tag 唤起回到默认收起态）。
+   v1.2 变更（Wilson 决定）：已删除「观察钱包」场景与「反向解析多域名」场景（当前均无该解析能力）。
    v1.9 变更（Wilson × PM Yiqun 口径，取代 v1.8）：C08「无交易记录」回到区域一（分割线以上），与 Warning / High risk 同一信息层级、
    同一「标题 + 正文」结构（标题 Transaction Record）；只在 Tag = Info 时展示——Warning / High risk 时从 ctx 剔除（不进折叠区、不计入 N）；
    无法检测或检测到有记录时也不显示。Info 态区域一与区域二之间一条分割线（.tt-divider[data-reg="sep"]），区域二为空则无分割线。
@@ -144,7 +148,8 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
 /* ============================================================
    2b. Tooltip — shared container / fold (both skins)
        容器：白底 343 r16 双层阴影，padding 16，箭头对 Tag
-       折叠：D8′ 可反复收起；整行 32 高可点；∨/∧ 旋转
+       折叠：v1.12 单向展开——整行 32 高可点；点击后入口行高度 32→0、透明度 1→0（160ms）随后 display:none，
+             折叠区 grid-template-rows 0fr→1fr（160ms）在原位置展开；展开后无 ∧、不可收起
    ============================================================ */
 .skin-s1 .tt, .skin-s2 .tt{
   background:#fff;border-radius:16px;padding:16px;
@@ -155,15 +160,16 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
 /* v1.9: Info 态「区域一 Transaction Record ｜ 区域二 Address info」之间的分割线——同款 1px --deep08；
    下方不是 32 高的折叠入口而是普通条目，所以下边距补到 12，使线到正文的距离与风险态一致 */
 .tt-divider[data-reg="sep"]{margin:10px 0 12px}
-.tt-more{display:flex;width:100%;height:32px;align-items:center;justify-content:space-between;font-size:12px;line-height:16px;color:var(--deep60);text-align:left;cursor:pointer}
-.tt-more svg{transition:transform var(--d-fold) var(--ease)}
-.tt[data-expanded="true"] .tt-more svg{transform:rotate(180deg)}
+.tt-more{display:flex;width:100%;height:32px;align-items:center;justify-content:space-between;font-size:12px;line-height:16px;color:var(--deep60);text-align:left;cursor:pointer;transition:height var(--d-fold) var(--ease),opacity var(--d-fold) var(--ease)}
+/* v1.12: 展开后入口行消失（不提供手动收起）——高度/透明度过渡到 0 并隐藏，JS 在 --d-fold 后再加 hidden（display:none） */
+.tt[data-expanded="true"] .tt-more{height:0;opacity:0;overflow:hidden;visibility:hidden;pointer-events:none}
 .tt-more:focus-visible{outline:2px solid var(--blue);outline-offset:2px;border-radius:4px}
 .tt-fold{display:grid;grid-template-rows:0fr;transition:grid-template-rows var(--d-fold) var(--ease)}
 .tt-fold > div{overflow:hidden;min-height:0}
 .tt-fold-inner{display:flex;flex-direction:column;gap:12px;padding-top:4px;opacity:0;transition:opacity var(--d-fold) var(--ease)}
 .tt[data-expanded="true"] .tt-fold{grid-template-rows:1fr}
-.tt[data-expanded="true"] .tt-fold-inner{opacity:1}
+/* v1.12: 入口行消失后分割线直接接区域二，上边距补到 12，与 Info 态 .tt-divider[data-reg="sep"] 线到正文的距离一致 */
+.tt[data-expanded="true"] .tt-fold-inner{opacity:1;padding-top:12px}
 .tt-truncate{font-size:12px;line-height:16px;color:var(--deep60)}
 /* hex (D17): 0x 普通 · 0x 后首 4 + 末 4 加重 · 中段 70% */
 .tt-hex{font-family:var(--mono);font-size:12px;line-height:16px;letter-spacing:-.2px;white-space:nowrap;overflow:hidden;color:var(--deep70)}
@@ -394,7 +400,7 @@ html,body{background:var(--hub-ground)}
 </style>
 </head>
 <body class="skin-s1">
-<div class="ver" id="ver">v1.11</div>
+<div class="ver" id="ver">v1.12</div>
 <!-- ===================== INTRO · 解析对象与信息架构（2026-10-08 团队讨论口径） ===================== -->
 
 <div class="ambient" aria-hidden="true"><i class="b1"></i><i class="b2"></i><i class="b3"></i></div>
@@ -448,7 +454,7 @@ html,body{background:var(--hub-ground)}
 
       <!-- tooltip (popover) -->
       <div class="tooltip-wrap" id="tooltipWrap" hidden>
-        <div class="tt" id="tooltip" role="dialog" aria-live="polite" aria-label="Address info" data-level="" data-expanded="false">
+        <div class="tt" id="tooltip" role="dialog" aria-live="polite" aria-label="Address info" tabindex="-1" data-level="" data-expanded="false">
           <div class="tt-arrow" id="ttArrow"><svg width="30" height="11" viewBox="0 0 30 11"><path d="M0 11 15 0l15 11z" fill="#fff"/></svg></div>
           <div id="ttContent"></div>
         </div>
@@ -528,7 +534,7 @@ html,body{background:var(--hub-ground)}
       <div class="log-head"><span>状态机日志</span><span class="state" id="stateNow">idle</span></div>
       <ol class="log" id="log"></ol>
     </div>
-    <p class="hint">直达：<code>#scene=10&amp;step=expanded</code>（scene = 1…15 · step = typed / resolving / shown / expanded / dismissed）· 点手机空白处关闭 · 点 Tag 再次唤起 · Esc 关闭 · 折叠入口 ∨/∧ 可反复切换 · C08「Transaction Record」只在 Tag = Info 时出现在区域一（分割线以上，左侧色条 + 正文，不带标题）；Warning / High risk 时不显示、不进折叠区</p>
+    <p class="hint">直达：<code>#scene=10&amp;step=expanded</code>（scene = 1…16 · step = typed / resolving / shown / expanded / dismissed）· 点手机空白处关闭 · 点 Tag 再次唤起（回到默认收起态） · Esc 关闭 · 折叠入口点击展开、展开后不可收起 · C08「Transaction Record」只在 Tag = Info 时出现在区域一（分割线以上，左侧色条 + 正文，不带标题）；Warning / High risk 时不显示、不进折叠区</p>
   </aside>
 
   <!-- ===================== COMPARE (S1 | S2, static) ===================== -->
@@ -562,7 +568,7 @@ html,body{background:var(--hub-ground)}
     <div class="dim">
       <span class="no">分割线以上</span>
       <h2><span class="pill r1">区域一</span>判断辅助信息</h2>
-      <p>帮助用户评判这个地址有没有风险的输入，与区域二的解析事实分开承载。等级由风控系统返回，体验层只区分 Info / Warning / High risk；Warning / High risk 时不显示交易历史。区域一条目不带标题（Tag 已说明等级），用左侧 3px 色条区分：橙 = Warning、红 = High risk、Info 文字色 = 交易历史（⏳ 探索中，与「popover 内无彩色」原则的例外）。</p>
+      <p>帮助用户评判这个地址有没有风险的输入，与区域二的解析事实分开承载。等级由风控系统返回，体验层只区分 Info / Warning / High risk；Warning / High risk 时不显示交易历史。区域一条目不带标题（Tag 已说明等级），用左侧 3px 色条区分：橙 = Warning、红 = High risk、Info 文字色 = 交易历史（⏳ 探索中，与「popover 内无彩色」原则的例外）。色条的另一个好处：多条 Warning 同时命中时上下排列即可，色条引导逐条阅读；「标题 + 副标题」方式在多条 warning 时标题会重复，难以处理。</p>
       <ul class="lv">
         <li><span><b>Transaction Record</b>（交易历史）<small>Tag = Info 时展示：色条（Info Tag 文字色）+ 正文「You haven't transacted with this address before.」，不带标题。无法检测是否有交易记录 → 不显示；检测到有交易记录 → 目前拿不到具体记录，也不显示（未来支持后同样在此区块显示）。</small></span><span class="tagx">Info</span></li>
         <li><span><b>Warning</b><small>可能存在风险，但未确认；橙色色条 + 正文常显，区域二折叠。</small></span><span class="tagx w">Warning</span></li>
@@ -586,7 +592,7 @@ html,body{background:var(--hub-ground)}
       <h2>折叠与唤起</h2>
       <p>风险类信息与地址解析信息同时存在时的展示规则。</p>
       <ul class="rules">
-        <li><b>Tag = Warning / High risk → 区域二默认折叠</b><span>Tooltip 只常显风险条目，地址解析信息收进「More address info (N)」，可反复展开 / 收起；交易历史不显示。</span></li>
+        <li><b>Tag = Warning / High risk → 区域二默认折叠</b><span>Tooltip 只常显风险条目，地址解析信息收进「More address info (N)」：点击展开，展开后不可收起；看完点空白处关闭；交易历史不显示。</span></li>
         <li><b>Tag = Warning / High risk → 自动唤起后不自动消失</b><span>用户点击空白区域、或与其他控件交互时才收起。</span></li>
         <li><b>Tag = Info → 不折叠</b><span>区域一（若有 Transaction Record）与区域二并列，中间一条分割线；区域二为空或区域一为空时没有分割线；自动唤起后 4s 收起。</span></li>
       </ul>
@@ -595,8 +601,8 @@ html,body{background:var(--hub-ground)}
 
   <div class="anatomy">
     <div class="ahead">
-      <h2>组件解剖：两个内容区域在 Tooltip 中的位置</h2>
-      <p>组件按 S1 极简版原样渲染；右侧色条标出对应区域，文字说明其规则。</p>
+      <h2>组件解剖：两个信息区，各自承载一个信息维度</h2>
+      <p>区域一帮助用户<b>识别风险</b>（Transaction Record / Warning / High risk，左侧色条引导阅读）；区域二帮助用户<b>理解地址解析出来的 facts</b>（专项信息 → 地址标记 → ENS）。组件按 S1 极简版原样渲染，右侧色条标出对应区域。</p>
     </div>
     <div class="ana-grid">
 
@@ -623,9 +629,9 @@ html,body{background:var(--hub-ground)}
         </div>
       </div>
 
-      <!-- Anatomy B · Warning / High risk (default collapsed, click to expand) -->
+      <!-- Anatomy B · Warning / High risk (default collapsed; v1.12: click to expand, one-way — entry row disappears, no manual collapse) -->
       <div class="ana skin-s1" id="anaB">
-        <div class="acap"><span class="tagx w">Warning</span>Warning / High risk · 同一样式，默认折叠<span class="hintx">点「More address info」展开</span></div>
+        <div class="acap"><span class="tagx w">Warning</span>Warning / High risk · 同一样式，默认折叠<span class="hintx">点「More address info」展开（展开后不可收起）</span></div>
         <div class="ana-body">
           <div class="tt" data-level="warning" data-expanded="false" id="anaBtt">
             <div class="tt-arrow"><svg width="30" height="11" viewBox="0 0 30 11"><path d="M0 11 15 0l15 11z" fill="#fff"/></svg></div>
@@ -641,8 +647,34 @@ html,body{background:var(--hub-ground)}
           </div>
           <div class="ana-side">
             <div class="ann r1" data-for="r1"><span class="bar"></span><div class="txt"><b><span class="k">区域一</span>风险条目常显</b>Warning / High risk 不带标题（Tag 已说明等级），左侧 3px 色条用对应的橙 / 红，正文无彩色；此时不显示交易历史。自动唤起后不自动消失，点空白或与其他控件交互才收起。</div></div>
-            <div class="ann sep" data-for="fold"><span class="bar"></span><div class="txt"><b><span class="k">折叠入口</span></b>Warning / High risk 时区域二默认折叠为「More address info (N)」，N = 折叠条数；∨ / ∧ 可反复切换。</div></div>
-            <div class="ann r2 is-hidden" data-for="r2"><span class="bar"></span><div class="txt"><b><span class="k">区域二</span>展开后同一套排序</b>本例命中专项信息（Osmosis / IBC），排在 ① 位，地址本 ② 紧随其后。</div></div>
+            <div class="ann sep" data-for="fold"><span class="bar"></span><div class="txt"><b><span class="k">折叠入口</span></b>Warning / High risk 时区域二默认折叠为「More address info (N)」，N = 折叠条数；点击展开地址解析信息；不提供手动收起——看完点空白处关闭 tooltip。</div></div>
+            <div class="ann r2 is-hidden" data-for="r2"><span class="bar"></span><div class="txt"><b><span class="k">区域二</span>展开后同一套排序</b>入口行已消失、不可收起；本例命中专项信息（Osmosis / IBC），排在 ① 位，地址本 ② 紧随其后。</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Anatomy C · Warning × 2 (expanded) — 两个信息区各承载一个维度；多条 warning 上下排列 -->
+      <div class="ana skin-s1" id="anaC">
+        <div class="acap"><span class="tagx w">Warning</span>Warning × 2 · 展开后：两个信息区，两种信息维度<span class="hintx">图示为用户展开后的状态</span></div>
+        <div class="ana-body">
+          <div class="tt" data-level="warning" data-expanded="true">
+            <div class="tt-arrow"><svg width="30" height="11" viewBox="0 0 30 11"><path d="M0 11 15 0l15 11z" fill="#fff"/></svg></div>
+            <div class="tt-main">
+              <div class="tt-main" data-reg="r1">
+                <div class="tt-entry tt-risk" data-tone="warning"><span class="tt-bar" aria-hidden="true"></span><div class="tt-risk-title">Warning</div><div class="tt-risk-body">Recent activity on this address appears unusual. Double-check before sending.</div></div>
+                <div class="tt-entry tt-risk" data-tone="warning"><span class="tt-bar" aria-hidden="true"></span><div class="tt-risk-title">Warning</div><div class="tt-risk-body">This domain contains hidden characters and may be impersonating another name.</div></div>
+              </div>
+              <div class="tt-divider" data-reg="sep"></div>
+              <div class="tt-main" data-reg="r2">
+                <div class="tt-entry tt-labeled"><div class="tt-label">Address book</div><div class="tt-body">Alice</div></div>
+                <div class="tt-entry tt-labeled"><div class="tt-label">ENS · Resolved address</div><div class="tt-body tt-hex"><span class="hx0">0x</span><span class="hx">5C1e</span><span class="hxm">8A3f9B2d7E4c6A0f3D8b1E9c5A7d2F4b</span><span class="hx">6C8e</span></div></div>
+              </div>
+            </div>
+          </div>
+          <div class="ana-side">
+            <div class="ann r1" data-for="r1"><span class="bar"></span><div class="txt"><b><span class="k">区域一</span>帮助用户识别风险</b>判断类信息：Transaction Record / Warning / High risk。多条 warning 同时命中时直接上下排列，每条一根色条引导逐条阅读——用「标题 + 副标题」则两条都叫 Warning，标题重复、层级会乱。</div></div>
+            <div class="ann sep" data-for="sep"><span class="bar"></span><div class="txt"><b><span class="k">分割线</span></b>两个信息维度的边界：上面是判断，下面是事实。</div></div>
+            <div class="ann r2" data-for="r2"><span class="bar"></span><div class="txt"><b><span class="k">区域二</span>帮助用户理解解析出来的 facts</b>事实类信息，按 ① 专项信息识别 → ② 地址标记 → ③ ENS 解析 排序；Warning / High risk 时默认折叠，展开后入口行消失、不可收起。</div></div>
           </div>
         </div>
       </div>
@@ -664,6 +696,7 @@ var REDUCED = (typeof window.matchMedia === 'function') && window.matchMedia('(p
 var TIMING = {
   char: 30, charFast: 12, pause: 1000, resolve: 750,
   tagToTip: 160, tipIn: 160, tipOut: REDUCED ? 0 : 120, infoAuto: 4000,
+  fold: REDUCED ? 0 : 160,   // v1.12: 入口行 32→0 / 折叠区 0fr→1fr 的过渡时长（= --d-fold），过渡结束后入口行 display:none
   autoplay: 6000, autoExpand: 3200
 };
 
@@ -732,7 +765,9 @@ var SCENES = [
   // v1.10 Wilson：地址本与我的钱包同时命中——两条都显示，地址本在前（多数情况下不会既是又是）
   { n:14, title:'hex · 地址本「Alice」+ 我的钱包「My DeFi Wallet」', meta:'C09 + C01 · 同时显示', chain:'eth', input:HEX.s14, ctx:[{id:'C01', wallet:'My DeFi Wallet', account:'Account 01'},{id:'C09', nickname:'Alice'}] },
   // v1.10 Wilson：专项信息识别会与地址标记、ENS 解析同时出现，次序固定 专项 → 地址标记 → ENS（ctx 故意乱序，由模型排序）
-  { n:15, title:'Tron · alice.eth → 未激活 + 地址本', meta:'C03 + C09 + C10 · 三者同现', chain:'tron', input:'alice.eth', ctx:[{id:'C10', hex:TRON},{id:'C09', nickname:'Alice'},{id:'C03', amount:'0.1 TRX'}] }
+  { n:15, title:'Tron · alice.eth → 未激活 + 地址本', meta:'C03 + C09 + C10 · 三者同现', chain:'tron', input:'alice.eth', ctx:[{id:'C10', hex:TRON},{id:'C09', nickname:'Alice'},{id:'C03', amount:'0.1 TRX'}] },
+  // v1.12 Wilson：多条 Warning 上下排列，色条引导阅读（标题 + 副标题方式在多条 warning 时难处理）
+  { n:16, title:'Warning × 2 · warning 地址 + ENS 零宽字符', meta:'C06 + C07 + C10 · 两条 warning 叠放', chain:'eth', input:'alíce.eth', ctx:[{id:'C10', hex:HEX.s11},{id:'C06'},{id:'C07'}] }
 ];
 
 /* ---------- DOM ---------- */
@@ -929,7 +964,7 @@ function renderTooltip(m){
   el.tt.dataset.skin = state.skin;
   state.expanded = false;
   var more = $('ttMore');
-  if (more) more.addEventListener('click', function(ev){ ev.stopPropagation(); toggleFold(); });
+  if (more) more.addEventListener('click', function(ev){ ev.stopPropagation(); expand(); });   // v1.12: 单向展开
   updateCompare();
 }
 
@@ -956,7 +991,12 @@ function updateCompare(){
     arrow.style.left = left;
     capEl.textContent = cap;
     setStaticExpanded(tt, $(ids.more), $(ids.fold), state.expanded);
-    var more = $(ids.more); if (more) more.addEventListener('click', function(ev){ ev.stopPropagation(); toggleFold(); });
+    var more = $(ids.more);
+    // v1.12: 静态展开态不渲染入口行（从 DOM 移除）；收起态的入口行点击 → 单向展开（同时作用于 live tooltip）
+    if (more){
+      if (state.expanded) more.parentNode.removeChild(more);
+      else more.addEventListener('click', function(ev){ ev.stopPropagation(); expand(); });
+    }
   });
 }
 function setCompare(on){
@@ -1008,6 +1048,8 @@ function showTooltip(reason){
   el.wrap.classList.add('in');
   state.tooltipVisible = true;
   el.tag.setAttribute('aria-expanded', 'true');
+  // v1.12: 重新唤起 = 状态重置——折叠态 tooltip 回到默认收起（不是手动收起；入口行随之恢复）
+  if (el.tt.dataset.folded === 'true' && state.expanded) collapse();
   log('tooltip shown' + (reason ? ' (' + reason + ')' : '') + (el.tt.dataset.folded === 'true' ? (state.expanded ? ' · expanded' : ' · collapsed') : ''));
   if (state.level === 'info' && !state.frozen){
     autoHideId = T.set(function(){ hideTooltip('auto 4s'); }, TIMING.infoAuto);
@@ -1023,22 +1065,39 @@ function hideTooltip(reason){
   log('dismissed' + (reason ? ' (' + reason + ')' : ''));
   T.set(function(){ el.wrap.hidden = true; el.wrap.classList.remove('out'); }, TIMING.tipOut);
 }
-// D8′: fold entry toggles repeatedly (∨ expand / ∧ collapse); state survives dismiss → re-open
-function setExpanded(on, silent){
-  if (el.tt.dataset.folded !== 'true') return;
-  on = !!on;
-  if (state.expanded === on) return;
-  state.expanded = on;
-  el.tt.dataset.expanded = on ? 'true' : 'false';
+// v1.12 (Wilson): fold entry is ONE-WAY. Clicking「More address info (N)」expands 区域二 in place and the entry row itself
+//   disappears (32→0 / opacity 0 over --d-fold, then hidden = display:none). No ∧, no manual collapse — the user closes the
+//   tooltip by tapping outside / Esc. collapse() is NOT exposed: it only runs implicitly as a state reset when the tooltip is
+//   re-rendered or re-invoked (tag click → back to the default collapsed state).
+//   instant = skip the entry-row transition (deep-link / skin re-render); silent = no log line (skin re-render)
+function expand(instant, silent){
+  if (el.tt.dataset.folded !== 'true' || state.expanded) return;
+  state.expanded = true;
+  el.tt.dataset.expanded = 'true';
   var more = $('ttMore'), fold = $('ttFold');
-  if (more) more.setAttribute('aria-expanded', on ? 'true' : 'false');
-  if (fold) fold.setAttribute('aria-hidden', on ? 'false' : 'true');
-  if (!silent) log(on ? 'expanded (More address info ∨)' : 'collapsed (More address info ∧)');
+  if (fold) fold.setAttribute('aria-hidden', 'false');
+  if (more){
+    more.setAttribute('aria-expanded', 'true');
+    more.disabled = true; more.setAttribute('aria-hidden', 'true'); more.tabIndex = -1;
+    if (document.activeElement === more){ try { el.tt.focus({ preventScroll: true }); } catch (e) { el.tt.focus(); } }   // keyboard: focus hands over to the dialog
+    if (instant || TIMING.fold === 0) more.hidden = true;
+    else T.set(function(){ if (state.expanded && $('ttMore') === more) more.hidden = true; }, TIMING.fold);
+  }
+  if (!silent) log('expanded (More address info → entry row removed, no collapse)');
   updateCompare();
 }
-function expand(){ setExpanded(true); }
-function collapse(){ setExpanded(false); }
-function toggleFold(){ setExpanded(!state.expanded); }
+function collapse(){   // internal state reset only (re-render / re-invoke) — never a user action
+  if (!state.expanded) return;
+  state.expanded = false;
+  el.tt.dataset.expanded = 'false';
+  var more = $('ttMore'), fold = $('ttFold');
+  if (fold) fold.setAttribute('aria-hidden', 'true');
+  if (more){
+    more.hidden = false; more.disabled = false; more.removeAttribute('aria-hidden'); more.removeAttribute('tabindex');
+    more.setAttribute('aria-expanded', 'false');
+  }
+  updateCompare();
+}
 
 /* ---------- scene flow ---------- */
 function resetView(){
@@ -1111,7 +1170,7 @@ function jumpTo(index, step){
   if (k === 2){ el.spinner.hidden = false; state.phase = 'resolving'; log('resolving'); return; }
   if (k >= 3){ resolveNow(scene); }
   if (k >= 4 && state.level !== 'none'){ showTooltip('instant'); }
-  if (k >= 5) expand();
+  if (k >= 5) expand(true);   // v1.12: instant — entry row removed without the 160ms transition
   if (k === 3 && state.level !== 'none') log('(tooltip not shown — jump to dismissed)');
 }
 function scheduleAutoplay(){
@@ -1125,7 +1184,7 @@ function scheduleAutoplay(){
 var CATS = [
   { key:'A', title:'区域一 · 判断辅助信息', dim:'分割线以上',
     sub:'交易历史只在 Tag = Info 时出现；Warning / High risk 常显、区域二折叠且不自动消失。',
-    scenes:[1, 2, 10, 11, 12] },
+    scenes:[1, 2, 10, 11, 12, 16] },
   { key:'B', title:'专项信息识别', dim:'区域二 ① · 优先级最高',
     sub:'链类型与地址状态是发送前必须知道的事实，在 Address info 列表中排最前。',
     scenes:[7, 8, 9, 15] },
@@ -1179,15 +1238,15 @@ var EXPLAIN = {
         why:'与未激活同属地址状态识别，提前告诉用户对方未激活时资金的去向。' },
   10: { dim:'区域一 Warning + 区域二 ③。',
         type:'C06 Warning 地址（近期活动异常）· C10 ENS 正向解析（bob.eth → 地址）。',
-        rule:'Tag = Warning；风险条目（橙色色条 + 正文，无标题）常显；区域二折叠为「More address info (1)」，∨/∧ 可反复切换；自动唤起后不自动消失，点空白 / Esc 才收起。',
-        why:'Warning / High risk 时先只给风险判断，解析出的地址收进折叠区，用户需要时再展开核对全文。' },
+        rule:'Tag = Warning；风险条目（橙色色条 + 正文，无标题）常显；区域二折叠为「More address info (1)」，点击展开、入口行消失、展开后不可收起；自动唤起后不自动消失，点空白 / Esc 才关闭。',
+        why:'Warning / High risk 时先只给风险判断，解析出的地址收进折叠区，用户需要时再展开核对全文；展开/收起是页面内次级信息的模式，tooltip 不做复杂交互，看完直接点空白处关闭。' },
   11: { dim:'区域一 Warning + 区域二 ③（C08 被剔除）。',
         type:'C07 域名含隐藏字符（可能仿冒）· C10 ENS 正向解析；风控同时返回了无交易记录（C08），但 Warning 时不显示。',
-        rule:'Tag = Warning；C07 常显；折叠区「More address info (1)」只有 C10；C08 不进区域一、不进折叠区、不计入 N；不自动消失。',
+        rule:'Tag = Warning；C07 常显；折叠区「More address info (1)」只有 C10，点击展开后不可收起；C08 不进区域一、不进折叠区、不计入 N；不自动消失。',
         why:'交易历史只在 Tag = Info 时作为判断输入展示；已经有 Warning / High risk 时它不再增加信息量，所以整条剔除；唯一的分割线在区域一与折叠入口之间。' },
   12: { dim:'区域一 High risk + 区域二 ② ③。',
         type:'C05 High risk 地址 · C09 地址本命中（Airdrop claim）· C10 ENS 正向解析。',
-        rule:'Tag = High risk；风险条目常显，Tooltip 内不用彩色；折叠「More address info (2)」：地址本 ② 排在 ENS ③ 前；不自动消失；不显示「Add to address book」。',
+        rule:'Tag = High risk；风险条目常显，Tooltip 内不用彩色；折叠「More address info (2)」：地址本 ② 排在 ENS ③ 前，点击展开后不可收起；不自动消失；不显示「Add to address book」。',
         why:'High risk 与 Warning 同一结构，只有 Tag 颜色升级；地址本标记只回答「这是谁」，不抵消风险判断，所以仍折叠在风险条目之下。' },
   13: { dim:'Unhappy Path · 不进 Tooltip（两个区域都不产生内容）。',
         type:'figma.eth 在当前链（Ethereum）无法解析 / 无记录。',
@@ -1200,7 +1259,11 @@ var EXPLAIN = {
   15: { dim:'区域二 ① + ② + ③（区域一无内容）。',
         type:'C03 专项信息 · Tron 收款账户未激活 · C09 地址本命中（Alice）· C10 ENS 正向解析（alice.eth → Tron 地址）。',
         rule:'Tag = Info；三类同时出现，固定次序 ① 专项信息识别 → ② 地址标记 → ③ ENS 解析；不折叠；4s 后收起；不显示「Add to address book」。',
-        why:'先说这笔转账能不能成（未激活要 0.1 TRX），再说这是谁（Alice），最后给解析出的地址全文供核对——按用户发送前要回答的问题的先后排。' }
+        why:'先说这笔转账能不能成（未激活要 0.1 TRX），再说这是谁（Alice），最后给解析出的地址全文供核对——按用户发送前要回答的问题的先后排。' },
+  16: { dim:'区域一 Warning × 2 + 区域二 ③。',
+        type:'C06 Warning 地址（近期活动异常）· C07 域名含隐藏字符（可能仿冒）· C10 ENS 正向解析。',
+        rule:'Tag = Warning；两条 warning 上下排列，各自一根橙色色条，不带标题；区域二折叠为「More address info (1)」，展开后不可收起；不自动消失。',
+        why:'多条 warning 时色条天然把每一条分开并引导阅读；如果用「标题 + 副标题」，两条都叫 Warning，标题会重复、层级会乱——这是采用色条的一个直接好处。' }
 };
 var EX_KEYS = [['dim','解析维度'], ['type','解析类型'], ['rule','展示规则'], ['why','为什么左侧这样显示']];
 
@@ -1259,7 +1322,7 @@ function setSkin(skin){
   if (changed && state.model && state.level !== 'none' && el.ttContent.innerHTML){
     var wasExpanded = state.expanded;
     renderTooltip(state.model);
-    if (wasExpanded) setExpanded(true, true);
+    if (wasExpanded) expand(true, true);   // v1.12: re-render keeps the expanded (entry-row-removed) state, instantly + silently
     if (state.sceneStart) log('skin → ' + skin.toUpperCase() + ' (re-rendered' + (wasExpanded ? ', expanded kept' : '') + ')');
   }
 }
@@ -1298,7 +1361,7 @@ window.addEventListener('hashchange', function(){ var q = parseInit(); if (q.sce
 /* ---------- public API (for tests / console) ---------- */
 window.proto = {
   SCENES: SCENES, CTX: CTX, TIMING: TIMING, CATS: CATS, EXPLAIN: EXPLAIN,
-  play: play, jumpTo: jumpTo, expand: expand, collapse: collapse, toggleFold: toggleFold, showTooltip: showTooltip, hideTooltip: hideTooltip, setSkin: setSkin, setCompare: setCompare,
+  play: play, jumpTo: jumpTo, expand: expand, /* v1.12: collapse / toggleFold removed — fold is one-way */ showTooltip: showTooltip, hideTooltip: hideTooltip, setSkin: setSkin, setCompare: setCompare,
   buildModel: buildModel, tooltipHTML: tooltipHTML, hexHTML: hexHTML,
   getState: function(){ return { phase:state.phase, level:state.level, tooltipVisible:state.tooltipVisible, expanded:state.expanded, sceneIndex:state.sceneIndex, log:state.log.slice(), skin:state.skin, compare:state.compare }; }
 };
@@ -1306,7 +1369,8 @@ window.proto = {
 boot();
 })();
 
-/* ---- 01 · 组件解剖：右侧色条随区域高度对齐；B 图默认折叠，展开后区域二说明再出现 ---- */
+/* ---- 01 · 组件解剖：右侧色条随区域高度对齐；B 图默认折叠，点「More address info (2)」单向展开（v1.12）：
+        入口行消失、折叠区展开、右侧「折叠入口」说明随入口行一起淡出、「区域二」说明渐显；不可再点收起 ---- */
 (function(){
   function layout(ana){
     var tt = ana.querySelector('.tt'); if (!tt) return;
@@ -1326,15 +1390,21 @@ boot();
     });
   }
   function layoutAll(){ document.querySelectorAll('.ana').forEach(layout); }
-  var more = document.getElementById('anaBMore'), tt = document.getElementById('anaBtt'), annR2 = document.querySelector('#anaB .ann[data-for="r2"]');
+  var more = document.getElementById('anaBMore'), tt = document.getElementById('anaBtt'), fold = document.getElementById('anaBFold'),
+      annFold = document.querySelector('#anaB .ann[data-for="fold"]'), annR2 = document.querySelector('#anaB .ann[data-for="r2"]');
   if (more && tt){
     more.addEventListener('click', function(){
-      var on = tt.getAttribute('data-expanded') !== 'true';
-      tt.setAttribute('data-expanded', on ? 'true' : 'false');
-      more.setAttribute('aria-expanded', on ? 'true' : 'false');
-      if (!on && annR2) annR2.classList.add('is-hidden');
-      var t0 = Date.now();
-      (function tick(){ layoutAll(); if (Date.now() - t0 < 260) requestAnimationFrame(tick); else if (on && annR2) annR2.classList.remove('is-hidden'); })();
+      if (tt.getAttribute('data-expanded') === 'true') return;   // one-way: no manual collapse
+      tt.setAttribute('data-expanded', 'true');
+      more.setAttribute('aria-expanded', 'true'); more.disabled = true; more.setAttribute('aria-hidden', 'true'); more.tabIndex = -1;
+      if (fold) fold.setAttribute('aria-hidden', 'false');
+      if (annFold) annFold.classList.add('is-hidden');   // 「折叠入口」说明随入口行一起淡出
+      var frames = 0;   // ~16 frames ≈ 260ms：跟完入口行 / 折叠区过渡后再把入口行 display:none，并显示「区域二」说明
+      (function tick(){
+        layoutAll();
+        if (++frames < 16) requestAnimationFrame(tick);
+        else { more.hidden = true; if (annR2) annR2.classList.remove('is-hidden'); layoutAll(); }
+      })();
     });
   }
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(layoutAll);
