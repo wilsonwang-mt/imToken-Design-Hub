@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Prototype — 转账地址解析 Tooltip v1.2 · imToken UXD</title>
+<title>Prototype — 转账地址解析 Tooltip v1.3 · imToken UXD</title>
 <style>
 /* v1.2 变更（Wilson 决定）：已删除「观察钱包」场景与「反向解析多域名」场景（当前均无该解析能力）；
    C08「无交易记录」之后若还有其它 Entry → 插入分割线（.tt-sep，任意皮肤 / Info 态 / 风险展开态折叠区 / 对比视图）。 */
@@ -254,10 +254,195 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
 .log .t{color:var(--deep60);width:62px;flex:0 0 auto}
 .hint{margin-top:10px;font-size:11px;line-height:15px;color:var(--deep60)}
 .hint code{font-family:var(--mono);background:var(--deep08);padding:0 4px;border-radius:4px}
+
+/* ============================================================
+   0. Intro — Tooltip 解析对象与信息架构（2026-10-08 团队口径）
+   ============================================================ */
+.intro{max-width:1160px;margin:0 auto;padding:36px 24px 8px}
+.intro h1{font-size:22px;font-weight:600;line-height:30px;letter-spacing:-.2px}
+.intro .lead{margin-top:6px;font-size:13px;line-height:19px;color:var(--deep60);max-width:760px}
+.intro .eyebrow{font-family:var(--mono);font-size:11px;line-height:16px;color:var(--blue);letter-spacing:.4px;margin-bottom:6px}
+.dims{display:grid;grid-template-columns:1fr 1.35fr 1fr;gap:16px;margin-top:22px}
+@media (max-width:980px){.dims{grid-template-columns:1fr}}
+.dim{background:#fff;border-radius:16px;padding:18px 20px;box-shadow:0 1px 2px rgba(17,29,74,.06),0 8px 24px rgba(17,29,74,.06);position:relative}
+.dim .no{position:absolute;right:16px;top:14px;font-family:var(--mono);font-size:11px;color:var(--deep40)}
+.dim h2{font-size:14px;font-weight:600;line-height:20px;display:flex;align-items:center;gap:8px}
+.dim h2 .pill{display:inline-flex;align-items:center;height:20px;padding:0 8px;border-radius:6px;font-size:11px;font-weight:600;line-height:1;letter-spacing:.2px}
+.pill.r1{background:var(--blue20);color:var(--blue)}
+.pill.r2{background:var(--deep08);color:var(--deep)}
+.dim p{margin-top:6px;font-size:12px;line-height:17px;color:var(--deep60)}
+.lv{list-style:none;margin-top:12px;display:flex;flex-direction:column;gap:6px}
+.lv li{display:grid;grid-template-columns:22px 1fr auto;align-items:center;gap:10px;font-size:13px;line-height:18px;padding:7px 10px;border-radius:10px;background:var(--page)}
+.lv .k{font-family:var(--mono);font-size:11px;color:var(--deep60)}
+.lv .tagx{display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:7px;font-size:11px;font-weight:500;background:var(--deep08);color:var(--deep60)}
+.lv .tagx.none{background:transparent;border:1px dashed var(--deep20)}
+.lv .tagx.w{background:var(--warn20);color:var(--warn)}
+.lv .tagx.h{background:var(--risk20);color:var(--risk)}
+.cls{list-style:none;margin-top:12px;display:flex;flex-direction:column;gap:8px;counter-reset:cls}
+.cls li{position:relative;padding:9px 12px 9px 40px;border-radius:10px;background:var(--page);font-size:13px;line-height:18px}
+.cls li::before{counter-increment:cls;content:counter(cls);position:absolute;left:12px;top:9px;width:18px;height:18px;border-radius:50%;background:var(--deep);color:#fff;font-size:11px;font-weight:600;line-height:18px;text-align:center}
+.cls li b{font-weight:600}
+.cls li span{display:block;margin-top:2px;font-size:12px;line-height:16px;color:var(--deep60)}
+.cls li .prio{position:absolute;right:10px;top:9px;font-family:var(--mono);font-size:10px;color:var(--blue);background:var(--blue20);padding:2px 6px;border-radius:5px}
+.rules{list-style:none;margin-top:12px;display:flex;flex-direction:column;gap:8px}
+.rules li{padding:9px 12px;border-radius:10px;background:var(--page);font-size:13px;line-height:18px}
+.rules li b{font-weight:600}
+.rules li span{display:block;margin-top:2px;font-size:12px;line-height:16px;color:var(--deep60)}
+
+/* anatomy */
+.anatomy{margin-top:28px}
+.anatomy .ahead{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.anatomy h2{font-size:15px;font-weight:600;line-height:22px}
+.anatomy .ahead p{font-size:12px;line-height:17px;color:var(--deep60)}
+.ana-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(600px,1fr));gap:20px;margin-top:14px}
+@media (max-width:600px){.ana-grid{grid-template-columns:1fr}}
+.ana{background:#fff;border-radius:16px;padding:20px;box-shadow:0 1px 2px rgba(17,29,74,.06),0 8px 24px rgba(17,29,74,.06)}
+.ana .acap{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;line-height:18px;margin-bottom:14px}
+.ana .acap .tagx{display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:7px;font-size:11px;font-weight:500;background:var(--deep08);color:var(--deep60)}
+.ana .acap .tagx.w{background:var(--warn20);color:var(--warn)}
+.ana-body{display:grid;grid-template-columns:343px minmax(260px,1fr);gap:28px;align-items:start}
+@media (max-width:600px){.ana-body{grid-template-columns:1fr}}
+.ana .tt{opacity:1;transform:none;transition:none;filter:drop-shadow(0 4px 24px rgba(0,0,0,.12))}
+.ana .tt *{transition:none!important}
+.ana .tt-more{cursor:default}
+.ana .tt-fold{grid-template-rows:1fr}
+.ana .tt-fold-inner{opacity:1}
+/* region overlays */
+.reg{position:relative;border-radius:8px;outline:1.5px dashed;outline-offset:6px}
+.reg.r1{outline-color:var(--blue)}
+.reg.r2{outline-color:rgba(17,29,74,.5)}
+.reg::after{content:attr(data-tag);position:absolute;right:-6px;top:-18px;font-family:var(--mono);font-size:10px;line-height:14px;padding:0 6px;border-radius:4px;color:#fff}
+.reg.r1::after{background:var(--blue)}
+.reg.r2::after{background:var(--deep)}
+.ana-sep{position:relative}
+.ana-sep::after{content:"分割线";position:absolute;left:-6px;top:-9px;font-family:var(--mono);font-size:10px;line-height:14px;padding:0 6px;border-radius:4px;background:#9598AB;color:#fff}
+.ana-fold{position:relative;border-radius:8px;outline:1.5px dashed #9598AB;outline-offset:4px}
+.ana-fold::after{content:"折叠入口";position:absolute;right:-6px;top:-16px;font-family:var(--mono);font-size:10px;line-height:14px;padding:0 6px;border-radius:4px;background:#9598AB;color:#fff}
+.ana .ord{position:absolute;left:-30px;top:0;width:18px;height:18px;border-radius:50%;background:var(--deep);color:#fff;font-size:10px;font-weight:600;line-height:18px;text-align:center}
+.ana .tt-entry{position:relative}
+.notes{list-style:none;display:flex;flex-direction:column;gap:10px}
+.notes li{position:relative;padding-left:26px;font-size:12px;line-height:17px;color:var(--deep)}
+.notes li .sw{position:absolute;left:0;top:2px;width:14px;height:14px;border-radius:4px}
+.notes li .sw.r1{background:var(--blue)}
+.notes li .sw.r2{background:var(--deep)}
+.notes li .sw.sep{background:#9598AB}
+.notes li b{font-weight:600}
+.notes li span{display:block;color:var(--deep60)}
 </style>
 </head>
 <body class="skin-s1">
-<div class="ver" id="ver">v1.2</div>
+<div class="ver" id="ver">v1.3</div>
+<!-- ===================== INTRO · 解析对象与信息架构（2026-10-08 团队讨论口径） ===================== -->
+<section class="intro" id="intro" aria-labelledby="intro-title">
+  <p class="eyebrow">01 · WHAT THE TOOLTIP RESOLVES</p>
+  <h1 id="intro-title">Tooltip 解析的对象：两个内容区域，决定了信息架构</h1>
+  <p class="lead">地址输入后，Tooltip 要表达的信息分为两部分：<b>区域一</b>是对这个地址的风险判断（Risk Level），<b>区域二</b>是对用户输入的地址 / 域名解析出来的事实（Address info）。两部分性质不同，所以在组件里分区承载、用分割线隔开，并有各自的排序与折叠规则。</p>
+
+  <div class="dims">
+    <div class="dim">
+      <span class="no">区域一</span>
+      <h2><span class="pill r1">RISK LEVEL</span>风险等级的表达</h2>
+      <p>由风控引擎返回，决定输入框右侧 Tag 的等级与颜色；0–1 不折叠，2–3 触发折叠。</p>
+      <ul class="lv">
+        <li><span class="k">L0</span><span>无任何风险信息 → 不显示</span><span class="tagx none">无 Tag</span></li>
+        <li><span class="k">L1</span><span>过往没有 transaction record</span><span class="tagx">Info</span></li>
+        <li><span class="k">L2</span><span>Warning 地址</span><span class="tagx w">Warning</span></li>
+        <li><span class="k">L3</span><span>High Risk 地址</span><span class="tagx h">High risk</span></li>
+      </ul>
+    </div>
+
+    <div class="dim">
+      <span class="no">区域二</span>
+      <h2><span class="pill r2">ADDRESS INFO</span>地址解析信息（事实）</h2>
+      <p>针对用户输入的地址 / 域名解析出来的事实，三类信息按下面的优先级在列表中排序：</p>
+      <ol class="cls">
+        <li><span class="prio">优先级最高</span><b>专项信息识别</b><span>地址所属链类型（Cosmos / Osmosis，IBC 跨链）；地址状态（Polkadot / Kusama / Tron / Tezos 未激活地址、TON 反弹地址）</span></li>
+        <li><b>地址标记</b><span>是否是地址本存储的地址；是否是用户当前某个钱包中的账户地址。「已存于地址本」的标记优先级高于「我的钱包」</span></li>
+        <li><b>ENS 正向 / 反向解析结果</b><span>正向：域名 → 解析出的地址全文（等宽单行、首尾加重）；反向：地址 → 关联的单个域名</span></li>
+      </ol>
+    </div>
+
+    <div class="dim">
+      <span class="no">附加规则</span>
+      <h2>折叠与唤起</h2>
+      <p>风险类信息与地址解析信息同时存在时的展示规则。</p>
+      <ul class="rules">
+        <li><b>Risk Level ≥ 2 → 区域二默认折叠</b><span>Tooltip 只常显风险条目，地址解析信息收进「More address info (N)」，可反复展开 / 收起。</span></li>
+        <li><b>Risk Level ≥ 2 → 自动唤起后不自动消失</b><span>用户点击空白区域、或与其他控件交互时才收起。</span></li>
+        <li><b>Risk Level 0–1 → 不折叠</b><span>区域一（若有）与区域二并列展示，中间一条分割线；L1 态自动唤起后 4s 自动收起。</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="anatomy">
+    <div class="ahead">
+      <h2>组件解剖：两个内容区域在 Tooltip 中的位置</h2>
+      <p>以 S1 极简版渲染；虚线框与标签为解剖标注，不属于组件本身。</p>
+    </div>
+    <div class="ana-grid">
+
+      <!-- Anatomy A · Level 1 -->
+      <div class="ana skin-s1">
+        <div class="acap"><span class="tagx">Info</span>Risk Level 1 · 无交易记录 + 地址本 + ENS 正向解析</div>
+        <div class="ana-body">
+          <div class="tt" data-level="info" data-expanded="false">
+            <div class="tt-arrow"><svg width="30" height="11" viewBox="0 0 30 11"><path d="M0 11 15 0l15 11z" fill="#fff"/></svg></div>
+            <div class="tt-main">
+              <div class="reg r1" data-tag="区域一 · RISK LEVEL">
+                <div class="tt-entry tt-sentence">You haven't transacted with this address before.</div>
+              </div>
+              <div class="tt-sep ana-sep"></div>
+              <div class="reg r2" data-tag="区域二 · ADDRESS INFO">
+                <div class="tt-main">
+                  <div class="tt-entry tt-labeled"><span class="ord">2</span><div class="tt-label">Address book</div><div class="tt-body">Alice</div></div>
+                  <div class="tt-entry tt-labeled"><span class="ord">3</span><div class="tt-label">ENS · Resolved address</div><div class="tt-body tt-hex"><span class="hx0">0x</span><span class="hx">9b57</span><span class="hxm">48e79638c895cD34B7aF5215eBc40ad7</span><span class="hx">1f72</span></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <ul class="notes">
+            <li><span class="sw r1"></span><b>区域一 · Risk Level 表达</b><span>L1 为一句事实陈述，无标题、无彩色；L0 时整个区域不出现，Tooltip 直接从区域二开始。</span></li>
+            <li><span class="sw sep"></span><b>分割线</b><span>区域一与区域二之间固定一条 1px 分割线，表明两者性质不同。</span></li>
+            <li><span class="sw r2"></span><b>区域二 · Address info 列表</b><span>按 ① 专项信息识别 → ② 地址标记（地址本 &gt; 我的钱包）→ ③ ENS 解析结果 排序。本例未命中专项信息，所以从 ② 开始；若命中（如 IBC、未激活），它会排在列表最前。</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Anatomy B · Level 2 expanded -->
+      <div class="ana skin-s1">
+        <div class="acap"><span class="tagx w">Warning</span>Risk Level 2 · 展开态（默认折叠，图示为用户展开后）</div>
+        <div class="ana-body">
+          <div class="tt" data-level="warning" data-expanded="true">
+            <div class="tt-arrow"><svg width="30" height="11" viewBox="0 0 30 11"><path d="M0 11 15 0l15 11z" fill="#fff"/></svg></div>
+            <div class="tt-main">
+              <div class="reg r1" data-tag="区域一 · RISK LEVEL">
+                <div class="tt-entry tt-risk"><div class="tt-risk-title">Warning</div><div class="tt-risk-body">Recent activity on this address appears unusual. Double-check before sending.</div></div>
+              </div>
+              <div class="tt-divider ana-sep"></div>
+              <div class="ana-fold"><div class="tt-more" role="presentation"><span>More address info (2)</span><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#111D4A" stroke-opacity=".6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l4 4 4-4"/></svg></div></div>
+              <div class="tt-divider"></div>
+              <div class="reg r2" data-tag="区域二 · ADDRESS INFO（折叠区）">
+                <div class="tt-main">
+                  <div class="tt-entry tt-labeled"><span class="ord">1</span><div class="tt-label">Osmosis address</div><div class="tt-body">Funds will be sent via IBC cross-chain.</div></div>
+                  <div class="tt-entry tt-labeled"><span class="ord">2</span><div class="tt-label">Address book</div><div class="tt-body">Alice</div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <ul class="notes">
+            <li><span class="sw r1"></span><b>区域一 · 风险条目常显</b><span>L2 / L3 用「标题 + 正文」结构，颜色只在输入框 Tag 上，Tooltip 内不用彩色。</span></li>
+            <li><span class="sw sep"></span><b>折叠入口</b><span>Risk Level ≥ 2 时区域二默认折叠为「More address info (N)」，N = 折叠条数；∨ / ∧ 可反复切换。</span></li>
+            <li><span class="sw r2"></span><b>区域二 · 展开后同一套排序</b><span>本例命中专项信息（Osmosis / IBC），排在 ① 位，地址本 ② 紧随其后。</span></li>
+            <li><span class="sw sep"></span><b>唤起与收起</b><span>此态自动唤起后不自动消失；点击空白区域或与其他控件交互时收起。</span></li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<p class="eyebrow" style="max-width:1160px;margin:28px auto 0;padding:0 24px;font-family:var(--mono);font-size:11px;color:var(--blue);letter-spacing:.4px">02 · PROTOTYPE</p>
 <div class="stage">
 
   <!-- ===================== PHONE ===================== -->
