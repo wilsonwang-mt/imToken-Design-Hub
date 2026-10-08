@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Prototype — 转账地址解析 Tooltip v1.6 · imToken UXD</title>
+<title>Prototype — 转账地址解析 Tooltip v1.7 · imToken UXD</title>
 <style>
 /* v1.2 变更（Wilson 决定）：已删除「观察钱包」场景与「反向解析多域名」场景（当前均无该解析能力）；
    C08「无交易记录」之后若还有其它 Entry → 插入分割线（.tt-sep，任意皮肤 / Info 态 / 风险展开态折叠区 / 对比视图）。 */
@@ -380,7 +380,7 @@ html,body{background:var(--hub-ground)}
 </style>
 </head>
 <body class="skin-s1">
-<div class="ver" id="ver">v1.6</div>
+<div class="ver" id="ver">v1.7</div>
 <!-- ===================== INTRO · 解析对象与信息架构（2026-10-08 团队讨论口径） ===================== -->
 
 <div class="ambient" aria-hidden="true"><i class="b1"></i><i class="b2"></i><i class="b3"></i></div>
@@ -664,7 +664,7 @@ var CTX = {
   C03:{ rank:2, sub:1, kind:'labeled', label:'Not activated',   body:"The recipient account isn't activated yet. At least {amount} is needed to activate it." },
   C04:{ rank:2, sub:2, kind:'labeled', label:'Bounceable',      body:'If the recipient account is inactive, funds will be returned to you.' },
   C09:{ rank:3, kind:'labeled', label:'Address book', body:'{nickname}' },
-  C01:{ rank:4, kind:'labeled', label:'My wallet',    body:'{wallet}', subtitle:'{account}' },   // v1.4: Title = 钱包名 · Subtitle = Account Name（Account 01/02/03，用户可改）
+  C01:{ rank:4, kind:'labeled', label:'{wallet}',     body:'{account}' },   // v1.7 Wilson：第一行 = Wallet Name，第二行 = Account Name（Account 01/02/03，用户可改）；Text style 与地址本条目一致（label 12·60% / body 14）
   C10:{ rank:5, sub:0, kind:'labeled', label:'ENS · Resolved address', hex:true },
   C13:{ rank:5, sub:0, kind:'labeled', label:'DAS · Resolved address', hex:true },
   C14:{ rank:5, sub:0, kind:'labeled', label:'UNS · Resolved address', hex:true },
@@ -704,7 +704,7 @@ var SCENES = [
   { n:1,  title:'hex · 陌生地址（无 context）',          meta:'S2 · 无 Tag 无 tooltip', chain:'eth', input:HEX.s1, ctx:[] },
   { n:2,  title:'hex · 无交易记录',                      meta:'C08',                    chain:'eth', input:HEX.s2, ctx:[{id:'C08'}] },
   { n:3,  title:'hex · 无交易记录 + 地址本「Alice」',     meta:'C08 + C09 · US2',        chain:'eth', input:HEX.s3, ctx:[{id:'C09', nickname:'Alice'},{id:'C08'}] },
-  { n:4,  title:'hex · 我的钱包「DeFi Wallet」',          meta:'C01 · Account 03',       chain:'eth', input:HEX.s4, ctx:[{id:'C01', wallet:'DeFi Wallet', account:'Account 03'}] },
+  { n:4,  title:'hex · 我的钱包「My DeFi Wallet」',       meta:'C01 · Account 01',       chain:'eth', input:HEX.s4, ctx:[{id:'C01', wallet:'My DeFi Wallet', account:'Account 01'}] },
   { n:5,  title:'ENS 正向解析 alice.eth',                meta:'C10 · hex 单行等宽',     chain:'eth', input:'alice.eth', ctx:[{id:'C10', hex:HEX_ALICE}] },
   { n:6,  title:'hex · 反向解析单域名',                  meta:'C11',                    chain:'eth', input:HEX_ALICE, ctx:[{id:'C11', name:'alice.eth'}] },
   { n:7,  title:'Cosmos → Osmosis IBC',                 meta:'C02',                    chain:'cosmos', input:OSMO, ctx:[{id:'C02', chain:'Osmosis'}] },
@@ -824,9 +824,10 @@ function entryHTML_S1(e){
   var body, cls = 'tt-body';
   if (e.hex && typeof e.hex === 'string'){ body = hexHTML(e.hex); cls += ' tt-hex'; }
   else { body = escapeHTML(fillText(e, e.body)); }
-  // v1.4: C01 三行结构 label「My wallet」/ title 钱包名 14 / subtitle Account Name 12·60%
+  // v1.7: C01 两行结构 title = Wallet Name 14 / subtitle = Account Name 12·60%（label 为空时不输出 label 行）
   var sub = (e.subtitle && fillText(e, e.subtitle)) ? '<div class="tt-sub">' + escapeHTML(fillText(e, e.subtitle)) + '</div>' : '';
-  return '<div class="tt-entry tt-labeled" data-ctx="' + e.id + '" data-type="labeled"><div class="tt-label">' + escapeHTML(label) + '</div><div class="' + cls + '">' + body + '</div>' + sub + '</div>';
+  var lab = label ? '<div class="tt-label">' + escapeHTML(label) + '</div>' : '';
+  return '<div class="tt-entry tt-labeled" data-ctx="' + e.id + '" data-type="labeled">' + lab + '<div class="' + cls + '">' + body + '</div>' + sub + '</div>';
 }
 
 /* ---- S2 · 身份头 + 条件列 ---- */
@@ -846,11 +847,11 @@ function entryHTML_S2(e){
   }
   if (type === 'identity'){
     // avatar = 昵称/钱包名首字母；来源小字：Address book / My wallet
-    // v1.4: C01 第二行 .s2-desc = Account Name（title 行保持「钱包名 + My wallet」，与地址本行结构一致）
-    var src   = e.id === 'C01' ? 'My wallet' : 'Address book';
-    var title = e.id === 'C01' ? (e.wallet || '') : (e.nickname || '');
-    var desc  = (e.id === 'C01' && e.account) ? '<div class="s2-desc">' + escapeHTML(e.account) + '</div>' : '';
-    return open + '<div class="s2-row"><span class="s2-avatar" aria-hidden="true">' + initial(title) + '</span><div class="s2-text"><div class="s2-titlerow"><span class="s2-title">' + escapeHTML(title) + '</span><span class="s2-src">' + escapeHTML(src) + '</span></div>' + desc + '</div></div></div>';
+    // v1.7: C01 与地址本行同构：title = Account Name，来源小字 = Wallet Name
+    var src   = e.id === 'C01' ? (e.wallet || '') : 'Address book';
+    var title = e.id === 'C01' ? (e.account || '') : (e.nickname || '');
+    var desc  = '';
+    return open + '<div class="s2-row"><span class="s2-avatar" aria-hidden="true">' + initial(title) + '</span><div class="s2-text"><div class="s2-titlerow"><span class="s2-title">' + escapeHTML(title) + '</span>' + (src ? '<span class="s2-src">' + escapeHTML(src) + '</span>' : '') + '</div>' + desc + '</div></div></div>';
   }
   // resolved
   if (e.hex && typeof e.hex === 'string'){
@@ -1120,8 +1121,8 @@ var EXPLAIN = {
         rule:'Tag = Info；不折叠；区域一与区域二之间一条分割线；自动唤起 4s 后收起；不显示「Add to address book」。',
         why:'先告诉用户没转过，再告诉他这是地址本里的 Alice，顺序由区域一 → 区域二决定。' },
   4:  { dim:'区域二 ②（区域一 L0，无风险信息）。',
-        type:'C01 我的钱包：地址是用户当前某个钱包里的账户。Title = 用户起的钱包名「DeFi Wallet」，Subtitle = Account Name「Account 03」（自动命名，可改）。',
-        rule:'Tag = Info（由区域二有内容触发，作为 Tooltip 入口）；label「My wallet」/ title 14 / subtitle 12·60% 三行；不折叠；若同时命中地址本，地址本排在前；4s 后收起；不显示「Add to address book」。',
+        type:'C01 我的钱包：地址是用户当前某个钱包里的账户。第一行 = Wallet Name「My DeFi Wallet」，第二行 = Account Name「Account 01」（自动命名，可改）。',
+        rule:'Tag = Info（由区域二有内容触发，作为 Tooltip 入口）；两行：第一行 Wallet Name、第二行 Account Name，Text style 与地址本条目一致（12·60% / 14）；不折叠；若同时命中地址本，地址本排在前；4s 后收起；不显示「Add to address book」。',
         why:'标记只回答「这是谁」——给自己的哪个钱包、哪个账户转账，所以用钱包名 + 账户名两级表达，不做风险判断。' },
   5:  { dim:'区域二 ③（区域一 L0）。',
         type:'C10 ENS 正向解析：alice.eth → 解析出的地址全文。',
