@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Prototype — 转账地址解析 Tooltip v1.9 · imToken UXD</title>
+<title>Prototype — 转账地址解析 Tooltip v1.10 · imToken UXD</title>
 <style>
 /* v1.2 变更（Wilson 决定）：已删除「观察钱包」场景与「反向解析多域名」场景（当前均无该解析能力）。
    v1.9 变更（Wilson × PM Yiqun 口径，取代 v1.8）：C08「无交易记录」回到区域一（分割线以上），与 Warning / High risk 同一信息层级、
@@ -388,7 +388,7 @@ html,body{background:var(--hub-ground)}
 </style>
 </head>
 <body class="skin-s1">
-<div class="ver" id="ver">v1.9</div>
+<div class="ver" id="ver">v1.10</div>
 <!-- ===================== INTRO · 解析对象与信息架构（2026-10-08 团队讨论口径） ===================== -->
 
 <div class="ambient" aria-hidden="true"><i class="b1"></i><i class="b2"></i><i class="b3"></i></div>
@@ -522,7 +522,7 @@ html,body{background:var(--hub-ground)}
       <div class="log-head"><span>状态机日志</span><span class="state" id="stateNow">idle</span></div>
       <ol class="log" id="log"></ol>
     </div>
-    <p class="hint">直达：<code>#scene=10&amp;step=expanded</code>（scene = 1…13 · step = typed / resolving / shown / expanded / dismissed）· 点手机空白处关闭 · 点 Tag 再次唤起 · Esc 关闭 · 折叠入口 ∨/∧ 可反复切换 · C08「Transaction Record」只在 Tag = Info 时出现在区域一（分割线以上，标题 + 正文）；Warning / High risk 时不显示、不进折叠区</p>
+    <p class="hint">直达：<code>#scene=10&amp;step=expanded</code>（scene = 1…15 · step = typed / resolving / shown / expanded / dismissed）· 点手机空白处关闭 · 点 Tag 再次唤起 · Esc 关闭 · 折叠入口 ∨/∧ 可反复切换 · C08「Transaction Record」只在 Tag = Info 时出现在区域一（分割线以上，标题 + 正文）；Warning / High risk 时不显示、不进折叠区</p>
   </aside>
 
   <!-- ===================== COMPARE (S1 | S2, static) ===================== -->
@@ -701,7 +701,8 @@ var HEX = {
   s4:'0xb8c2E7a19F4d3C6b5A8e2D1f0C9b7A6e5D4c267d',
   s10:'0x8aF3c1E7b2D5e4A6c0B5d8F1a3E7c9B2d6A4f0E1',
   s11:'0x5C1e8A3f9B2d7E4c6A0f3D8b1E9c5A7d2F4b6C8e',
-  s12:'0xE9b2D4f7A1c6E3d8B5a0F2c9D7e1A4b6C8f3D5a2'
+  s12:'0xE9b2D4f7A1c6E3d8B5a0F2c9D7e1A4b6C8f3D5a2',
+  s14:'0x3D7a9C2e5F1b8E4d6A0c2B9f7E3a1D5c8B6e4F2a'
 };
 var OSMO = 'osmo1qy352eufqy352eufqy352eufqy35v9aj2kglhs';
 var TRON = 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t';
@@ -721,7 +722,11 @@ var SCENES = [
   { n:10, title:'Warning · warning 地址 + ENS 解析',     meta:'C06 + C10 · 折叠→点展开', chain:'eth', input:'bob.eth', ctx:[{id:'C10', hex:HEX.s10},{id:'C06'}] },
   { n:11, title:'Warning · ENS 零宽字符',                meta:'C07 + C10 · C08 被剔除',  chain:'eth', input:'alice​.eth', ctx:[{id:'C10', hex:HEX.s11},{id:'C08'},{id:'C07'}] },   // v1.9: 风控同时返回了 C08，但 Warning 时由模型剔除（不进折叠区、不计入 N）
   { n:12, title:'High risk',                             meta:'C05 + C09 + C10 · 折叠', chain:'eth', input:'free-airdrop.eth', ctx:[{id:'C09', nickname:'Airdrop claim'},{id:'C05'},{id:'C10', hex:HEX.s12}] },
-  { n:13, title:'解析中 → 无法解析',                     meta:'S3 · 现有 Alert，无 tooltip', chain:'eth', input:'figma.eth', unresolved:true, ctx:[] }
+  { n:13, title:'解析中 → 无法解析',                     meta:'S3 · 现有 Alert，无 tooltip', chain:'eth', input:'figma.eth', unresolved:true, ctx:[] },
+  // v1.10 Wilson：地址本与我的钱包同时命中——两条都显示，地址本在前（多数情况下不会既是又是）
+  { n:14, title:'hex · 地址本「Alice」+ 我的钱包「My DeFi Wallet」', meta:'C09 + C01 · 同时显示', chain:'eth', input:HEX.s14, ctx:[{id:'C01', wallet:'My DeFi Wallet', account:'Account 01'},{id:'C09', nickname:'Alice'}] },
+  // v1.10 Wilson：专项信息识别会与地址标记、ENS 解析同时出现，次序固定 专项 → 地址标记 → ENS（ctx 故意乱序，由模型排序）
+  { n:15, title:'Tron · alice.eth → 未激活 + 地址本', meta:'C03 + C09 + C10 · 三者同现', chain:'tron', input:'alice.eth', ctx:[{id:'C10', hex:TRON},{id:'C09', nickname:'Alice'},{id:'C03', amount:'0.1 TRX'}] }
 ];
 
 /* ---------- DOM ---------- */
@@ -1115,10 +1120,10 @@ var CATS = [
     scenes:[1, 2, 10, 11, 12] },
   { key:'B', title:'专项信息识别', dim:'区域二 ① · 优先级最高',
     sub:'链类型与地址状态是发送前必须知道的事实，在 Address info 列表中排最前。',
-    scenes:[7, 8, 9] },
+    scenes:[7, 8, 9, 15] },
   { key:'C', title:'地址标记', dim:'区域二 ②',
     sub:'地址本与我的钱包同时命中时两条都显示，地址本在前；标记只回答「这是谁」，不做风险判断。',
-    scenes:[3, 4] },
+    scenes:[3, 4, 14] },
   { key:'D', title:'ENS 解析', dim:'区域二 ③',
     sub:'正向解析展示地址全文供核对（等宽单行、首尾加重）；反向解析展示关联的单个域名；永远排在列表最后。',
     scenes:[5, 6] },
@@ -1179,7 +1184,15 @@ var EXPLAIN = {
   13: { dim:'Unhappy Path · 不进 Tooltip（两个区域都不产生内容）。',
         type:'figma.eth 在当前链（Ethereum）无法解析 / 无记录。',
         rule:'解析中：Tag 位置只显示 spinner，无 Tooltip；解析失败：走现有 S3 Alert「Unable to resolve this name on Ethereum」，无 Tag、无 Tooltip；Next 不可用。',
-        why:'无法解析意味着没有可发送的目标，这不是地址信息，所以用阻断式 Alert 而不是 Tooltip 提示。' }
+        why:'无法解析意味着没有可发送的目标，这不是地址信息，所以用阻断式 Alert 而不是 Tooltip 提示。' },
+  14: { dim:'区域二 ②（区域一无内容）。',
+        type:'C09 地址本命中（Alice）· C01 我的钱包（My DeFi Wallet / Account 01）同时命中。',
+        rule:'Tag = Info；两条都显示、不二选一，地址本排在我的钱包之前；不折叠；4s 后收起；不显示「Add to address book」。',
+        why:'两个标记回答的是同一个问题「这是谁」，但来源不同，所以都保留；地址本是用户主动存的，优先级更高。多数情况下不会既是又是。' },
+  15: { dim:'区域二 ① + ② + ③（区域一无内容）。',
+        type:'C03 专项信息 · Tron 收款账户未激活 · C09 地址本命中（Alice）· C10 ENS 正向解析（alice.eth → Tron 地址）。',
+        rule:'Tag = Info；三类同时出现，固定次序 ① 专项信息识别 → ② 地址标记 → ③ ENS 解析；不折叠；4s 后收起；不显示「Add to address book」。',
+        why:'先说这笔转账能不能成（未激活要 0.1 TRX），再说这是谁（Alice），最后给解析出的地址全文供核对——按用户发送前要回答的问题的先后排。' }
 };
 var EX_KEYS = [['dim','解析维度'], ['type','解析类型'], ['rule','展示规则'], ['why','为什么左侧这样显示']];
 
