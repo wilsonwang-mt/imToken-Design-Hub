@@ -58,7 +58,7 @@ export const projects: Project[] = [
     en: 'Address Context Label & Tooltip',
     status: '设计评审中 · v1.2',
     phase: '两个方向待定：S1 极简版 · S2 身份头 + 条件列',
-    desc: '转账地址输入后的 context 标识与 Tooltip 规范：单一 Tag（Info / Warning / High risk）加无彩色 popover，按 PRD 的 15 条 context 排序与折叠。可操作原型：左侧是转账页，右侧是场景选择器，13 种地址类型和解析状态自动演示，支持 S1 / S2 两套方案切换与并排对比。',
+    desc: '转账地址输入后的 context 标识与 Tooltip 规范：单一 Tag（Info / Warning / High risk）加无彩色 popover，按 PRD 的 15 条 context 排序与折叠。可操作原型：左侧是转账页，右侧是场景选择器，13 种地址类型和解析状态自动演示。',
     tags: ['ENS v2', 'Wallet App', 'Tooltip', 'Design Spec', 'Prototype'],
     href: '/projects/ens-address-resolution/',
     static: true,

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Prototype — 转账地址解析 Tooltip v1.2 · S1+S2 · imToken UXD</title>
+<title>Prototype — 转账地址解析 Tooltip v1.2 · imToken UXD</title>
 <style>
 /* v1.2 变更（Wilson 决定）：已删除「观察钱包」场景与「反向解析多域名」场景（当前均无该解析能力）；
    C08「无交易记录」之后若还有其它 Entry → 插入分割线（.tt-sep，任意皮肤 / Info 态 / 风险展开态折叠区 / 对比视图）。 */
@@ -29,6 +29,7 @@
   --d-in:160ms; --d-out:120ms; --d-fold:160ms;
 }
 *{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
 html,body{background:var(--page);font-family:var(--font);color:var(--deep);-webkit-font-smoothing:antialiased}
 button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit}
 .stage{display:flex;flex-wrap:wrap;gap:32px;align-items:flex-start;justify-content:center;padding:28px 24px 40px}
@@ -256,7 +257,7 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
 </style>
 </head>
 <body class="skin-s1">
-<div class="ver" id="ver">v1.2 · S1+S2</div>
+<div class="ver" id="ver">v1.2</div>
 <div class="stage">
 
   <!-- ===================== PHONE ===================== -->
@@ -349,7 +350,8 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
     <h1>场景选择器</h1>
     <p class="sub">转账地址解析 Tooltip v1 · 依据 P1 IA 矩阵 §3 顺序 / §4 状态机 / §6 动效</p>
 
-    <div class="row">
+    <!-- 2026-10-08 Wilson：隐藏 S1/S2 切换与对比入口（代码保留，仅隐藏） -->
+    <div class="row" id="skinRow" hidden>
       <span class="lbl">皮肤</span>
       <div class="seg" role="radiogroup" aria-label="皮肤">
         <button type="button" class="is-on" data-skin="s1" role="radio" aria-checked="true">S1 · 极简版</button>
@@ -360,7 +362,7 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
 
     <div class="row">
       <button type="button" class="btn" id="replay">重播</button>
-      <button type="button" class="btn ghost" id="compareBtn" aria-pressed="false">对比 S1 / S2</button>
+      <button type="button" class="btn ghost" id="compareBtn" aria-pressed="false" hidden>对比 S1 / S2</button>
       <label class="switch"><input type="checkbox" id="autoplay"> 自动播放全部（每场景 6s）</label>
     </div>
 
@@ -370,7 +372,7 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
       <div class="log-head"><span>状态机日志</span><span class="state" id="stateNow">idle</span></div>
       <ol class="log" id="log"></ol>
     </div>
-    <p class="hint">直达：<code>#scene=10&amp;step=expanded&amp;skin=s2&amp;compare=1</code>（scene = 1…13 · step = typed / resolving / shown / expanded / dismissed）· 点手机空白处关闭 · 点 Tag 再次唤起 · Esc 关闭 · 折叠入口 ∨/∧ 可反复切换 · C08「无交易记录」之后若还有其它地址信息会出现分割线</p>
+    <p class="hint">直达：<code>#scene=10&amp;step=expanded</code>（scene = 1…13 · step = typed / resolving / shown / expanded / dismissed）· 点手机空白处关闭 · 点 Tag 再次唤起 · Esc 关闭 · 折叠入口 ∨/∧ 可反复切换 · C08「无交易记录」之后若还有其它地址信息会出现分割线</p>
   </aside>
 
   <!-- ===================== COMPARE (S1 | S2, static) ===================== -->
