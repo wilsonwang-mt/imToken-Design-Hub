@@ -3,8 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Prototype — 转账地址解析 Tooltip v1.1 · S1+S2 · imToken UXD</title>
+<title>Prototype — 转账地址解析 Tooltip v1.2 · S1+S2 · imToken UXD</title>
 <style>
+/* v1.2 变更（Wilson 决定）：已删除「观察钱包」场景与「反向解析多域名」场景（当前均无该解析能力）；
+   C08「无交易记录」之后若还有其它 Entry → 插入分割线（.tt-sep，任意皮肤 / Info 态 / 风险展开态折叠区 / 对比视图）。 */
 /* ============================================================
    0. Base
    ============================================================ */
@@ -146,6 +148,8 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
 }
 .tt-main{display:flex;flex-direction:column;gap:12px}
 .tt-divider{height:1px;background:var(--deep08);margin:10px 0 4px}
+/* v1.2: C08「无交易记录」之后的分割线（同色 1px 8%）。位于 gap 12 的列内：margin -2px 0 0 → 线上 10 / 线下 12，与 .tt-divider 的视觉间距一致 */
+.tt-sep{height:1px;background:var(--deep08);margin:-2px 0 0}
 .tt-more{display:flex;width:100%;height:32px;align-items:center;justify-content:space-between;font-size:12px;line-height:16px;color:var(--deep60);text-align:left;cursor:pointer}
 .tt-more svg{transition:transform var(--d-fold) var(--ease)}
 .tt[data-expanded="true"] .tt-more svg{transform:rotate(180deg)}
@@ -173,8 +177,6 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
 .skin-s1 .tt-body{font-size:14px;line-height:140%;color:var(--deep)}
 .skin-s1 .tt-body.tt-hex{font-family:var(--mono);font-size:12px;line-height:16px;color:var(--deep70)}   /* beat .skin-s1 .tt-body */
 .skin-s1 .tt-hex .hx{font-weight:600}
-.skin-s1 .tt-names{display:flex;flex-direction:column;gap:2px}
-.skin-s1 .tt-more-names{font-size:12px;line-height:130%;color:var(--deep60)}
 .skin-s1 .tt-risk-title{font-size:14px;font-weight:600;line-height:140%;color:var(--deep)}
 .skin-s1 .tt-risk-body{font-size:14px;font-weight:400;line-height:140%;color:var(--deep)}
 
@@ -196,9 +198,6 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
 .skin-s2 .s2-src{font-size:12px;line-height:16px;color:var(--deep60)}
 .skin-s2 .s2-label{font-size:12px;line-height:16px;color:var(--deep60);margin-bottom:2px}
 .skin-s2 .tt-hex .hx{font-weight:500}
-.skin-s2 .s2-names{font-size:12px;line-height:16px;color:var(--deep60);margin-top:2px}
-.skin-s2 .s2-names .tt-name{color:var(--deep60)}
-.skin-s2 .tt-more-names{color:var(--deep60)}
 .skin-s2 .tt-risk-title{font-size:14px;font-weight:600;line-height:20px;color:var(--deep)}
 .skin-s2 .tt-risk-body{font-size:14px;font-weight:400;line-height:20px;color:var(--deep)}
 
@@ -257,7 +256,7 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
 </style>
 </head>
 <body class="skin-s1">
-<div class="ver" id="ver">v1.1 · S1+S2</div>
+<div class="ver" id="ver">v1.2 · S1+S2</div>
 <div class="stage">
 
   <!-- ===================== PHONE ===================== -->
@@ -371,7 +370,7 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
       <div class="log-head"><span>状态机日志</span><span class="state" id="stateNow">idle</span></div>
       <ol class="log" id="log"></ol>
     </div>
-    <p class="hint">直达：<code>#scene=12&amp;step=expanded&amp;skin=s2&amp;compare=1</code>（step = typed / resolving / shown / expanded / dismissed）· 点手机空白处关闭 · 点 Tag 再次唤起 · Esc 关闭 · 折叠入口 ∨/∧ 可反复切换</p>
+    <p class="hint">直达：<code>#scene=10&amp;step=expanded&amp;skin=s2&amp;compare=1</code>（scene = 1…13 · step = typed / resolving / shown / expanded / dismissed）· 点手机空白处关闭 · 点 Tag 再次唤起 · Esc 关闭 · 折叠入口 ∨/∧ 可反复切换 · C08「无交易记录」之后若还有其它地址信息会出现分割线</p>
   </aside>
 
   <!-- ===================== COMPARE (S1 | S2, static) ===================== -->
@@ -417,13 +416,12 @@ var CTX = {
   C13:{ rank:5, sub:0, kind:'labeled', label:'DAS · Resolved address', hex:true },
   C14:{ rank:5, sub:0, kind:'labeled', label:'UNS · Resolved address', hex:true },
   C15:{ rank:5, sub:0, kind:'labeled', label:'ZNS · Resolved address', hex:true },
-  C11:{ rank:5, sub:1, kind:'labeled', label:'ENS name',  body:'{name}' },
-  C12:{ rank:5, sub:1, kind:'labeled', label:'ENS names', names:true }
+  C11:{ rank:5, sub:1, kind:'labeled', label:'ENS name',  body:'{name}' }
+  // v1.2: 反向解析多域名条目已删除（目前只支持反向解析单域名 C11）
 };
 var TAG_TEXT = { info:'Info', warning:'Warning', high:'High risk' };
 var TAG_W    = { info:38, warning:63, high:72 };   // fallback widths when layout is unavailable (jsdom)
 var MAX_ENTRIES = 4;                                // D7
-var MAX_NAMES   = 3;                                // D6
 
 /* ---------- chains ---------- */
 var CHAINS = {
@@ -440,33 +438,29 @@ var HEX = {
   s2:'0x4E8b1C9d7A2f6B3e5D1c8A9f0E2b4C6d8A1f3E5b',
   s3:'0xB140ED1e3bC2a7f94D8e6c5A1b3F7d9E2c4A6683',
   s4:'0xb8c2E7a19F4d3C6b5A8e2D1f0C9b7A6e5D4c267d',
-  s5:'0x2F6a9C1e4B8d7E3f5A0c6D2b9E1f8C4a7B3d5E6f',
-  s8:'0xD3c7A1e9F2b6C8d4E5a0B7f1C9e3D6a2F8b4C1e7',
-  s12:'0x8aF3c1E7b2D9e4A6c0B5d8F1a3E7c9B2d6A4f0E1',
-  s13:'0x5C1e8A3f9B2d7E4c6A0f3D8b1E9c5A7d2F4b6C8e',
-  s14:'0xE9b2D4f7A1c6E3d8B5a0F2c9D7e1A4b6C8f3D5a2'
+  s10:'0x8aF3c1E7b2D5e4A6c0B5d8F1a3E7c9B2d6A4f0E1',
+  s11:'0x5C1e8A3f9B2d7E4c6A0f3D8b1E9c5A7d2F4b6C8e',
+  s12:'0xE9b2D4f7A1c6E3d8B5a0F2c9D7e1A4b6C8f3D5a2'
 };
 var OSMO = 'osmo1qy352eufqy352eufqy352eufqy35v9aj2kglhs';
 var TRON = 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t';
 var TONA = 'EQDtFpEwcFAEcRe5mLVh2N6C0x-_hJEM7W61_JLnSF74p4q2';
 
-/* ---------- scenes ---------- */
+/* ---------- scenes (v1.2: 13 个，编号连续；已删除「观察钱包」与「反向解析多域名」两场景) ---------- */
 var SCENES = [
   { n:1,  title:'hex · 陌生地址（无 context）',          meta:'S2 · 无 Tag 无 tooltip', chain:'eth', input:HEX.s1, ctx:[] },
   { n:2,  title:'hex · 无交易记录',                      meta:'C08',                    chain:'eth', input:HEX.s2, ctx:[{id:'C08'}] },
   { n:3,  title:'hex · 无交易记录 + 地址本「Alice」',     meta:'C08 + C09 · US2',        chain:'eth', input:HEX.s3, ctx:[{id:'C09', nickname:'Alice'},{id:'C08'}] },
   { n:4,  title:'hex · 我的钱包「Main Wallet」',          meta:'C01',                    chain:'eth', input:HEX.s4, ctx:[{id:'C01', wallet:'Main Wallet'}] },
-  { n:5,  title:'hex · 观察钱包',                        meta:'C01 · Watch-only',       chain:'eth', input:HEX.s5, ctx:[{id:'C01', wallet:'Cold Vault', watch:true}] },
-  { n:6,  title:'ENS 正向解析 alice.eth',                meta:'C10 · hex 单行等宽',     chain:'eth', input:'alice.eth', ctx:[{id:'C10', hex:HEX_ALICE}] },
-  { n:7,  title:'hex · 反向解析单域名',                  meta:'C11',                    chain:'eth', input:HEX_ALICE, ctx:[{id:'C11', name:'alice.eth'}] },
-  { n:8,  title:'hex · 反向解析多域名',                  meta:'C12 · 3 名 + +2 more',   chain:'eth', input:HEX.s8, ctx:[{id:'C12', names:['alice.eth','alicewallet.eth','alice-dao.eth','alice2.eth','alice-nft.eth']}] },
-  { n:9,  title:'Cosmos → Osmosis IBC',                 meta:'C02',                    chain:'cosmos', input:OSMO, ctx:[{id:'C02', chain:'Osmosis'}] },
-  { n:10, title:'Tron 未激活',                           meta:'C03',                    chain:'tron', input:TRON, ctx:[{id:'C03', amount:'0.1 TRX'}] },
-  { n:11, title:'TON bounceable',                        meta:'C04',                    chain:'ton',  input:TONA, ctx:[{id:'C04'}] },
-  { n:12, title:'Warning · warning 地址 + ENS 解析',     meta:'C06 + C10 · 折叠→点展开', chain:'eth', input:'bob.eth', ctx:[{id:'C10', hex:HEX.s12},{id:'C06'}] },
-  { n:13, title:'Warning · ENS 零宽字符',                meta:'C07 + C08 + C10',        chain:'eth', input:'alice​.eth', ctx:[{id:'C10', hex:HEX.s13},{id:'C08'},{id:'C07'}] },
-  { n:14, title:'High risk',                             meta:'C05 + C09 + C10 · 折叠', chain:'eth', input:'free-airdrop.eth', ctx:[{id:'C09', nickname:'Airdrop claim'},{id:'C05'},{id:'C10', hex:HEX.s14}] },
-  { n:15, title:'解析中 → 无法解析',                     meta:'S3 · 现有 Alert，无 tooltip', chain:'eth', input:'figma.eth', unresolved:true, ctx:[] }
+  { n:5,  title:'ENS 正向解析 alice.eth',                meta:'C10 · hex 单行等宽',     chain:'eth', input:'alice.eth', ctx:[{id:'C10', hex:HEX_ALICE}] },
+  { n:6,  title:'hex · 反向解析单域名',                  meta:'C11',                    chain:'eth', input:HEX_ALICE, ctx:[{id:'C11', name:'alice.eth'}] },
+  { n:7,  title:'Cosmos → Osmosis IBC',                 meta:'C02',                    chain:'cosmos', input:OSMO, ctx:[{id:'C02', chain:'Osmosis'}] },
+  { n:8,  title:'Tron 未激活',                           meta:'C03',                    chain:'tron', input:TRON, ctx:[{id:'C03', amount:'0.1 TRX'}] },
+  { n:9,  title:'TON bounceable',                        meta:'C04',                    chain:'ton',  input:TONA, ctx:[{id:'C04'}] },
+  { n:10, title:'Warning · warning 地址 + ENS 解析',     meta:'C06 + C10 · 折叠→点展开', chain:'eth', input:'bob.eth', ctx:[{id:'C10', hex:HEX.s10},{id:'C06'}] },
+  { n:11, title:'Warning · ENS 零宽字符',                meta:'C07 + C08 + C10',        chain:'eth', input:'alice​.eth', ctx:[{id:'C10', hex:HEX.s11},{id:'C08'},{id:'C07'}] },
+  { n:12, title:'High risk',                             meta:'C05 + C09 + C10 · 折叠', chain:'eth', input:'free-airdrop.eth', ctx:[{id:'C09', nickname:'Airdrop claim'},{id:'C05'},{id:'C10', hex:HEX.s12}] },
+  { n:13, title:'解析中 → 无法解析',                     meta:'S3 · 现有 Alert，无 tooltip', chain:'eth', input:'figma.eth', unresolved:true, ctx:[] }
 ];
 
 /* ---------- DOM ---------- */
@@ -550,16 +544,12 @@ function fillText(e, tpl){
   return tpl
     .replace('{chain}', e.chain || '')
     .replace('{nickname}', e.nickname || '')
-    .replace('{wallet}', (e.wallet || '') + (e.watch ? ' · Watch-only' : ''))
+    .replace('{wallet}', e.wallet || '')
     .replace('{amount}', e.amount || '')
     .replace('{name}', e.name || '');
 }
-function namesSplit(e){
-  var shown = e.names.slice(0, MAX_NAMES);
-  return { shown: shown, more: e.names.length - shown.length };
-}
 // S2 entry type per IA id (D20: glyphs ≤ 3 — history / chain / info)
-var S2_TYPE  = { C05:'risk', C06:'risk', C07:'risk', C08:'condition', C02:'condition', C03:'condition', C04:'condition', C09:'identity', C01:'identity', C10:'resolved', C13:'resolved', C14:'resolved', C15:'resolved', C11:'resolved', C12:'resolved' };
+var S2_TYPE  = { C05:'risk', C06:'risk', C07:'risk', C08:'condition', C02:'condition', C03:'condition', C04:'condition', C09:'identity', C01:'identity', C10:'resolved', C13:'resolved', C14:'resolved', C15:'resolved', C11:'resolved' };
 var S2_GLYPH = { C08:'history', C02:'chain', C03:'info', C04:'info' };
 var GLYPH = {
   history: '<svg viewBox="0 0 16 20" fill="none" aria-hidden="true"><circle cx="8" cy="10" r="6.25" stroke="currentColor" stroke-width="1.5"/><path d="M8 6.75V10l2.4 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
@@ -579,13 +569,7 @@ function entryHTML_S1(e){
   var label = fillText(e, e.label);
   var body, cls = 'tt-body';
   if (e.hex && typeof e.hex === 'string'){ body = hexHTML(e.hex); cls += ' tt-hex'; }
-  else if (Array.isArray(e.names)){
-    var ns = namesSplit(e);
-    body = '<div class="tt-names">' + ns.shown.map(function(n){ return '<div class="tt-name">' + escapeHTML(n) + '</div>'; }).join('') +
-           (ns.more > 0 ? '<div class="tt-more-names">+' + ns.more + ' more</div>' : '') + '</div>';
-  } else {
-    body = escapeHTML(fillText(e, e.body));
-  }
+  else { body = escapeHTML(fillText(e, e.body)); }
   return '<div class="tt-entry tt-labeled" data-ctx="' + e.id + '" data-type="labeled"><div class="tt-label">' + escapeHTML(label) + '</div><div class="' + cls + '">' + body + '</div></div>';
 }
 
@@ -605,8 +589,8 @@ function entryHTML_S2(e){
     return open + '<div class="s2-row">' + glyph + '<div class="s2-text"><div class="s2-title">' + escapeHTML(fillText(e, e.label)) + '</div><div class="s2-desc">' + escapeHTML(fillText(e, e.body)) + '</div></div></div></div>';
   }
   if (type === 'identity'){
-    // avatar = 昵称/钱包名首字母；来源小字：Address book / My wallet / My wallet · Watch-only（D9）
-    var src   = e.id === 'C01' ? ('My wallet' + (e.watch ? ' · Watch-only' : '')) : 'Address book';
+    // avatar = 昵称/钱包名首字母；来源小字：Address book / My wallet
+    var src   = e.id === 'C01' ? 'My wallet' : 'Address book';
     var title = e.id === 'C01' ? (e.wallet || '') : (e.nickname || '');
     return open + '<div class="s2-row"><span class="s2-avatar" aria-hidden="true">' + initial(title) + '</span><div class="s2-text"><div class="s2-titlerow"><span class="s2-title">' + escapeHTML(title) + '</span><span class="s2-src">' + escapeHTML(src) + '</span></div></div></div></div>';
   }
@@ -614,33 +598,33 @@ function entryHTML_S2(e){
   if (e.hex && typeof e.hex === 'string'){
     return open + '<div class="s2-label">' + escapeHTML(fillText(e, e.label)) + '</div><div class="tt-hex">' + hexHTML(e.hex) + '</div></div>';
   }
-  if (Array.isArray(e.names)){
-    var ns = namesSplit(e);
-    var primary = ns.shown[0] || '';
-    var others = ns.shown.slice(1).map(function(n){ return '<span class="tt-name">' + escapeHTML(n) + '</span>'; });
-    if (ns.more > 0) others.push('<span class="tt-more-names">+' + ns.more + ' more</span>');
-    return open + '<div class="s2-row"><span class="s2-avatar" aria-hidden="true">' + initial(primary) + '</span><div class="s2-text"><div class="s2-titlerow"><span class="s2-title tt-name">' + escapeHTML(primary) + '</span><span class="s2-src">' + escapeHTML(fillText(e, e.label)) + '</span></div>' +
-           (others.length ? '<div class="s2-names">' + others.join('<span class="s2-sep"> · </span>') + '</div>' : '') + '</div></div></div>';
-  }
   var nm = fillText(e, e.body);
   return open + '<div class="s2-row"><span class="s2-avatar" aria-hidden="true">' + initial(nm) + '</span><div class="s2-text"><div class="s2-titlerow"><span class="s2-title">' + escapeHTML(nm) + '</span><span class="s2-src">' + escapeHTML(fillText(e, e.label)) + '</span></div></div></div></div>';
 }
 function entryRenderer(skin){ return skin === 's2' ? entryHTML_S2 : entryHTML_S1; }
 
 var CHEV = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="m2.5 4.5 3.5 3.5 3.5-3.5" stroke="#111D4A" stroke-opacity=".6" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+// v1.2: C08「无交易记录」之后若还有其它 Entry → 紧随其后插入分割线 .tt-sep
+//       （与皮肤无关；Info 态在 .tt-main 内、风险态在折叠区 .tt-fold-inner 内；对比视图复用同一函数）
+function entriesHTML(list, E){
+  return list.map(function(e, i){
+    var sep = (e.id === 'C08' && i < list.length - 1) ? '<div class="tt-sep" data-after="C08" aria-hidden="true"></div>' : '';
+    return E(e) + sep;
+  }).join('');
+}
 // Shared structure (IA §3 order + fold rule) — identical for both skins; only entries differ.
 function tooltipHTML(m, skin, ids){
   var E = entryRenderer(skin);
   ids = ids || { more:'ttMore', fold:'ttFold' };
   var html = '';
   if (m.folded){
-    html += '<div class="tt-main">' + m.risk.map(E).join('') + '</div>';
+    html += '<div class="tt-main">' + entriesHTML(m.risk, E) + '</div>';
     html += '<div class="tt-divider"></div>';
     html += '<button type="button" class="tt-more" id="' + ids.more + '" aria-expanded="false" aria-controls="' + ids.fold + '"><span>More address info (' + (m.rest.length + m.truncated) + ')</span>' + CHEV + '</button>';
-    html += '<div class="tt-fold" id="' + ids.fold + '" aria-hidden="true"><div><div class="tt-fold-inner">' + m.rest.map(E).join('') +
+    html += '<div class="tt-fold" id="' + ids.fold + '" aria-hidden="true"><div><div class="tt-fold-inner">' + entriesHTML(m.rest, E) +
             (m.truncated ? '<div class="tt-truncate">+' + m.truncated + ' more details</div>' : '') + '</div></div></div>';
   } else {
-    html += '<div class="tt-main">' + m.risk.concat(m.rest).map(E).join('') +
+    html += '<div class="tt-main">' + entriesHTML(m.risk.concat(m.rest), E) +
             (m.truncated ? '<div class="tt-truncate">+' + m.truncated + ' more details</div>' : '') + '</div>';
   }
   return html;
