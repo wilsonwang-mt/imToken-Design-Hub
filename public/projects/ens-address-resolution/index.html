@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Prototype — 转账地址解析 Tooltip v1.4 · imToken UXD</title>
+<title>Prototype — 转账地址解析 Tooltip v1.5 · imToken UXD</title>
 <style>
 /* v1.2 变更（Wilson 决定）：已删除「观察钱包」场景与「反向解析多域名」场景（当前均无该解析能力）；
    C08「无交易记录」之后若还有其它 Entry → 插入分割线（.tt-sep，任意皮肤 / Info 态 / 风险展开态折叠区 / 对比视图）。 */
@@ -311,7 +311,7 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
 .rules li b{font-weight:600}
 .rules li span{display:block;margin-top:2px;font-size:12px;line-height:16px;color:var(--deep60)}
 
-/* anatomy */
+/* anatomy — 组件原样渲染，右侧用色条 + 文字标注（不在组件上画框） */
 .anatomy{margin-top:28px}
 .anatomy .ahead{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
 .anatomy h2{font-size:15px;font-weight:600;line-height:22px}
@@ -322,38 +322,29 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
 .ana .acap{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;line-height:18px;margin-bottom:14px}
 .ana .acap .tagx{display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:7px;font-size:11px;font-weight:500;background:var(--deep08);color:var(--deep60)}
 .ana .acap .tagx.w{background:var(--warn20);color:var(--warn)}
-.ana-body{display:grid;grid-template-columns:343px minmax(260px,1fr);gap:28px;align-items:start}
+.ana .acap .hintx{margin-left:auto;font-size:11px;font-weight:400;color:var(--deep60)}
+.ana-body{position:relative;display:grid;grid-template-columns:343px minmax(240px,1fr);gap:24px;align-items:start;padding-top:12px}
 @media (max-width:600px){.ana-body{grid-template-columns:1fr}}
 .ana .tt{opacity:1;transform:none;transition:none;filter:drop-shadow(0 4px 24px rgba(0,0,0,.12))}
-.ana .tt *{transition:none!important}
-.ana .tt-more{cursor:default}
-.ana .tt-fold{grid-template-rows:1fr}
-.ana .tt-fold-inner{opacity:1}
-/* region overlays */
-.reg{position:relative;border-radius:8px;outline:1.5px dashed;outline-offset:6px}
-.reg.r1{outline-color:var(--blue)}
-.reg.r2{outline-color:rgba(17,29,74,.5)}
-.reg::after{content:attr(data-tag);position:absolute;right:-6px;top:-18px;font-family:var(--mono);font-size:10px;line-height:14px;padding:0 6px;border-radius:4px;color:#fff}
-.reg.r1::after{background:var(--blue)}
-.reg.r2::after{background:var(--deep)}
-.ana-sep{position:relative}
-.ana-sep::after{content:"分割线";position:absolute;left:-6px;top:-9px;font-family:var(--mono);font-size:10px;line-height:14px;padding:0 6px;border-radius:4px;background:#9598AB;color:#fff}
-.ana-fold{position:relative;border-radius:8px;outline:1.5px dashed #9598AB;outline-offset:4px}
-.ana-fold::after{content:"折叠入口";position:absolute;right:-6px;top:-16px;font-family:var(--mono);font-size:10px;line-height:14px;padding:0 6px;border-radius:4px;background:#9598AB;color:#fff}
-.ana .ord{position:absolute;left:-30px;top:0;width:18px;height:18px;border-radius:50%;background:var(--deep);color:#fff;font-size:10px;font-weight:600;line-height:18px;text-align:center}
-.ana .tt-entry{position:relative}
-.notes{list-style:none;display:flex;flex-direction:column;gap:10px}
-.notes li{position:relative;padding-left:26px;font-size:12px;line-height:17px;color:var(--deep)}
-.notes li .sw{position:absolute;left:0;top:2px;width:14px;height:14px;border-radius:4px}
-.notes li .sw.r1{background:var(--blue)}
-.notes li .sw.r2{background:var(--deep)}
-.notes li .sw.sep{background:#9598AB}
-.notes li b{font-weight:600}
-.notes li span{display:block;color:var(--deep60)}
+.ana .tt-more{cursor:pointer}
+.ana-side{position:relative;min-height:100%}
+.ann{position:absolute;left:0;right:0;padding-left:16px;opacity:1;transition:opacity 200ms var(--ease)}
+.ann.is-hidden{opacity:0;pointer-events:none}
+.ann .bar{position:absolute;left:0;top:0;width:4px;border-radius:2px;background:var(--deep)}
+.ann.sep .txt b{display:inline;margin-right:6px}
+.ann.r1 .bar{background:var(--blue)}
+.ann.r2 .bar{background:var(--deep)}
+.ann.sep .bar{background:#9598AB}
+.ann .txt{font-size:12px;line-height:17px;color:var(--deep60);padding-top:1px}
+.ann .txt b{display:block;font-weight:600;color:var(--deep);margin-bottom:1px}
+.ann .txt .k{font-family:var(--mono);font-size:10px;letter-spacing:.3px;margin-right:6px}
+.ann.r1 .txt .k{color:var(--blue)}
+.ann.r2 .txt .k{color:var(--deep)}
+.ann.sep .txt .k{color:#9598AB}
 </style>
 </head>
 <body class="skin-s1">
-<div class="ver" id="ver">v1.4</div>
+<div class="ver" id="ver">v1.5</div>
 <!-- ===================== INTRO · 解析对象与信息架构（2026-10-08 团队讨论口径） ===================== -->
 <section class="intro" id="intro" aria-labelledby="intro-title">
   <p class="eyebrow">01 · WHAT THE TOOLTIP RESOLVES</p>
@@ -399,64 +390,54 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
   <div class="anatomy">
     <div class="ahead">
       <h2>组件解剖：两个内容区域在 Tooltip 中的位置</h2>
-      <p>以 S1 极简版渲染；虚线框与标签为解剖标注，不属于组件本身。</p>
+      <p>组件按 S1 极简版原样渲染；右侧色条标出对应区域，文字说明其规则。</p>
     </div>
     <div class="ana-grid">
 
       <!-- Anatomy A · Level 1 -->
-      <div class="ana skin-s1">
+      <div class="ana skin-s1" id="anaA">
         <div class="acap"><span class="tagx">Info</span>Risk Level 1 · 无交易记录 + 地址本 + ENS 正向解析</div>
         <div class="ana-body">
           <div class="tt" data-level="info" data-expanded="false">
             <div class="tt-arrow"><svg width="30" height="11" viewBox="0 0 30 11"><path d="M0 11 15 0l15 11z" fill="#fff"/></svg></div>
             <div class="tt-main">
-              <div class="reg r1" data-tag="区域一 · RISK LEVEL">
-                <div class="tt-entry tt-sentence">You haven't transacted with this address before.</div>
-              </div>
-              <div class="tt-sep ana-sep"></div>
-              <div class="reg r2" data-tag="区域二 · ADDRESS INFO">
-                <div class="tt-main">
-                  <div class="tt-entry tt-labeled"><span class="ord">2</span><div class="tt-label">Address book</div><div class="tt-body">Alice</div></div>
-                  <div class="tt-entry tt-labeled"><span class="ord">3</span><div class="tt-label">ENS · Resolved address</div><div class="tt-body tt-hex"><span class="hx0">0x</span><span class="hx">9b57</span><span class="hxm">48e79638c895cD34B7aF5215eBc40ad7</span><span class="hx">1f72</span></div></div>
-                </div>
+              <div class="tt-entry tt-sentence" data-reg="r1">You haven't transacted with this address before.</div>
+              <div class="tt-sep" data-reg="sep"></div>
+              <div class="tt-main" data-reg="r2">
+                <div class="tt-entry tt-labeled"><div class="tt-label">Address book</div><div class="tt-body">Alice</div></div>
+                <div class="tt-entry tt-labeled"><div class="tt-label">ENS · Resolved address</div><div class="tt-body tt-hex"><span class="hx0">0x</span><span class="hx">9b57</span><span class="hxm">48e79638c895cD34B7aF5215eBc40ad7</span><span class="hx">1f72</span></div></div>
               </div>
             </div>
           </div>
-          <ul class="notes">
-            <li><span class="sw r1"></span><b>区域一 · Risk Level 表达</b><span>L1 为一句事实陈述，无标题、无彩色；L0 时整个区域不出现，Tooltip 直接从区域二开始。</span></li>
-            <li><span class="sw sep"></span><b>分割线</b><span>区域一与区域二之间固定一条 1px 分割线，表明两者性质不同。</span></li>
-            <li><span class="sw r2"></span><b>区域二 · Address info 列表</b><span>按 ① 专项信息识别 → ② 地址标记（地址本 &gt; 我的钱包）→ ③ ENS 解析结果 排序。本例未命中专项信息，所以从 ② 开始；若命中（如 IBC、未激活），它会排在列表最前。</span></li>
-          </ul>
+          <div class="ana-side">
+            <div class="ann r1" data-for="r1"><span class="bar"></span><div class="txt"><b><span class="k">区域一</span>Risk Level 表达</b>L1 是一句事实陈述，无标题、无彩色。L0 时整个区域不出现，Tooltip 直接从区域二开始。</div></div>
+            <div class="ann sep" data-for="sep"><span class="bar"></span><div class="txt"><b><span class="k">分割线</span></b>区域一与区域二之间固定一条 1px 分割线。</div></div>
+            <div class="ann r2" data-for="r2"><span class="bar"></span><div class="txt"><b><span class="k">区域二</span>Address info 列表</b>按 ① 专项信息识别 → ② 地址标记（地址本 &gt; 我的钱包）→ ③ ENS 解析结果排序。本例未命中专项信息，所以从地址本开始；若命中（IBC、未激活），它会排在最前。</div></div>
+          </div>
         </div>
       </div>
 
-      <!-- Anatomy B · Level 2 expanded -->
-      <div class="ana skin-s1">
-        <div class="acap"><span class="tagx w">Warning</span>Risk Level 2 · 展开态（默认折叠，图示为用户展开后）</div>
+      <!-- Anatomy B · Level 2 (default collapsed, click to expand) -->
+      <div class="ana skin-s1" id="anaB">
+        <div class="acap"><span class="tagx w">Warning</span>Risk Level 2 / 3 · 同一样式，默认折叠<span class="hintx">点「More address info」展开</span></div>
         <div class="ana-body">
-          <div class="tt" data-level="warning" data-expanded="true">
+          <div class="tt" data-level="warning" data-expanded="false" id="anaBtt">
             <div class="tt-arrow"><svg width="30" height="11" viewBox="0 0 30 11"><path d="M0 11 15 0l15 11z" fill="#fff"/></svg></div>
             <div class="tt-main">
-              <div class="reg r1" data-tag="区域一 · RISK LEVEL">
-                <div class="tt-entry tt-risk"><div class="tt-risk-title">Warning</div><div class="tt-risk-body">Recent activity on this address appears unusual. Double-check before sending.</div></div>
-              </div>
-              <div class="tt-divider ana-sep"></div>
-              <div class="ana-fold"><div class="tt-more" role="presentation"><span>More address info (2)</span><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#111D4A" stroke-opacity=".6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l4 4 4-4"/></svg></div></div>
+              <div class="tt-entry tt-risk" data-reg="r1"><div class="tt-risk-title">Warning</div><div class="tt-risk-body">Recent activity on this address appears unusual. Double-check before sending.</div></div>
               <div class="tt-divider"></div>
-              <div class="reg r2" data-tag="区域二 · ADDRESS INFO（折叠区）">
-                <div class="tt-main">
-                  <div class="tt-entry tt-labeled"><span class="ord">1</span><div class="tt-label">Osmosis address</div><div class="tt-body">Funds will be sent via IBC cross-chain.</div></div>
-                  <div class="tt-entry tt-labeled"><span class="ord">2</span><div class="tt-label">Address book</div><div class="tt-body">Alice</div></div>
-                </div>
-              </div>
+              <button type="button" class="tt-more" id="anaBMore" aria-expanded="false" aria-controls="anaBFold" data-reg="fold"><span>More address info (2)</span><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#111D4A" stroke-opacity=".6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l4 4 4-4"/></svg></button>
+              <div class="tt-fold" id="anaBFold"><div><div class="tt-fold-inner" data-reg="r2">
+                <div class="tt-entry tt-labeled"><div class="tt-label">Osmosis address</div><div class="tt-body">Funds will be sent via IBC cross-chain.</div></div>
+                <div class="tt-entry tt-labeled"><div class="tt-label">Address book</div><div class="tt-body">Alice</div></div>
+              </div></div></div>
             </div>
           </div>
-          <ul class="notes">
-            <li><span class="sw r1"></span><b>区域一 · 风险条目常显</b><span>L2 / L3 用「标题 + 正文」结构，颜色只在输入框 Tag 上，Tooltip 内不用彩色。</span></li>
-            <li><span class="sw sep"></span><b>折叠入口</b><span>Risk Level ≥ 2 时区域二默认折叠为「More address info (N)」，N = 折叠条数；∨ / ∧ 可反复切换。</span></li>
-            <li><span class="sw r2"></span><b>区域二 · 展开后同一套排序</b><span>本例命中专项信息（Osmosis / IBC），排在 ① 位，地址本 ② 紧随其后。</span></li>
-            <li><span class="sw sep"></span><b>唤起与收起</b><span>此态自动唤起后不自动消失；点击空白区域或与其他控件交互时收起。</span></li>
-          </ul>
+          <div class="ana-side">
+            <div class="ann r1" data-for="r1"><span class="bar"></span><div class="txt"><b><span class="k">区域一</span>风险条目常显</b>L2 / L3 用「标题 + 正文」，颜色只在输入框 Tag 上。自动唤起后不自动消失，点空白或与其他控件交互才收起。</div></div>
+            <div class="ann sep" data-for="fold"><span class="bar"></span><div class="txt"><b><span class="k">折叠入口</span></b>Risk Level ≥ 2 时区域二默认折叠为「More address info (N)」，N = 折叠条数；∨ / ∧ 可反复切换。</div></div>
+            <div class="ann r2 is-hidden" data-for="r2"><span class="bar"></span><div class="txt"><b><span class="k">区域二</span>展开后同一套排序</b>本例命中专项信息（Osmosis / IBC），排在 ① 位，地址本 ② 紧随其后。</div></div>
+          </div>
         </div>
       </div>
 
@@ -555,7 +536,7 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
   <!-- ===================== PANEL ===================== -->
   <aside class="panel">
     <h1>场景选择器</h1>
-    <p class="sub">转账地址解析 Tooltip v1 · 依据 P1 IA 矩阵 §3 顺序 / §4 状态机 / §6 动效 · 场景按 01 口径分 5 类，点开即解释</p>
+    <p class="sub">转账地址解析 Tooltip v1 · 依据 P1 IA 矩阵 §3 顺序 / §4 状态机 / §6 动效 · 场景按 01 口径分 5 类</p>
 
     <!-- 2026-10-08 Wilson：隐藏 S1/S2 切换与对比入口（代码保留，仅隐藏） -->
     <div class="row" id="skinRow" hidden>
@@ -580,7 +561,7 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
       <div class="log-head"><span>状态机日志</span><span class="state" id="stateNow">idle</span></div>
       <ol class="log" id="log"></ol>
     </div>
-    <p class="hint">直达：<code>#scene=10&amp;step=expanded</code>（scene = 1…13 全局编号，类别内的 A1 / B2… 为局部编号 · step = typed / resolving / shown / expanded / dismissed）· 点手机空白处关闭 · 点 Tag 再次唤起 · Esc 关闭 · 折叠入口 ∨/∧ 可反复切换 · C08「无交易记录」之后若还有其它地址信息会出现分割线</p>
+    <p class="hint">直达：<code>#scene=10&amp;step=expanded</code>（scene = 1…13 · step = typed / resolving / shown / expanded / dismissed）· 点手机空白处关闭 · 点 Tag 再次唤起 · Esc 关闭 · 折叠入口 ∨/∧ 可反复切换 · C08「无交易记录」之后若还有其它地址信息会出现分割线</p>
   </aside>
 
   <!-- ===================== COMPARE (S1 | S2, static) ===================== -->
@@ -1123,7 +1104,7 @@ function levelOf(scene){ return scene.unresolved ? 'error' : buildModel(scene).l
 CATS.forEach(function(cat){
   var sec = document.createElement('section');
   sec.className = 'cat'; sec.dataset.cat = cat.key; sec.setAttribute('aria-label', cat.key + ' · ' + cat.title);
-  sec.innerHTML = '<div class="cat-head"><span class="cat-key">' + cat.key + '</span><div><div class="cat-title">' + escapeHTML(cat.title) + '<span class="cat-dim">' + escapeHTML(cat.dim) + '</span></div><div class="cat-sub">' + escapeHTML(cat.sub) + '</div></div></div><ol class="scenes"></ol>';
+  sec.innerHTML = '<div class="cat-head"><div><div class="cat-title">' + escapeHTML(cat.title) + '<span class="cat-dim">' + escapeHTML(cat.dim) + '</span></div><div class="cat-sub">' + escapeHTML(cat.sub) + '</div></div></div><ol class="scenes"></ol>';
   var ol = sec.querySelector('.scenes');
   cat.scenes.forEach(function(n, j){
     var i = SCENES.findIndex(function(s){ return s.n === n; }); if (i < 0) return;
@@ -1131,13 +1112,10 @@ CATS.forEach(function(cat){
     var li = document.createElement('li');
     li.className = 'scene'; li.dataset.n = String(n); li.dataset.local = local;
     li.innerHTML =
-      '<button type="button" class="scene-btn" data-i="' + i + '" data-n="' + n + '" aria-pressed="false" aria-expanded="false" aria-controls="ex-' + n + '">' +
-        '<span class="num">' + local + '</span><span class="dot lv-' + lv + '"></span><span class="name">' + escapeHTML(s.title) + '</span><span class="meta">' + escapeHTML(s.meta) + '</span>' +
-      '</button>' +
-      '<div class="scene-ex" id="ex-' + n + '" aria-hidden="true"><div><div class="ex-card">' +
-        '<div class="ex-head"><span>' + local + ' · scene ' + n + '</span><span>#scene=' + n + '</span></div>' +
-        EX_KEYS.map(function(k){ return '<div class="ex-row" data-k="' + k[0] + '"><div class="ex-k">' + k[1] + '</div><div class="ex-v">' + escapeHTML(ex[k[0]] || '') + '</div></div>'; }).join('') +
-      '</div></div></div>';
+      /* v1.5 Wilson：面板简化——不再展开解释卡、不显示编号与 context 代码（解释内容保留在 EXPLAIN，后续搬到 Figma） */
+      '<button type="button" class="scene-btn" data-i="' + i + '" data-n="' + n + '" aria-pressed="false">' +
+        '<span class="dot lv-' + lv + '"></span><span class="name">' + escapeHTML(s.title) + '</span>' +
+      '</button>';
     ol.appendChild(li);
   });
   el.sceneList.appendChild(sec);
@@ -1145,13 +1123,11 @@ CATS.forEach(function(cat){
 // 同一时刻只展开当前激活场景；切换时上一张收起（grid-template-rows 过渡）
 function setActiveScene(index){
   Array.prototype.forEach.call(el.sceneList.querySelectorAll('.scene'), function(li){
-    var b = li.querySelector('.scene-btn'), ex = li.querySelector('.scene-ex');
+    var b = li.querySelector('.scene-btn');
     var on = parseInt(b.dataset.i, 10) === index;
     li.classList.toggle('is-open', on);
     b.classList.toggle('is-on', on);
     b.setAttribute('aria-pressed', on ? 'true' : 'false');
-    b.setAttribute('aria-expanded', on ? 'true' : 'false');
-    ex.setAttribute('aria-hidden', on ? 'false' : 'true');
   });
 }
 el.sceneList.addEventListener('click', function(ev){
@@ -1225,6 +1201,43 @@ window.proto = {
 
 boot();
 })();
+
+/* ---- 01 · 组件解剖：右侧色条随区域高度对齐；B 图默认折叠，展开后区域二说明再出现 ---- */
+(function(){
+  function layout(ana){
+    var tt = ana.querySelector('.tt'); if (!tt) return;
+    var ttTop = tt.getBoundingClientRect().top, prevBottom = 0;
+    ana.querySelectorAll('.ann').forEach(function(ann){
+      var reg = tt.querySelector('[data-reg="' + ann.dataset.for + '"]'); if (!reg) return;
+      var r = reg.getBoundingClientRect();
+      var regTop = r.top - ttTop, h = Math.max(r.height, 4);
+      if (ann.dataset.for === 'sep'){ regTop -= 6; h = 12; }
+      // 文字块不互相重叠：顶边取「区域顶边」与「上一条说明底边 + 10」的较大值；色条始终对齐区域
+      var top = Math.max(regTop, prevBottom);
+      if (ann.classList.contains('is-hidden')) top = regTop;
+      ann.style.top = top + 'px';
+      var bar = ann.querySelector('.bar'); bar.style.top = (regTop - top) + 'px'; bar.style.height = h + 'px';
+      if (!ann.classList.contains('is-hidden')) prevBottom = top + ann.offsetHeight + 10;
+    });
+  }
+  function layoutAll(){ document.querySelectorAll('.ana').forEach(layout); }
+  var more = document.getElementById('anaBMore'), tt = document.getElementById('anaBtt'), annR2 = document.querySelector('#anaB .ann[data-for="r2"]');
+  if (more && tt){
+    more.addEventListener('click', function(){
+      var on = tt.getAttribute('data-expanded') !== 'true';
+      tt.setAttribute('data-expanded', on ? 'true' : 'false');
+      more.setAttribute('aria-expanded', on ? 'true' : 'false');
+      if (!on && annR2) annR2.classList.add('is-hidden');
+      var t0 = Date.now();
+      (function tick(){ layoutAll(); if (Date.now() - t0 < 260) requestAnimationFrame(tick); else if (on && annR2) annR2.classList.remove('is-hidden'); })();
+    });
+  }
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(layoutAll);
+  window.addEventListener('load', layoutAll);
+  window.addEventListener('resize', layoutAll);
+  layoutAll();
+})();
+
 </script>
 <script src="/projects/site-nav.js" defer></script>
 </body>
