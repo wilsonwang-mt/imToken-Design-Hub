@@ -163,7 +163,7 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
 .tt-hex .hx{color:var(--deep)}
 
 /* ============================================================
-   3. Skin S1 · Zeid 优化   (.skin-s1)
+   3. Skin S1 · 极简版   (.skin-s1)
       label 12/60% + 正文 14；Info 态组间 14；hex 加重 600
    ============================================================ */
 .skin-s1 .tt[data-level="info"] .tt-main{gap:14px}
@@ -353,7 +353,7 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
     <div class="row">
       <span class="lbl">皮肤</span>
       <div class="seg" role="radiogroup" aria-label="皮肤">
-        <button type="button" class="is-on" data-skin="s1" role="radio" aria-checked="true">S1 · Zeid 优化</button>
+        <button type="button" class="is-on" data-skin="s1" role="radio" aria-checked="true">S1 · 极简版</button>
         <button type="button" data-skin="s2" role="radio" aria-checked="false">S2 · 身份头+条件列</button>
       </div>
     </div>
@@ -377,7 +377,7 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
   <!-- ===================== COMPARE (S1 | S2, static) ===================== -->
   <section class="compare" id="compare" aria-label="S1 / S2 对比">
     <div class="compare-col skin-s1" id="cmpS1">
-      <h3>S1 · Zeid 优化</h3>
+      <h3>S1 · 极简版</h3>
       <div class="cap" id="cmpCapS1"></div>
       <div class="tt" id="cmpTtS1" data-level="" data-expanded="false"><div class="tt-arrow" id="cmpArrowS1"><svg width="30" height="11" viewBox="0 0 30 11"><path d="M0 11 15 0l15 11z" fill="#fff"/></svg></div><div id="cmpContentS1"></div></div>
     </div>
@@ -568,7 +568,7 @@ var GLYPH = {
 };
 function initial(s){ var ch = Array.from(String(s || '').trim())[0] || '?'; return escapeHTML(ch.toUpperCase()); }
 
-/* ---- S1 · Zeid 优化：label 12 + 正文 14 ---- */
+/* ---- S1 · 极简版：label 12 + 正文 14 ---- */
 function entryHTML_S1(e){
   if (e.kind === 'risk'){
     return '<div class="tt-entry tt-risk" data-ctx="' + e.id + '" data-type="risk"><div class="tt-risk-title">' + escapeHTML(e.title) + '</div><div class="tt-risk-body">' + escapeHTML(e.body) + '</div></div>';
