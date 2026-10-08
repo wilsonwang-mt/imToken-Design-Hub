@@ -3,8 +3,18 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Prototype — 转账地址解析 Tooltip v2.1 · imToken UXD</title>
+<title>Prototype — 转账地址解析 Tooltip v2.3 · imToken UXD</title>
 <style>
+/* v2.3 变更（Wilson 定稿 2026-10-09）：专项信息（区域二 ①）正文文案定稿——label 已标明网络，正文不再重复「This address is…」，先说对用户的后果，一句话 ≤ 2 行：
+   C02「{chain} address」（IBC 场景 chain = 收款地址自身的格式 Osmosis，场景 7 ctx Cosmos → Osmosis）+「Funds will be sent via IBC cross-chain transfer.」；
+   C03「Tron address」+「Not activated yet. An extra {amount} will be spent to activate it.」（amount = 0.1 TRX）；
+   C04「TON bounceable address」+「Transfers work as usual. If the transfer fails, funds are returned to you automatically.」。
+   解剖图 B IBC 条目 / Part 2 Address info ① / EXPLAIN 7·8·9·15 同步；新增「专项信息文案优化 · 线上 → 定稿」对照块（#copyCmp，解剖图之后）。 */
+/* v2.2 变更（Wilson 决定 2026-10-09）：① Transaction Record（data-tone="record"）不再带色条——色条只用于 Warning（橙）/ High risk（红）；
+   交易历史条目 = 纯正文一行 / 两行，无标题、无色条，与其他正文左对齐（entryHTML_S1 / S2 在 tone === 'record' 时不输出 .tt-bar，
+   默认 .tt-bar 背景改为 transparent）。② Resolved full address 的地址内容采用与其他解析内容一致的字体 / 颜色 / 字号：SF Pro 14 / 140% / --deep / 400，
+   不再等宽、不再 12px、不再首 4 / 末 4 加重、不再中段变淡；允许自然换行（word-break:break-all），不再 nowrap / overflow hidden。
+   hexHTML 直接输出纯文本（escapeHTML），.hx0 / .hx / .hxm 规则与 D17 分段全部删除。Part 2 文案 / 解剖图 A·B·C / EXPLAIN / hint 同步。 */
 /* v2.1 变更（Wilson 定稿 2026-10-09）：区域二 label 文案定稿——C09「Saved in address book」（昵称示例改为更普遍的地址本名「Binance Deposit」，
    场景 12 的「Airdrop claim」保留）；C01 label「My wallet」+ 正文一行「{wallet} · {account}」（示例「DeFi Exploration · Account 01」）；
    C10/C13/C14/C15 四个正向解析服务统一「Resolved full address」（不再带 ENS/DAS/UNS/ZNS 前缀）；C11「ENS domain name」。
@@ -181,27 +191,25 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
 /* v1.12: 入口行消失后分割线直接接区域二，上边距补到 12，与 Info 态 .tt-divider[data-reg="sep"] 线到正文的距离一致 */
 .tt[data-expanded="true"] .tt-fold-inner{opacity:1;padding-top:12px}
 .tt-truncate{font-size:12px;line-height:16px;color:var(--deep60)}
-/* hex (D17): 0x 普通 · 0x 后首 4 + 末 4 加重 · 中段 70% */
-.tt-hex{font-family:var(--mono);font-size:12px;line-height:16px;letter-spacing:-.2px;white-space:nowrap;overflow:hidden;color:var(--deep70)}
-.tt-hex .hx0{color:var(--deep70);font-weight:400}
-.tt-hex .hxm{color:var(--deep70);font-weight:400}
-.tt-hex .hx{color:var(--deep)}
+/* v2.2 Wilson：Resolved full address 的地址全文与其他解析内容同一正文样式（继承 .tt-body / .tt-entry：14 / 140% / --deep / 400），
+   不再等宽、不再 12px、不加重、不变淡；允许自然换行（break-all），不再 nowrap / overflow hidden。D17 分段（.hx0 / .hx / .hxm）已删除 */
+.tt-hex{font:inherit;color:inherit;letter-spacing:0;white-space:normal;word-break:break-all;overflow-wrap:anywhere;overflow:visible}
 
 /* ============================================================
    3. Skin S1 · 极简版   (.skin-s1)
-      label 12/60% + 正文 14；Info 态组间 14；hex 加重 600
+      label 12/60% + 正文 14；Info 态组间 14；hex 与正文同样式（v2.2）
    ============================================================ */
 .skin-s1 .tt[data-level="info"] .tt-main{gap:14px}
 .skin-s1 .tt[data-level="info"] .tt-fold-inner{gap:14px}
 .skin-s1 .tt-entry{font-size:14px;line-height:140%;color:var(--deep)}
 .skin-s1 .tt-label{font-size:12px;line-height:130%;color:var(--deep60);margin-bottom:2px}
 .skin-s1 .tt-body{font-size:14px;line-height:140%;color:var(--deep)}
-.skin-s1 .tt-body.tt-hex{font-family:var(--mono);font-size:12px;line-height:16px;color:var(--deep70)}   /* beat .skin-s1 .tt-body */
 .skin-s1 .tt-sub{font-size:12px;line-height:130%;color:var(--deep60);margin-top:2px}   /* v1.4: C01 第三行 Account Name（label / title / subtitle） */
-.skin-s1 .tt-hex .hx{font-weight:600}
-/* v1.11 Wilson：区域一条目去标题（Tag 已有 Info/Warning/High risk 文字），改为左侧 3px 色条 + 正文；色条：Warning 橙 / High risk 红 / 交易历史 = Info Tag 文字色 */
+/* v1.11 Wilson：区域一条目去标题（Tag 已有 Info/Warning/High risk 文字），改为左侧 3px 色条 + 正文
+   v2.2 Wilson：色条只用于 Warning 橙 / High risk 红；Transaction Record（data-tone="record"）不输出 .tt-bar——纯正文，无标题、无色条，
+   与其他正文左对齐（flex 行只剩正文，等价于普通条目）。默认 .tt-bar 背景 transparent（无灰色默认） */
 .tt-risk{display:flex;align-items:stretch;gap:10px}
-.tt-risk .tt-bar{flex:0 0 3px;width:3px;border-radius:1.5px;background:var(--deep60)}
+.tt-risk .tt-bar{flex:0 0 3px;width:3px;border-radius:1.5px;background:transparent}
 .tt-risk[data-tone="warning"] .tt-bar{background:var(--warn)}
 .tt-risk[data-tone="high"] .tt-bar{background:var(--risk)}
 .tt-risk .tt-risk-title{display:none}
@@ -210,7 +218,7 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
 
 /* ============================================================
    3b. Skin S2 · 身份头 + 条件列   (.skin-s2)
-       Figma 3205:14148 Converge；字号 14/12 + 等宽 12；无彩色
+       Figma 3205:14148 Converge；字号 14/12（v2.2：hex 与正文同 14，不再等宽）；无彩色
        Risk / Condition(字形 ≤3) / Identity(头像) / Resolved / Fold
    ============================================================ */
 .skin-s2 .tt-entry{font-size:14px;line-height:20px;color:var(--deep)}
@@ -225,7 +233,6 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
 .skin-s2 .s2-titlerow{display:flex;flex-wrap:wrap;align-items:baseline;gap:0 6px}
 .skin-s2 .s2-src{font-size:12px;line-height:16px;color:var(--deep60)}
 .skin-s2 .s2-label{font-size:12px;line-height:16px;color:var(--deep60);margin-bottom:2px}
-.skin-s2 .tt-hex .hx{font-weight:500}
 .skin-s2 .tt-risk-title{font-size:14px;font-weight:600;line-height:20px;color:var(--deep)}
 .skin-s2 .tt-risk-body{font-size:14px;font-weight:400;line-height:20px;color:var(--deep);flex:1 1 auto;min-width:0}
 
@@ -347,6 +354,17 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
 .rules li{padding:9px 12px;border-radius:10px;background:var(--page);font-size:13px;line-height:18px}
 .rules li b{font-weight:600}
 .rules li span{display:block;margin-top:2px;font-size:12px;line-height:16px;color:var(--deep60)}
+/* v2.3: 专项信息文案对照块（线上 → 定稿）——沿用 .dim / .rules；每行左列线上文案、右列定稿、下方一行优化理由 */
+.copy-cmp{margin-top:20px}
+.copy-cmp .cmp-row{display:grid;grid-template-columns:1fr 24px 1fr;gap:10px;align-items:start}
+@media (max-width:720px){.copy-cmp .cmp-row{grid-template-columns:1fr}.copy-cmp .cmp-arrow{display:none}}
+.copy-cmp .cmp-cell{display:block}
+.copy-cmp .cmp-h{display:block;font-size:11px;line-height:16px;font-weight:600;color:var(--deep60);font-family:var(--mono);letter-spacing:.2px}
+.copy-cmp .cmp-h em{font-style:normal;color:var(--deep)}
+.copy-cmp .cmp-old{display:block;margin-top:2px;font-size:13px;line-height:18px;color:var(--deep60);text-decoration:line-through;text-decoration-color:var(--deep20)}
+.copy-cmp .cmp-new{display:block;margin-top:2px;font-size:13px;line-height:18px;color:var(--deep);font-weight:500}
+.copy-cmp .cmp-arrow{display:block;text-align:center;font-size:14px;line-height:18px;color:var(--deep40);margin-top:18px}
+.copy-cmp .cmp-why{display:block;margin-top:6px;padding-top:6px;border-top:1px dashed var(--deep08);font-size:12px;line-height:16px;color:var(--deep60)}
 
 /* anatomy — 组件原样渲染，右侧用色条 + 文字标注（不在组件上画框） */
 .anatomy{margin-top:28px}
@@ -418,7 +436,7 @@ html,body{background:var(--hub-ground)}
 </style>
 </head>
 <body class="skin-s1">
-<div class="ver" id="ver">v2.1</div>
+<div class="ver" id="ver">v2.3</div>
 <!-- ===================== INTRO · 解析对象与信息架构（2026-10-08 团队讨论口径） ===================== -->
 
 <div class="ambient" aria-hidden="true"><i class="b1"></i><i class="b2"></i><i class="b3"></i></div>
@@ -534,12 +552,12 @@ html,body{background:var(--hub-ground)}
         </div>
         <button type="button" class="btn ghost" id="compareBtn" aria-pressed="false" hidden>对比 S1 / S2</button>
       </div>
-      <div class="skin-note" id="skinNote" hidden>S2 · Converge「身份头 + 条件列」（Figma 3205:14148）：Condition 行单色字形 ≤3（chain / info；v1.9 起 Transaction Record 改用标题 + 正文，不再用 history 字形）· Identity 首字母头像 · hex 等宽 0x 后首 4 / 末 4 加重 · 容器与折叠规则同 S1</div>
+      <div class="skin-note" id="skinNote" hidden>S2 · Converge「身份头 + 条件列」（Figma 3205:14148）：Condition 行单色字形 ≤3（chain / info；v1.9 起 Transaction Record 改用标题 + 正文，不再用 history 字形）· Identity 首字母头像 · hex 地址全文与正文同字体字号、可换行（v2.2） · 容器与折叠规则同 S1</div>
 
       <!-- v2.0: 两个 Prototype 区由 PROTOS 渲染（各自一台手机 + 一个场景面板） -->
       <div class="protos" id="protos"></div>
 
-      <p class="hint">直达：<code>#scene=10&amp;step=expanded</code>（scene = 1…16 · step = typed / resolving / shown / expanded / dismissed · 场景属于哪个 Prototype 就在哪台手机上播放并选中对应 Tab / 卡片）· 点手机空白处只关闭该台的 tooltip · 点 Tag 再次唤起（回到默认收起态） · Esc 关闭 · 折叠入口点击展开、展开后不可收起 · C08「Transaction Record」只在 Tag = Info 时出现在区域一（分割线以上，左侧色条 + 正文，不带标题）；Warning / High risk 时不显示、不进折叠区</p>
+      <p class="hint">直达：<code>#scene=10&amp;step=expanded</code>（scene = 1…16 · step = typed / resolving / shown / expanded / dismissed · 场景属于哪个 Prototype 就在哪台手机上播放并选中对应 Tab / 卡片）· 点手机空白处只关闭该台的 tooltip · 点 Tag 再次唤起（回到默认收起态） · Esc 关闭 · 折叠入口点击展开、展开后不可收起 · C08「Transaction Record」只在 Tag = Info 时出现在区域一（分割线以上，纯正文，不带标题、不带色条——色条只用于 Warning / High risk）；Warning / High risk 时不显示、不进折叠区 · Resolved full address 的地址全文与其他内容同字体字号，可换行</p>
 
       <!-- ===================== COMPARE (S1 | S2, static · 隐藏，跟随最近操作的那台手机) ===================== -->
       <section class="compare" id="compare" aria-label="S1 / S2 对比">
@@ -571,9 +589,9 @@ html,body{background:var(--hub-ground)}
     <div class="dim">
       <span class="no">分割线以上</span>
       <h2><span class="pill r1">区域一</span>判断辅助信息</h2>
-      <p>帮助用户评判这个地址有没有风险的输入，与区域二的解析事实分开承载。等级由风控系统返回，体验层只区分 Info / Warning / High risk；Warning / High risk 时不显示交易历史。区域一条目不带标题（Tag 已说明等级），用左侧 3px 色条区分：橙 = Warning、红 = High risk、Info 文字色 = 交易历史（⏳ 探索中，与「popover 内无彩色」原则的例外）。色条的另一个好处：多条 Warning 同时命中时上下排列即可，色条引导逐条阅读；「标题 + 副标题」方式在多条 warning 时标题会重复，难以处理。</p>
+      <p>帮助用户评判这个地址有没有风险的输入，与区域二的解析事实分开承载。等级由风控系统返回，体验层只区分 Info / Warning / High risk；Warning / High risk 时不显示交易历史。区域一条目不带标题（Tag 已说明等级）；Warning / High risk 条目左侧有 3px 色条（橙 / 红）；Transaction Record 无色条、无标题，纯正文（色条 ⏳ 探索中，是「popover 内无彩色」原则的例外）。色条的另一个好处：多条 Warning 同时命中时上下排列即可，色条引导逐条阅读；「标题 + 副标题」方式在多条 warning 时标题会重复，难以处理。</p>
       <ul class="lv">
-        <li><span><b>Transaction Record</b>（交易历史）<small>Tag = Info 时展示：色条（Info Tag 文字色）+ 正文「You haven't transacted with this address before.」，不带标题。无法检测是否有交易记录 → 不显示；检测到有交易记录 → 目前拿不到具体记录，也不显示（未来支持后同样在此区块显示）。</small></span><span class="tagx">Info</span></li>
+        <li><span><b>Transaction Record</b>（交易历史）<small>Tag = Info 时展示：纯正文「You haven't transacted with this address before.」，无标题、无色条。无法检测是否有交易记录 → 不显示；检测到有交易记录 → 目前拿不到具体记录，也不显示（未来支持后同样在此区块显示）。</small></span><span class="tagx">Info</span></li>
         <li><span><b>Warning</b><small>可能存在风险，但未确认；橙色色条 + 正文常显，区域二折叠。</small></span><span class="tagx w">Warning</span></li>
         <li><span><b>High risk</b><small>明确存在风险；与 Warning 同一结构，色条与输入框 Tag 一起升级为红色。</small></span><span class="tagx h">High risk</span></li>
       </ul>
@@ -584,9 +602,9 @@ html,body{background:var(--hub-ground)}
       <h2><span class="pill r2">区域二</span>地址解析信息（Address info）</h2>
       <p>针对用户输入的地址 / 域名解析出来的事实，三类信息按下面的优先级在列表中排序：</p>
       <ol class="cls">
-        <li><span class="prio">优先级最高</span><b>专项信息识别 · 特定网络的地址解析</b><span>label 标识这是哪个网络的地址：Cosmos address（IBC 跨链）/ Tron address（未激活，需 0.1 TRX）/ TON bounceable address（反弹退回）…；正文写该网络的具体说明。同一个地址不可能来自不同网络，所以这类条目只会出现一条，并排在 Address info 最前</span></li>
+        <li><span class="prio">优先级最高</span><b>专项信息识别 · 特定网络的地址解析</b><span>label 标识这是哪个网络的地址：Osmosis address（IBC 跨链转账）/ Tron address（尚未激活，额外消耗 TRX 激活）/ TON bounceable address（转账失败自动退回）…；正文写该网络的具体说明。同一个地址不可能来自不同网络，所以这类条目只会出现一条，并排在 Address info 最前</span></li>
         <li><b>地址标记</b><span>是否是地址本存储的地址；是否是用户当前某个钱包中的账户地址。两者同时命中时同时显示（不二选一），「已存于地址本」排在「我的钱包」之前；多数情况下不会既是又是</span></li>
-        <li><b>ENS 正向 / 反向解析结果</b><span>正向：域名 → 解析出的地址全文（等宽单行、首尾加重）；反向：地址 → 关联的单个域名</span></li>
+        <li><b>ENS 正向 / 反向解析结果</b><span>正向：域名 → 解析出的地址全文（与其他内容同字体字号，可换行）；反向：地址 → 关联的单个域名</span></li>
       </ol>
     </div>
 
@@ -605,7 +623,7 @@ html,body{background:var(--hub-ground)}
   <div class="anatomy">
     <div class="ahead">
       <h2>组件解剖：两个信息区，各自承载一个信息维度</h2>
-      <p>区域一帮助用户<b>识别风险</b>（Transaction Record / Warning / High risk，左侧色条引导阅读）；区域二帮助用户<b>理解地址解析出来的 facts</b>（专项信息 → 地址标记 → ENS）。组件按 S1 极简版原样渲染，右侧色条标出对应区域。</p>
+      <p>区域一帮助用户<b>识别风险</b>（Transaction Record / Warning / High risk；Warning / High risk 左侧色条引导阅读）；区域二帮助用户<b>理解地址解析出来的 facts</b>（专项信息 → 地址标记 → ENS）。组件按 S1 极简版原样渲染，右侧色条标出对应区域。</p>
     </div>
     <div class="ana-grid">
 
@@ -616,18 +634,18 @@ html,body{background:var(--hub-ground)}
           <div class="tt" data-level="info" data-expanded="false">
             <div class="tt-arrow"><svg width="30" height="11" viewBox="0 0 30 11"><path d="M0 11 15 0l15 11z" fill="#fff"/></svg></div>
             <div class="tt-main" data-reg="r1">
-              <div class="tt-entry tt-risk" data-ctx="C08" data-type="record" data-tone="record"><span class="tt-bar" aria-hidden="true"></span><div class="tt-risk-title">Transaction Record</div><div class="tt-risk-body">You haven't transacted with this address before.</div></div>
+              <div class="tt-entry tt-risk" data-ctx="C08" data-type="record" data-tone="record"><div class="tt-risk-title">Transaction Record</div><div class="tt-risk-body">You haven't transacted with this address before.</div></div>
             </div>
             <div class="tt-divider" data-reg="sep"></div>
             <div class="tt-main" data-reg="r2">
               <div class="tt-entry tt-labeled"><div class="tt-label">Saved in address book</div><div class="tt-body">Binance Deposit</div></div>
-              <div class="tt-entry tt-labeled"><div class="tt-label">Resolved full address</div><div class="tt-body tt-hex"><span class="hx0">0x</span><span class="hx">9b57</span><span class="hxm">48e79638c895cD34B7aF5215eBc40ad7</span><span class="hx">1f72</span></div></div>
+              <div class="tt-entry tt-labeled"><div class="tt-label">Resolved full address</div><div class="tt-body tt-hex">0x9b5748e79638c895cD34B7aF5215eBc40ad71f72</div></div>
             </div>
           </div>
           <div class="ana-side">
-            <div class="ann r1" data-for="r1"><span class="bar"></span><div class="txt"><b><span class="k">区域一</span>判断辅助信息</b>Tag = Info 且检测到无交易记录时展示交易历史：左侧色条（Info Tag 文字色）+ 正文，不带标题——Tag 已经说明了等级；无法检测、或已有交易记录时此区域不出现。</div></div>
+            <div class="ann r1" data-for="r1"><span class="bar"></span><div class="txt"><b><span class="k">区域一</span>判断辅助信息</b>Tag = Info 且检测到无交易记录时展示交易历史：纯正文，不带标题也不带色条——Tag 已说明等级；无法检测、或已有交易记录时此区域不出现。</div></div>
             <div class="ann sep" data-for="sep"><span class="bar"></span><div class="txt"><b><span class="k">分割线</span></b>区域一与区域二之间一条分割线；区域二为空时没有。</div></div>
-            <div class="ann r2" data-for="r2"><span class="bar"></span><div class="txt"><b><span class="k">区域二</span>Address info 列表</b>顺序：① 专项信息识别 → ② 地址标记（地址本 &gt; 我的钱包）→ ③ ENS 解析结果。本例未命中专项信息，所以从地址本开始；若命中（IBC、未激活），它会排在地址本之前。条目之间只有正常间距。</div></div>
+            <div class="ann r2" data-for="r2"><span class="bar"></span><div class="txt"><b><span class="k">区域二</span>Address info 列表</b>顺序：① 专项信息识别 → ② 地址标记（地址本 &gt; 我的钱包）→ ③ ENS 解析结果。本例未命中专项信息，所以从地址本开始；若命中（IBC、未激活），它会排在地址本之前。条目之间只有正常间距；Resolved full address 的地址全文与其他内容同字体字号，可换行。</div></div>
           </div>
         </div>
       </div>
@@ -643,7 +661,7 @@ html,body{background:var(--hub-ground)}
               <div class="tt-divider"></div>
               <button type="button" class="tt-more" id="anaBMore" aria-expanded="false" aria-controls="anaBFold" data-reg="fold"><span>More address info (2)</span><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#111D4A" stroke-opacity=".6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l4 4 4-4"/></svg></button>
               <div class="tt-fold" id="anaBFold"><div><div class="tt-fold-inner" data-reg="r2">
-                <div class="tt-entry tt-labeled"><div class="tt-label">Cosmos address</div><div class="tt-body">Funds will be sent via IBC cross-chain.</div></div>
+                <div class="tt-entry tt-labeled"><div class="tt-label">Osmosis address</div><div class="tt-body">Funds will be sent via IBC cross-chain transfer.</div></div>
                 <div class="tt-entry tt-labeled"><div class="tt-label">Saved in address book</div><div class="tt-body">Binance Deposit</div></div>
               </div></div></div>
             </div>
@@ -651,7 +669,7 @@ html,body{background:var(--hub-ground)}
           <div class="ana-side">
             <div class="ann r1" data-for="r1"><span class="bar"></span><div class="txt"><b><span class="k">区域一</span>风险条目常显</b>Warning / High risk 不带标题（Tag 已说明等级），左侧 3px 色条用对应的橙 / 红，正文无彩色；此时不显示交易历史。自动唤起后不自动消失，点空白或与其他控件交互才收起。</div></div>
             <div class="ann sep" data-for="fold"><span class="bar"></span><div class="txt"><b><span class="k">折叠入口</span></b>Warning / High risk 时区域二默认折叠为「More address info (N)」，N = 折叠条数；点击展开地址解析信息；不提供手动收起——看完点空白处关闭 tooltip。</div></div>
-            <div class="ann r2 is-hidden" data-for="r2"><span class="bar"></span><div class="txt"><b><span class="k">区域二</span>展开后同一套排序</b>入口行已消失、不可收起；本例命中专项信息（Cosmos address · IBC），排在 ① 位，地址本 ② 紧随其后。</div></div>
+            <div class="ann r2 is-hidden" data-for="r2"><span class="bar"></span><div class="txt"><b><span class="k">区域二</span>展开后同一套排序</b>入口行已消失、不可收起；本例命中专项信息（Osmosis address · IBC 跨链转账），排在 ① 位，地址本 ② 紧随其后。</div></div>
           </div>
         </div>
       </div>
@@ -670,12 +688,12 @@ html,body{background:var(--hub-ground)}
               <div class="tt-divider" data-reg="sep"></div>
               <div class="tt-main" data-reg="r2">
                 <div class="tt-entry tt-labeled"><div class="tt-label">Saved in address book</div><div class="tt-body">Binance Deposit</div></div>
-                <div class="tt-entry tt-labeled"><div class="tt-label">Resolved full address</div><div class="tt-body tt-hex"><span class="hx0">0x</span><span class="hx">5C1e</span><span class="hxm">8A3f9B2d7E4c6A0f3D8b1E9c5A7d2F4b</span><span class="hx">6C8e</span></div></div>
+                <div class="tt-entry tt-labeled"><div class="tt-label">Resolved full address</div><div class="tt-body tt-hex">0x5C1e8A3f9B2d7E4c6A0f3D8b1E9c5A7d2F4b6C8e</div></div>
               </div>
             </div>
           </div>
           <div class="ana-side">
-            <div class="ann r1" data-for="r1"><span class="bar"></span><div class="txt"><b><span class="k">区域一</span>帮助用户识别风险</b>判断类信息：Transaction Record / Warning / High risk。多条 warning 同时命中时直接上下排列，每条一根色条引导逐条阅读——用「标题 + 副标题」则两条都叫 Warning，标题重复、层级会乱。</div></div>
+            <div class="ann r1" data-for="r1"><span class="bar"></span><div class="txt"><b><span class="k">区域一</span>帮助用户识别风险</b>判断类信息：Transaction Record / Warning / High risk。色条只用于 Warning / High risk；多条 warning 同时命中时直接上下排列，每条一根色条引导逐条阅读——用「标题 + 副标题」则两条都叫 Warning，标题重复、层级会乱。</div></div>
             <div class="ann sep" data-for="sep"><span class="bar"></span><div class="txt"><b><span class="k">分割线</span></b>两个信息维度的边界：上面是判断，下面是事实。</div></div>
             <div class="ann r2" data-for="r2"><span class="bar"></span><div class="txt"><b><span class="k">区域二</span>帮助用户理解解析出来的 facts</b>事实类信息，按 ① 专项信息识别 → ② 地址标记 → ③ ENS 解析 排序；Warning / High risk 时默认折叠，展开后入口行消失、不可收起。</div></div>
           </div>
@@ -683,6 +701,18 @@ html,body{background:var(--hub-ground)}
       </div>
 
     </div>
+  </div>
+
+  <!-- v2.3 · 专项信息文案对照：线上（PM 提供）→ 定稿（Wilson 2026-10-09） -->
+  <div class="dim copy-cmp" id="copyCmp">
+    <span class="no">v2.3 · 专项信息</span>
+    <h2>专项信息文案优化 · 线上 → 定稿</h2>
+    <p>区域二 ① 三条专项信息的正文改写。label 已标明网络，正文只说对用户的后果；左列为线上文案（PM 提供），右列为定稿。</p>
+    <ul class="rules">
+      <li data-ctx="C03"><div class="cmp-row"><span class="cmp-cell"><b class="cmp-h">线上 · Tron</b><span class="cmp-old">This address is not activated. It will cost {{num}} TRX to activate the address</span></span><span class="cmp-arrow" aria-hidden="true">→</span><span class="cmp-cell"><b class="cmp-h">定稿 · <em>Tron address</em></b><span class="cmp-new">Not activated yet. An extra {{num}} TRX will be spent to activate it.</span></span></div><span class="cmp-why">label 已标明网络 → 正文不再重复「This address is…」；先说后果（额外消耗的费用）；cost → extra … spent 更准确（是本次转账额外的支出，不是地址的价格）；一句话 ≤ 2 行。</span></li>
+      <li data-ctx="C04"><div class="cmp-row"><span class="cmp-cell"><b class="cmp-h">线上 · TON</b><span class="cmp-old">This is a bounceable address and supports normal transfers. If an error occurs, the funds will be automatically returned to you</span></span><span class="cmp-arrow" aria-hidden="true">→</span><span class="cmp-cell"><b class="cmp-h">定稿 · <em>TON bounceable address</em></b><span class="cmp-new">Transfers work as usual. If the transfer fails, funds are returned to you automatically.</span></span></div><span class="cmp-why">label 已标明「bounceable」→ 正文不再重复「This is a bounceable address」；先说后果（可正常转、失败会退款）；error → fails 更准确（用户关心的是转账失败，不是「错误」）；一句话 ≤ 2 行。</span></li>
+      <li data-ctx="C02"><div class="cmp-row"><span class="cmp-cell"><b class="cmp-h">线上 · IBC</b><span class="cmp-old">The receive address is in {{chainName}} address format, and the transfer will be executed as an IBC cross-chain transfer</span></span><span class="cmp-arrow" aria-hidden="true">→</span><span class="cmp-cell"><b class="cmp-h">定稿 · <em>{chainName} address</em>（IBC 场景 = Osmosis）</b><span class="cmp-new">Funds will be sent via IBC cross-chain transfer.</span></span></div><span class="cmp-why">label「{chainName} address」已标明收款地址的格式 → 正文不再重复「The receive address is in … format」；直接说怎么发（走 IBC 跨链）；一句话 ≤ 2 行。</span></li>
+    </ul>
   </div>
 </div>
     </div>
@@ -711,9 +741,11 @@ var CTX = {
   // v1.9 Wilson × Yiqun：C08 回到区域一，与 risk 同构（标题 + 正文，.tt-risk-title / .tt-risk-body）；只在 level === 'info' 时保留，Warning / High risk 时由 buildModel 剔除
   C08:{ rank:0, sub:1, kind:'record', title:'Transaction Record', body:"You haven't transacted with this address before." },
   // v1.13 Wilson：专项信息 = 特定网络的地址解析；label 标识这是哪个网络的地址，正文写该网络的说明；同一地址只属一个网络，这类条目只会出现一条，且排 Address info 最前
-  C02:{ rank:2, sub:0, kind:'labeled', label:'{chain} address',       body:'Funds will be sent via IBC cross-chain.' },
-  C03:{ rank:2, sub:1, kind:'labeled', label:'Tron address',          body:"The recipient account isn't activated yet. At least {amount} is needed to activate it." },
-  C04:{ rank:2, sub:2, kind:'labeled', label:'TON bounceable address', body:'If the recipient account is inactive, funds will be returned to you.' },
+  // v2.3 Wilson（2026-10-09）专项信息文案定稿：label 已标明网络，正文不再重复「This address is…」，先说对用户的后果（怎么发 / 费用 / 退款），一句话 ≤ 2 行；
+  //      C02 的 {chain} = 收款地址自身的格式（IBC 场景 = Osmosis）；C03 的 {amount} 填「0.1 TRX」（App 文案 {{num}} TRX）
+  C02:{ rank:2, sub:0, kind:'labeled', label:'{chain} address',       body:'Funds will be sent via IBC cross-chain transfer.' },
+  C03:{ rank:2, sub:1, kind:'labeled', label:'Tron address',          body:'Not activated yet. An extra {amount} will be spent to activate it.' },
+  C04:{ rank:2, sub:2, kind:'labeled', label:'TON bounceable address', body:'Transfers work as usual. If the transfer fails, funds are returned to you automatically.' },
   // v2.1 Wilson（2026-10-09）定稿 label：地址本 =「Saved in address book」；我的钱包 = label「My wallet」+ body 一行「{wallet} · {account}」；
   //      四个正向解析服务统一「Resolved full address」（不再带 ENS/DAS/UNS/ZNS 前缀）；反向解析 =「ENS domain name」
   C09:{ rank:3, kind:'labeled', label:'Saved in address book', body:'{nickname}' },
@@ -759,9 +791,9 @@ var SCENES = [
   { n:2,  title:'hex · 无交易记录',                      meta:'C08',                    chain:'eth', input:HEX.s2, ctx:[{id:'C08'}] },
   { n:3,  title:'hex · 无交易记录 + 地址本「Binance Deposit」', meta:'C08 + C09 · US2',    chain:'eth', input:HEX.s3, ctx:[{id:'C09', nickname:'Binance Deposit'},{id:'C08'}] },
   { n:4,  title:'hex · 我的钱包「DeFi Exploration」',     meta:'C01 · Account 01',       chain:'eth', input:HEX.s4, ctx:[{id:'C01', wallet:'DeFi Exploration', account:'Account 01'}] },
-  { n:5,  title:'ENS 正向解析 alice.eth',                meta:'C10 · hex 单行等宽',     chain:'eth', input:'alice.eth', ctx:[{id:'C10', hex:HEX_ALICE}] },
+  { n:5,  title:'ENS 正向解析 alice.eth',                meta:'C10 · 地址全文可换行',   chain:'eth', input:'alice.eth', ctx:[{id:'C10', hex:HEX_ALICE}] },
   { n:6,  title:'hex · 反向解析单域名',                  meta:'C11',                    chain:'eth', input:HEX_ALICE, ctx:[{id:'C11', name:'alice.eth'}] },
-  { n:7,  title:'Cosmos → Osmosis IBC',                 meta:'C02',                    chain:'cosmos', input:OSMO, ctx:[{id:'C02', chain:'Cosmos'}] },
+  { n:7,  title:'Cosmos → Osmosis IBC',                 meta:'C02',                    chain:'cosmos', input:OSMO, ctx:[{id:'C02', chain:'Osmosis'}] },   // v2.3: chain = 收款地址自身的格式（Osmosis），不是用户所在链
   { n:8,  title:'Tron 未激活',                           meta:'C03',                    chain:'tron', input:TRON, ctx:[{id:'C03', amount:'0.1 TRX'}] },
   { n:9,  title:'TON bounceable',                        meta:'C04',                    chain:'ton',  input:TONA, ctx:[{id:'C04'}] },
   { n:10, title:'Warning · warning 地址 + ENS 解析',     meta:'C06 + C10 · 折叠→点展开', chain:'eth', input:'bob.eth', ctx:[{id:'C10', hex:HEX.s10},{id:'C06'}] },
@@ -832,15 +864,13 @@ function buildModel(scene){
 }
 
 /* ---------- entry rendering (shared helpers) ---------- */
-// D17: `0x` plain · first 4 after 0x + last 4 emphasised · middle 70%
+// v2.2 Wilson：地址全文 = 纯文本，与其他解析内容同字体 / 颜色 / 字号（14 / --deep / 400），可换行；D17 的 0x / 首 4 / 末 4 分段已删除
 function hexHTML(h){
-  var has0x = /^0x/i.test(h);
-  var p = has0x ? h.slice(0,2) : '';
-  var r = has0x ? h.slice(2) : h;
-  return (p ? '<span class="hx0">' + escapeHTML(p) + '</span>' : '') +
-         '<span class="hx">' + escapeHTML(r.slice(0,4)) + '</span>' +
-         '<span class="hxm">' + escapeHTML(r.slice(4,-4)) + '</span>' +
-         '<span class="hx">' + escapeHTML(r.slice(-4)) + '</span>';
+  return escapeHTML(h);
+}
+// v2.2: 3px 色条只用于 Warning（橙）/ High risk（红）；Transaction Record（tone = record）不输出色条
+function barHTML(tone){
+  return (tone === 'warning' || tone === 'high') ? '<span class="tt-bar" aria-hidden="true"></span>' : '';
 }
 function fillText(e, tpl){
   return tpl
@@ -865,9 +895,10 @@ function initial(s){ var ch = Array.from(String(s || '').trim())[0] || '?'; retu
 /* ---- S1 · 极简版：label 12 + 正文 14 ---- */
 function entryHTML_S1(e){
   // v1.9: risk（Warning / High risk）与 record（Transaction Record）同一「标题 + 正文」结构，只有 data-type 不同
+  // v2.2: 色条只用于 Warning / High risk；record 不输出 .tt-bar（纯正文，无标题、无色条）
   if (e.kind === 'risk' || e.kind === 'record'){
     var tone = e.kind === 'record' ? 'record' : (e.level || 'warning');
-    return '<div class="tt-entry tt-risk" data-ctx="' + e.id + '" data-type="' + e.kind + '" data-tone="' + tone + '"><span class="tt-bar" aria-hidden="true"></span><div class="tt-risk-title">' + escapeHTML(e.title) + '</div><div class="tt-risk-body">' + escapeHTML(e.body) + '</div></div>';
+    return '<div class="tt-entry tt-risk" data-ctx="' + e.id + '" data-type="' + e.kind + '" data-tone="' + tone + '">' + barHTML(tone) + '<div class="tt-risk-title">' + escapeHTML(e.title) + '</div><div class="tt-risk-body">' + escapeHTML(e.body) + '</div></div>';
   }
   if (e.kind === 'sentence'){
     return '<div class="tt-entry tt-sentence" data-ctx="' + e.id + '" data-type="sentence">' + escapeHTML(e.body) + '</div>';
@@ -886,9 +917,9 @@ function entryHTML_S1(e){
 function entryHTML_S2(e){
   var type = S2_TYPE[e.id] || (e.kind === 'risk' || e.kind === 'record' ? e.kind : 'condition');
   var open = '<div class="tt-entry s2-' + type + '" data-ctx="' + e.id + '" data-type="' + type + '">';
-  if (type === 'risk' || type === 'record'){   // v1.9: Transaction Record 与 risk 同结构；v1.11: 色条 + 正文，无标题
+  if (type === 'risk' || type === 'record'){   // v1.9: Transaction Record 与 risk 同结构；v1.11: 色条 + 正文，无标题；v2.2: record 无色条
     var tone = type === 'record' ? 'record' : (e.level || 'warning');
-    return '<div class="tt-entry s2-' + type + ' tt-risk" data-ctx="' + e.id + '" data-type="' + type + '" data-tone="' + tone + '"><span class="tt-bar" aria-hidden="true"></span><div class="tt-risk-title">' + escapeHTML(e.title) + '</div><div class="tt-risk-body">' + escapeHTML(e.body) + '</div></div>';
+    return '<div class="tt-entry s2-' + type + ' tt-risk" data-ctx="' + e.id + '" data-type="' + type + '" data-tone="' + tone + '">' + barHTML(tone) + '<div class="tt-risk-title">' + escapeHTML(e.title) + '</div><div class="tt-risk-body">' + escapeHTML(e.body) + '</div></div>';
   }
   if (type === 'condition'){
     var g = S2_GLYPH[e.id] || 'info';
@@ -1003,8 +1034,8 @@ var EXPLAIN = {
         rule:'Tag = 无；无 Tooltip，Tag 位置为空；Next 可用；保留「Add to address book」入口。',
         why:'两个区域都没有内容时不显示 Tag，所以输入框右侧为空，也没有可唤起的 Tooltip。' },
   2:  { dim:'区域一：Transaction Record · 区域二为空。',
-        type:'C08 无交易记录：帮助用户评判风险的输入，Tag = Info 时放在区域一（分割线以上），与 Warning / High risk 同一信息层级，同一「色条 + 正文」结构（色条用 Info Tag 文字色）。',
-        rule:'Tag = Info；左侧色条（Info Tag 文字色）+ 正文「You haven\'t transacted with this address before.」，不带标题；不折叠；区域二为空，所以没有分割线；自动唤起后 4s 收起；点 Tag 可再次唤起。',
+        type:'C08 无交易记录：帮助用户评判风险的输入，Tag = Info 时放在区域一（分割线以上），与 Warning / High risk 同一信息层级；纯正文，无标题、无色条（色条只用于 Warning / High risk）。',
+        rule:'Tag = Info；纯正文「You haven\'t transacted with this address before.」，无标题、无色条，与其他正文左对齐；不折叠；区域二为空，所以没有分割线；自动唤起后 4s 收起；点 Tag 可再次唤起。',
         why:'无交易记录不是解析出来的事实，而是判断输入，所以放在分割线以上；本例没有任何地址信息，Tooltip 只有区域一这一个区块。' },
   3:  { dim:'区域一：Transaction Record · 区域二 ②。',
         type:'C08 无交易记录 · C09 地址本命中（Binance Deposit）。',
@@ -1016,24 +1047,24 @@ var EXPLAIN = {
         why:'标记只回答「这是谁」——给自己的哪个钱包、哪个账户转账，所以 label 固定「My wallet」，正文用「钱包名 · 账户名」一行表达，不做风险判断。' },
   5:  { dim:'区域二 ③（区域一无内容）。',
         type:'C10 ENS 正向解析：alice.eth → 解析出的地址全文。',
-        rule:'Tag = Info；label「Resolved full address」（ENS / DAS / UNS / ZNS 四个服务统一）+ 地址等宽单行，0x 后首 4 / 末 4 加重、中段 70%；不折叠；永远排列表最后；4s 后收起。',
-        why:'用户输入的是域名，Tooltip 要给出真正要转去的地址全文供核对，首尾加重方便与对方给的地址比对。' },
+        rule:'Tag = Info；label「Resolved full address」（ENS / DAS / UNS / ZNS 四个服务统一）+ 地址全文，与其他解析内容同字体字号颜色（SF Pro 14 / 400，不加粗），可换行；不折叠；永远排列表最后；4s 后收起。',
+        why:'用户输入的是域名，Tooltip 要给出真正要转去的地址全文供核对；地址与其他内容同一正文样式、完整换行显示，不做任何加粗或变淡处理。' },
   6:  { dim:'区域二 ③（区域一无内容）。',
         type:'C11 ENS 反向解析：hex 地址 → 关联的单个域名 alice.eth。',
         rule:'Tag = Info；label「ENS domain name」+ 域名；不折叠；排列表最后；4s 后收起；42 位地址让输入框升到 72 高，Tooltip 随之下移。',
         why:'用户输入的是地址，反向解析出的域名只是辅助识别，所以只展示单个域名（当前无多域名解析能力）。' },
   7:  { dim:'区域二 ①（区域一无内容）。',
-        type:'C02 专项信息 · 链类型识别：输入的是 Osmosis 地址，资金将通过 IBC 跨链发送。',
-        rule:'Tag = Info；label「Cosmos address」（标识网络）+ 正文「Funds will be sent via IBC cross-chain.」；不折叠；与其他地址信息同时出现时排列表最前；4s 后收起。',
+        type:'C02 专项信息 · 链类型识别：输入的是 Osmosis 格式的地址，将以 IBC 跨链方式转账（Funds will be sent via IBC cross-chain transfer.）。',
+        rule:'Tag = Info；label「Osmosis address」（标识收款地址自身的网络格式，{chainName} = Osmosis）+ 正文「Funds will be sent via IBC cross-chain transfer.」（将以 IBC 跨链方式转账）；不折叠；与其他地址信息同时出现时排列表最前；4s 后收起。',
         why:'没有风险信息，但「发到哪条链」是发送前必须知道的事实，所以独立成一条并置顶。' },
   8:  { dim:'区域二 ①（区域一无内容）。',
-        type:'C03 专项信息 · 地址状态：Tron 收款账户未激活，至少需要 0.1 TRX 激活。',
-        rule:'Tag = Info；label「Tron address」（标识网络）+ 正文（未激活，含激活所需金额）；不折叠；排列表最前；4s 后收起。',
-        why:'未激活会影响这笔转账能否成功，属于必须先知道的地址状态，所以用独立条目直接说明金额门槛。' },
+        type:'C03 专项信息 · 地址状态：Tron 收款地址尚未激活，本次转账将额外消耗 0.1 TRX 用于激活（Not activated yet. An extra 0.1 TRX will be spent to activate it.）。',
+        rule:'Tag = Info；label「Tron address」（标识网络）+ 正文「Not activated yet. An extra {{num}} TRX will be spent to activate it.」（尚未激活，本次转账将额外消耗 {{num}} TRX 用于激活；原型 num = 0.1）；不折叠；排列表最前；4s 后收起。',
+        why:'未激活会影响这笔转账的实际支出，属于必须先知道的地址状态，所以用独立条目直接说明额外消耗的金额。' },
   9:  { dim:'区域二 ①（区域一无内容）。',
-        type:'C04 专项信息 · 地址状态：TON 反弹地址（bounceable），对方账户未激活时资金会退回。',
-        rule:'Tag = Info；label「TON bounceable address」（标识网络与地址类型）+ 正文；不折叠；排列表最前；4s 后收起。',
-        why:'与未激活同属地址状态识别，提前告诉用户对方未激活时资金的去向。' },
+        type:'C04 专项信息 · 地址状态：TON 反弹地址（bounceable），可正常转账；若转账失败，资金会自动退回（Transfers work as usual. If the transfer fails, funds are returned to you automatically.）。',
+        rule:'Tag = Info；label「TON bounceable address」（标识网络与地址类型）+ 正文「Transfers work as usual. If the transfer fails, funds are returned to you automatically.」（可正常转账；若转账失败，资金会自动退回）；不折叠；排列表最前；4s 后收起。',
+        why:'与未激活同属地址状态识别，提前告诉用户转账失败时资金的去向。' },
   10: { dim:'区域一 Warning + 区域二 ③。',
         type:'C06 Warning 地址（近期活动异常）· C10 ENS 正向解析（bob.eth → 地址）。',
         rule:'Tag = Warning；风险条目（橙色色条 + 正文，无标题）常显；区域二折叠为「More address info (1)」，点击展开、入口行消失、展开后不可收起；自动唤起后不自动消失，点空白 / Esc 才关闭。',
@@ -1044,7 +1075,7 @@ var EXPLAIN = {
         why:'交易历史只在 Tag = Info 时作为判断输入展示；已经有 Warning / High risk 时它不再增加信息量，所以整条剔除；唯一的分割线在区域一与折叠入口之间。' },
   12: { dim:'区域一 High risk + 区域二 ② ③。',
         type:'C05 High risk 地址 · C09 地址本命中（Airdrop claim）· C10 ENS 正向解析。',
-        rule:'Tag = High risk；风险条目常显，Tooltip 内不用彩色；折叠「More address info (2)」：地址本 ② 排在 ENS ③ 前，点击展开后不可收起；不自动消失；不显示「Add to address book」。',
+        rule:'Tag = High risk；风险条目（红色色条 + 正文，无标题）常显，正文无彩色；折叠「More address info (2)」：地址本 ② 排在 ENS ③ 前，点击展开后不可收起；不自动消失；不显示「Add to address book」。',
         why:'High risk 与 Warning 同一结构，只有 Tag 颜色升级；地址本标记只回答「这是谁」，不抵消风险判断，所以仍折叠在风险条目之下。' },
   13: { dim:'Unhappy Path · 不进 Tooltip（两个区域都不产生内容）。',
         type:'figma.eth 在当前链（Ethereum）无法解析 / 无记录。',
@@ -1055,9 +1086,9 @@ var EXPLAIN = {
         rule:'Tag = Info；两条都显示、不二选一，地址本排在我的钱包之前；不折叠；4s 后收起；不显示「Add to address book」。',
         why:'两个标记回答的是同一个问题「这是谁」，但来源不同，所以都保留；地址本是用户主动存的，优先级更高。多数情况下不会既是又是。' },
   15: { dim:'区域二 ① + ② + ③（区域一无内容）。',
-        type:'C03 专项信息 · Tron 收款账户未激活 · C09 地址本命中（Binance Deposit）· C10 ENS 正向解析（alice.eth → Tron 地址）。',
-        rule:'Tag = Info；三类同时出现，固定次序 ① 专项信息识别 → ② 地址标记 → ③ ENS 解析；不折叠；4s 后收起；不显示「Add to address book」。',
-        why:'先说这笔转账能不能成（未激活要 0.1 TRX），再说这是谁（Binance Deposit），最后给解析出的地址全文供核对——按用户发送前要回答的问题的先后排。' },
+        type:'C03 专项信息 · Tron 收款账户未激活（Not activated yet. An extra 0.1 TRX will be spent to activate it.）· C09 地址本命中（Binance Deposit）· C10 ENS 正向解析（alice.eth → Tron 地址）。',
+        rule:'Tag = Info；三类同时出现，固定次序 ① 专项信息识别（label「Tron address」+ 尚未激活、额外消耗 0.1 TRX）→ ② 地址标记 → ③ ENS 解析；不折叠；4s 后收起；不显示「Add to address book」。',
+        why:'先说这笔转账要多花什么（未激活，额外消耗 0.1 TRX），再说这是谁（Binance Deposit），最后给解析出的地址全文供核对——按用户发送前要回答的问题的先后排。' },
   16: { dim:'区域一 Warning × 2 + 区域二 ③。',
         type:'C06 Warning 地址（近期活动异常）· C07 域名含隐藏字符（可能仿冒）· C10 ENS 正向解析。',
         rule:'Tag = Warning；两条 warning 上下排列，各自一根橙色色条，不带标题；区域二折叠为「More address info (1)」，展开后不可收起；不自动消失。',
