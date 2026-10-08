@@ -1,5 +1,6 @@
 /* imToken Design · hover navigation for hosted project prototypes under /public/projects/<slug>/.
-   Same glass bar as /confu/site-nav.js, but links back to 项目追踪 instead of the toolbox.
+   Same hover bar as /confu/site-nav.js, plus an always-visible back pill in the top-left corner (prototypes are
+   full-page HTML, so this is the only way back up to 项目追踪 without the browser back button).
    Rendered in a Shadow DOM so prototype styles and site styles never touch each other. */
 (function () {
   if (window.__imtDesignNav) return
@@ -29,10 +30,10 @@
     '.sep{width:1px;height:18px;background:rgba(17,29,74,.12);flex-shrink:0}' +
     '.title{font-size:13px;color:rgba(17,29,74,.55);padding:0 10px 0 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:360px}' +
     'svg{width:16px;height:16px;flex-shrink:0}' +
-    '.tab{position:fixed;top:10px;left:10px;display:none;pointer-events:auto;height:36px;padding:0 12px 0 10px;' +
+    '.tab{position:fixed;top:12px;left:16px;display:inline-flex;pointer-events:auto;height:36px;padding:0 14px 0 10px;border-radius:999px;' +
     'background:rgba(255,255,255,.78);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);' +
     'box-shadow:0 0 0 1px rgba(17,29,74,.08),0 8px 20px -10px rgba(17,29,74,.3)}' +
-    '@media (hover:none){.tab{display:inline-flex}}' +
+    '.tab:hover{background:#fff;color:#007FFF}' +
     '@media (max-width:640px){.title{display:none}}' +
     '@media (prefers-reduced-motion:reduce){.bar{transition:opacity .01ms}}' +
     '</style>' +
@@ -41,7 +42,7 @@
     '<a href="/">imToken Design 首页</a>' +
     '<span class="sep"></span><span class="title"></span>' +
     '</nav>' +
-    '<a class="tab" href="/projects/"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M11 6l-6 6 6 6"/></svg>项目</a>'
+    '<a class="tab" href="/projects/" aria-label="返回项目追踪"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M11 6l-6 6 6 6"/></svg>项目追踪</a>'
   root.querySelector('.title').textContent = title
 
   var bar = root.querySelector('.bar')
@@ -59,5 +60,8 @@
   }, { passive: true })
   document.addEventListener('mouseleave', function () { hideSoon(200) })
 
+  // keep the pill clear of the prototype's own top edge
+  var pad = parseFloat(getComputedStyle(document.body).paddingTop) || 0
+  if (pad < 56) document.body.style.paddingTop = '56px'
   document.body.appendChild(host)
 })()
