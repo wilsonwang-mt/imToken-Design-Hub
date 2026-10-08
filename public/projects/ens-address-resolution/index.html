@@ -3,10 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Prototype — 转账地址解析 Tooltip v1.7 · imToken UXD</title>
+<title>Prototype — 转账地址解析 Tooltip v1.8 · imToken UXD</title>
 <style>
-/* v1.2 变更（Wilson 决定）：已删除「观察钱包」场景与「反向解析多域名」场景（当前均无该解析能力）；
-   C08「无交易记录」之后若还有其它 Entry → 插入分割线（.tt-sep，任意皮肤 / Info 态 / 风险展开态折叠区 / 对比视图）。 */
+/* v1.2 变更（Wilson 决定）：已删除「观察钱包」场景与「反向解析多域名」场景（当前均无该解析能力）。
+   v1.8 变更（Wilson 纠正口径）：C08「无交易记录」= Risk Level 0，归区域二 Address info 第一条（⏳ 排序待确认）；
+   Risk Level 只有 L0 / L2 / L3，L1 不存在；取消 v1.2 的 C08 后分割线（.tt-sep 已删除），分割线只存在于区域一（L2/L3）与折叠入口之间。 */
 /* ============================================================
    0. Base
    ============================================================ */
@@ -149,8 +150,7 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
 }
 .tt-main{display:flex;flex-direction:column;gap:12px}
 .tt-divider{height:1px;background:var(--deep08);margin:10px 0 4px}
-/* v1.2: C08「无交易记录」之后的分割线（同色 1px 8%）。位于 gap 12 的列内：margin -2px 0 0 → 线上 10 / 线下 12，与 .tt-divider 的视觉间距一致 */
-.tt-sep{height:1px;background:var(--deep08);margin:-2px 0 0}
+/* v1.8: 原 v1.2 的 C08 后分割线 .tt-sep 已删除——C08 属区域二，与其它 address info 之间只有正常 gap */
 .tt-more{display:flex;width:100%;height:32px;align-items:center;justify-content:space-between;font-size:12px;line-height:16px;color:var(--deep60);text-align:left;cursor:pointer}
 .tt-more svg{transition:transform var(--d-fold) var(--ease)}
 .tt[data-expanded="true"] .tt-more svg{transform:rotate(180deg)}
@@ -306,6 +306,13 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
 .cls li b{font-weight:600}
 .cls li span{display:block;margin-top:2px;font-size:12px;line-height:16px;color:var(--deep60)}
 .cls li .prio{position:absolute;right:10px;top:9px;font-family:var(--mono);font-size:10px;color:var(--blue);background:var(--blue20);padding:2px 6px;border-radius:5px}
+/* v1.8: 区域二前置项「无交易记录（Risk Level 0）」——不占 ①②③ 编号，标 0；⏳ 排序待确认 */
+.cls-pre{position:relative;margin-top:12px;padding:9px 12px 9px 40px;border-radius:10px;background:var(--page);font-size:13px;line-height:18px;border:1px dashed var(--deep20)}
+.cls-pre::before{content:"0";position:absolute;left:12px;top:9px;width:18px;height:18px;border-radius:50%;background:#fff;border:1px solid var(--deep20);color:var(--deep60);font-size:11px;font-weight:600;line-height:16px;text-align:center}
+.cls-pre b{font-weight:600;padding-right:96px;display:block}
+.cls-pre > span:not(.prio){display:block;margin-top:2px;font-size:12px;line-height:16px;color:var(--deep60)}
+.cls-pre .prio{position:absolute;right:10px;top:9px;font-family:var(--mono);font-size:10px;color:var(--warn);background:var(--warn20);padding:2px 6px;border-radius:5px}
+.cls-pre + .cls{margin-top:8px}
 .rules{list-style:none;margin-top:12px;display:flex;flex-direction:column;gap:8px}
 .rules li{padding:9px 12px;border-radius:10px;background:var(--page);font-size:13px;line-height:18px}
 .rules li b{font-weight:600}
@@ -335,6 +342,9 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
 .ann.r1 .bar{background:var(--blue)}
 .ann.r2 .bar{background:var(--deep)}
 .ann.sep .bar{background:#9598AB}
+.ann.empty .bar{display:none}   /* v1.8: 解剖图 A「区域一为空」说明——省略色条（区域一不存在，没有可对齐的高度），只保留灰色文字 */
+.ann.empty .txt{color:var(--deep40)}
+.ann.empty .txt b{color:var(--deep60)}
 .ann .txt{font-size:12px;line-height:17px;color:var(--deep60);padding-top:1px}
 .ann .txt b{display:block;font-weight:600;color:var(--deep);margin-bottom:1px}
 .ann .txt .k{font-family:var(--mono);font-size:10px;letter-spacing:.3px;margin-right:6px}
@@ -380,7 +390,7 @@ html,body{background:var(--hub-ground)}
 </style>
 </head>
 <body class="skin-s1">
-<div class="ver" id="ver">v1.7</div>
+<div class="ver" id="ver">v1.8</div>
 <!-- ===================== INTRO · 解析对象与信息架构（2026-10-08 团队讨论口径） ===================== -->
 
 <div class="ambient" aria-hidden="true"><i class="b1"></i><i class="b2"></i><i class="b3"></i></div>
@@ -514,7 +524,7 @@ html,body{background:var(--hub-ground)}
       <div class="log-head"><span>状态机日志</span><span class="state" id="stateNow">idle</span></div>
       <ol class="log" id="log"></ol>
     </div>
-    <p class="hint">直达：<code>#scene=10&amp;step=expanded</code>（scene = 1…13 · step = typed / resolving / shown / expanded / dismissed）· 点手机空白处关闭 · 点 Tag 再次唤起 · Esc 关闭 · 折叠入口 ∨/∧ 可反复切换 · C08「无交易记录」之后若还有其它地址信息会出现分割线</p>
+    <p class="hint">直达：<code>#scene=10&amp;step=expanded</code>（scene = 1…13 · step = typed / resolving / shown / expanded / dismissed）· 点手机空白处关闭 · 点 Tag 再次唤起 · Esc 关闭 · 折叠入口 ∨/∧ 可反复切换 · C08「无交易记录」属区域二 Address info，排最前，与其它地址信息之间不加分割线</p>
   </aside>
 
   <!-- ===================== COMPARE (S1 | S2, static) ===================== -->
@@ -541,26 +551,28 @@ html,body{background:var(--hub-ground)}
       <div class="part-head">
         <p class="eyebrow">Part 2 · Information Architecture</p>
         <h2 id="part2-title">地址解析组件的信息架构</h2>
-        <p class="sub">Tooltip 要表达的信息分为两部分：区域一是对这个地址的风险判断（Risk Level），区域二是对用户输入的地址 / 域名解析出来的事实（Address info）。两部分性质不同，所以分区承载、用分割线隔开，并有各自的排序与折叠规则。</p>
+        <p class="sub">Tooltip 要表达的信息分为两部分：区域一是对这个地址的风险判断（Risk Level，只有 L2 / L3 的风险条目会进这里），区域二是对用户输入的地址 / 域名解析出来的事实（Address info，「无交易记录」也归这里）。两部分性质不同，所以分区承载：区域一存在时用分割线与折叠入口隔开；L0 时只有区域二，没有分割线。</p>
       </div>
 <div class="intro" id="intro">
   <div class="dims">
     <div class="dim">
       <span class="no">区域一</span>
       <h2><span class="pill r1">RISK LEVEL</span>风险等级的表达</h2>
-      <p>由风控引擎返回，决定输入框右侧 Tag 的等级与颜色；0–1 不折叠，2–3 触发折叠。</p>
+      <p>沿用风控数据库的 5 级定义（Infra《风控数据库 - 风险等级定义及数据对象说明》）；Tooltip 只在 L2 以上出风险条目：0–1 不折叠，2–4 触发折叠。</p>
       <ul class="lv">
-        <li><span class="k">L0</span><span>无任何风险信息 → 不显示</span><span class="tagx none">无 Tag</span></li>
-        <li><span class="k">L1</span><span>过往没有 transaction record</span><span class="tagx">Info</span></li>
-        <li><span class="k">L2</span><span>Warning 地址</span><span class="tagx w">Warning</span></li>
-        <li><span class="k">L3</span><span>High Risk 地址</span><span class="tagx h">High risk</span></li>
+        <li><span class="k">L0</span><span>默认等级，风险未知（未做风险评估）→ 区域一不显示；「无交易记录」属此级，归入区域二</span><span class="tagx none">无 Tag / Info</span></li>
+        <li><span class="k">L1</span><span>白名单（已认证，不触发风险检测）→ 区域一不显示</span><span class="tagx none">无 Tag / Info</span></li>
+        <li><span class="k">L2</span><span>可能存在风险，但未确认</span><span class="tagx w">Warning</span></li>
+        <li><span class="k">L3</span><span>明确存在风险</span><span class="tagx h">High risk</span></li>
+        <li><span class="k">L4</span><span>最高等级风险（Tooltip 与 L3 同一表达）</span><span class="tagx h">High risk</span></li>
       </ul>
     </div>
 
     <div class="dim">
       <span class="no">区域二</span>
       <h2><span class="pill r2">ADDRESS INFO</span>地址解析信息（事实）</h2>
-      <p>针对用户输入的地址 / 域名解析出来的事实，三类信息按下面的优先级在列表中排序：</p>
+      <p>针对用户输入的地址 / 域名解析出来的事实。「无交易记录」作为第一条前置展示，其后三类信息按下面的优先级在列表中排序：</p>
+      <div class="cls-pre" id="clsPre"><span class="prio">⏳ 排序待确认</span><b>无交易记录（Risk Level 0）</b><span>过往与该地址没有 transaction record 的事实陈述（C08）。不是风险条目、不进区域一；作为 address info 的第一条展示，与其后条目之间只有正常间距、不加分割线。</span></div>
       <ol class="cls">
         <li><span class="prio">优先级最高</span><b>专项信息识别</b><span>地址所属链类型（Cosmos / Osmosis，IBC 跨链）；地址状态（Polkadot / Kusama / Tron / Tezos 未激活地址、TON 反弹地址）</span></li>
         <li><b>地址标记</b><span>是否是地址本存储的地址；是否是用户当前某个钱包中的账户地址。「已存于地址本」的标记优先级高于「我的钱包」</span></li>
@@ -575,7 +587,7 @@ html,body{background:var(--hub-ground)}
       <ul class="rules">
         <li><b>Risk Level ≥ 2 → 区域二默认折叠</b><span>Tooltip 只常显风险条目，地址解析信息收进「More address info (N)」，可反复展开 / 收起。</span></li>
         <li><b>Risk Level ≥ 2 → 自动唤起后不自动消失</b><span>用户点击空白区域、或与其他控件交互时才收起。</span></li>
-        <li><b>Risk Level 0–1 → 不折叠</b><span>区域一（若有）与区域二并列展示，中间一条分割线；L1 态自动唤起后 4s 自动收起。</span></li>
+        <li><b>Risk Level 0 → 不折叠</b><span>区域一为空，Tooltip 只有区域二，没有分割线；自动唤起后 4s 自动收起。</span></li>
       </ul>
     </div>
   </div>
@@ -587,25 +599,23 @@ html,body{background:var(--hub-ground)}
     </div>
     <div class="ana-grid">
 
-      <!-- Anatomy A · Level 1 -->
+      <!-- Anatomy A · Level 0 (v1.8: 区域一为空，无分割线；C08 归区域二第一条) -->
       <div class="ana skin-s1" id="anaA">
-        <div class="acap"><span class="tagx">Info</span>Risk Level 1 · 无交易记录 + 地址本 + ENS 正向解析</div>
+        <div class="acap"><span class="tagx">Info</span>Risk Level 0 · 无交易记录 + 地址本 + ENS 正向解析</div>
         <div class="ana-body">
           <div class="tt" data-level="info" data-expanded="false">
             <div class="tt-arrow"><svg width="30" height="11" viewBox="0 0 30 11"><path d="M0 11 15 0l15 11z" fill="#fff"/></svg></div>
             <div class="tt-main">
-              <div class="tt-entry tt-sentence" data-reg="r1">You haven't transacted with this address before.</div>
-              <div class="tt-sep" data-reg="sep"></div>
               <div class="tt-main" data-reg="r2">
+                <div class="tt-entry tt-sentence" data-ctx="C08">You haven't transacted with this address before.</div>
                 <div class="tt-entry tt-labeled"><div class="tt-label">Address book</div><div class="tt-body">Alice</div></div>
                 <div class="tt-entry tt-labeled"><div class="tt-label">ENS · Resolved address</div><div class="tt-body tt-hex"><span class="hx0">0x</span><span class="hx">9b57</span><span class="hxm">48e79638c895cD34B7aF5215eBc40ad7</span><span class="hx">1f72</span></div></div>
               </div>
             </div>
           </div>
           <div class="ana-side">
-            <div class="ann r1" data-for="r1"><span class="bar"></span><div class="txt"><b><span class="k">区域一</span>Risk Level 表达</b>L1 是一句事实陈述，无标题、无彩色。L0 时整个区域不出现，Tooltip 直接从区域二开始。</div></div>
-            <div class="ann sep" data-for="sep"><span class="bar"></span><div class="txt"><b><span class="k">分割线</span></b>区域一与区域二之间固定一条 1px 分割线。</div></div>
-            <div class="ann r2" data-for="r2"><span class="bar"></span><div class="txt"><b><span class="k">区域二</span>Address info 列表</b>按 ① 专项信息识别 → ② 地址标记（地址本 &gt; 我的钱包）→ ③ ENS 解析结果排序。本例未命中专项信息，所以从地址本开始；若命中（IBC、未激活），它会排在最前。</div></div>
+            <div class="ann sep empty" data-for="r2"><span class="bar"></span><div class="txt"><b><span class="k">区域一</span>为空</b>L0 没有风险条目，也没有分割线；Tooltip 直接从区域二开始。</div></div>
+            <div class="ann r2" data-for="r2"><span class="bar"></span><div class="txt"><b><span class="k">区域二</span>Address info 列表</b>顺序：无交易记录（⏳ 最前，待确认）→ ① 专项信息识别 → ② 地址标记（地址本 &gt; 我的钱包）→ ③ ENS 解析结果。本例未命中专项信息，所以无交易记录之后直接是地址本；若命中（IBC、未激活），它会排在无交易记录之后、地址本之前。条目之间只有正常间距，不加分割线。</div></div>
           </div>
         </div>
       </div>
@@ -659,7 +669,7 @@ var CTX = {
   C05:{ rank:0, kind:'risk', level:'high',    title:'High risk', body:'This address is flagged as high risk. Sending may result in loss of funds.' },
   C06:{ rank:0, kind:'risk', level:'warning', title:'Warning',   body:'Recent activity on this address appears unusual. Double-check before sending.' },
   C07:{ rank:0, kind:'risk', level:'warning', title:'Warning',   body:'This domain contains hidden characters and may be impersonating another name.' },
-  C08:{ rank:1, kind:'sentence', body:"You haven't transacted with this address before." },
+  C08:{ rank:1, kind:'sentence', body:"You haven't transacted with this address before." },   // v1.8 Wilson：Risk Level 0，属区域二 Address info 第一条（rank 1 排在专项信息 rank 2 之前，⏳ 排序待确认）
   C02:{ rank:2, sub:0, kind:'labeled', label:'{chain} address', body:'Funds will be sent via IBC cross-chain.' },
   C03:{ rank:2, sub:1, kind:'labeled', label:'Not activated',   body:"The recipient account isn't activated yet. At least {amount} is needed to activate it." },
   C04:{ rank:2, sub:2, kind:'labeled', label:'Bounceable',      body:'If the recipient account is inactive, funds will be returned to you.' },
@@ -863,13 +873,10 @@ function entryHTML_S2(e){
 function entryRenderer(skin){ return skin === 's2' ? entryHTML_S2 : entryHTML_S1; }
 
 var CHEV = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="m2.5 4.5 3.5 3.5 3.5-3.5" stroke="#111D4A" stroke-opacity=".6" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-// v1.2: C08「无交易记录」之后若还有其它 Entry → 紧随其后插入分割线 .tt-sep
-//       （与皮肤无关；Info 态在 .tt-main 内、风险态在折叠区 .tt-fold-inner 内；对比视图复用同一函数）
+// v1.8: C08「无交易记录」= Risk Level 0，属区域二 Address info 第一条（rank 1，排在专项信息之前，⏳ 排序待确认）；
+//       v1.2 的 C08 后分割线已取消——区域二内部条目之间只有正常 gap，分割线只存在于区域一（L2/L3）与折叠入口之间
 function entriesHTML(list, E){
-  return list.map(function(e, i){
-    var sep = (e.id === 'C08' && i < list.length - 1) ? '<div class="tt-sep" data-after="C08" aria-hidden="true"></div>' : '';
-    return E(e) + sep;
-  }).join('');
+  return list.map(function(e){ return E(e); }).join('');
 }
 // Shared structure (IA §3 order + fold rule) — identical for both skins; only entries differ.
 function tooltipHTML(m, skin, ids){
@@ -1091,7 +1098,7 @@ function scheduleAutoplay(){
 /* ---------- panel: 5 categories (v1.4, order = 01 section priority; Risk Level first, Unhappy Path last) ---------- */
 var CATS = [
   { key:'A', title:'Risk Level 表达', dim:'区域一',
-    sub:'风控等级决定 Tag 与折叠：L0 无 Tag；L1 一句事实；L2/L3 风险条目常显、地址解析信息折叠且不自动消失。',
+    sub:'风控等级决定 Tag 与折叠：L0 无风险信息（无交易记录归区域二）；L2/L3 风险条目常显、地址解析信息折叠且不自动消失。',
     scenes:[1, 2, 10, 11, 12] },
   { key:'B', title:'专项信息识别', dim:'区域二 ① · 优先级最高',
     sub:'链类型与地址状态是发送前必须知道的事实，在 Address info 列表中排最前。',
@@ -1108,18 +1115,18 @@ var CATS = [
 ];
 /* 每个场景的解释卡（口径来自 01 section + 场景数据）：dim 解析维度 / type 解析类型 / rule 展示规则 / why 为什么左侧这样显示 */
 var EXPLAIN = {
-  1:  { dim:'区域一 L0（无任何风险信息）· 区域二无命中。',
-        type:'无 context：风控未返回风险信息，地址也未命中专项信息、地址标记或 ENS 解析。',
+  1:  { dim:'区域一 L0（无风险信息）· 区域二无命中。',
+        type:'无 context：风控未返回风险信息，地址也未命中无交易记录、专项信息、地址标记或 ENS 解析。',
         rule:'Tag = 无；无 Tooltip，Tag 位置为空；Next 可用；保留「Add to address book」入口。',
-        why:'两个区域都没有内容，L0 规定不显示 Tag，所以输入框右侧为空，也没有可唤起的 Tooltip。' },
-  2:  { dim:'区域一 L1 · 区域二无命中。',
-        type:'C08 无交易记录：过往与该地址没有 transaction record 的事实陈述。',
-        rule:'Tag = Info；一句事实，无标题、无彩色；不折叠；自动唤起后 4s 收起；点 Tag 可再次唤起。',
-        why:'L1 只是一句事实，区域二又没有内容，所以 Tooltip 只有一行，不出现分割线。' },
-  3:  { dim:'区域一 L1 + 区域二 ②。',
+        why:'两个区域都没有内容，L0 且区域二为空时不显示 Tag，所以输入框右侧为空，也没有可唤起的 Tooltip。' },
+  2:  { dim:'区域一 L0（为空）· 区域二只有一条：无交易记录。',
+        type:'C08 无交易记录：过往与该地址没有 transaction record 的事实陈述，属区域二 Address info（Risk Level 0），不是风险条目。',
+        rule:'Tag = Info（由区域二有内容触发）；一句事实，无标题、无彩色；不折叠；自动唤起后 4s 收起；点 Tag 可再次唤起。',
+        why:'无交易记录是 L0 的地址信息而非风险判断，区域一为空；区域二只有这一条，所以 Tooltip 只有一行，没有分割线。' },
+  3:  { dim:'区域一 L0（为空）· 区域二：无交易记录 + ②。',
         type:'C08 无交易记录 · C09 地址本命中（Alice）。',
-        rule:'Tag = Info；不折叠；区域一与区域二之间一条分割线；自动唤起 4s 后收起；不显示「Add to address book」。',
-        why:'先告诉用户没转过，再告诉他这是地址本里的 Alice，顺序由区域一 → 区域二决定。' },
+        rule:'Tag = Info；不折叠；区域二两条：无交易记录 → 地址本，无分割线；自动唤起 4s 后收起；不显示「Add to address book」。',
+        why:'两条都是区域二的地址信息：先告诉用户没转过（⏳ 排最前，待确认），再告诉他这是地址本里的 Alice；区域一为空，所以没有分割线。' },
   4:  { dim:'区域二 ②（区域一 L0，无风险信息）。',
         type:'C01 我的钱包：地址是用户当前某个钱包里的账户。第一行 = Wallet Name「My DeFi Wallet」，第二行 = Account Name「Account 01」（自动命名，可改）。',
         rule:'Tag = Info（由区域二有内容触发，作为 Tooltip 入口）；两行：第一行 Wallet Name、第二行 Account Name，Text style 与地址本条目一致（12·60% / 14）；不折叠；若同时命中地址本，地址本排在前；4s 后收起；不显示「Add to address book」。',
@@ -1148,10 +1155,10 @@ var EXPLAIN = {
         type:'C06 Warning 地址（近期活动异常）· C10 ENS 正向解析（bob.eth → 地址）。',
         rule:'Tag = Warning；风险条目「标题 + 正文」常显；区域二折叠为「More address info (1)」，∨/∧ 可反复切换；自动唤起后不自动消失，点空白 / Esc 才收起。',
         why:'L ≥ 2 时先只给风险判断，解析出的地址收进折叠区，用户需要时再展开核对全文。' },
-  11: { dim:'区域一 L2（另含 L1 事实）+ 区域二 ③。',
+  11: { dim:'区域一 L2 + 区域二：无交易记录 + ③。',
         type:'C07 域名含隐藏字符（可能仿冒）· C08 无交易记录 · C10 ENS 正向解析。',
-        rule:'Tag = Warning；C07 常显；折叠区「More address info (2)」内 C08 在前、其后一条分割线、再 C10；不自动消失。',
-        why:'等级最高的 C07 决定 Tag 与折叠；C08 虽属区域一但等级低于 Warning，随区域二一起收进折叠区，并用分割线与地址解析信息隔开。' },
+        rule:'Tag = Warning；C07 常显；折叠区「More address info (2)」内 C08 排最前、再 C10，二者之间无分割线；不自动消失。',
+        why:'C07 决定 Tag 与折叠；C08 属区域二（Risk Level 0），随其它地址信息一起进折叠区，排最前（⏳ 待确认）；唯一的分割线在区域一与折叠入口之间。' },
   12: { dim:'区域一 L3 + 区域二 ② ③。',
         type:'C05 High risk 地址 · C09 地址本命中（Airdrop claim）· C10 ENS 正向解析。',
         rule:'Tag = High risk；风险条目常显，Tooltip 内不用彩色；折叠「More address info (2)」：地址本 ② 排在 ENS ③ 前；不自动消失；不显示「Add to address book」。',
@@ -1275,6 +1282,7 @@ boot();
       var r = reg.getBoundingClientRect();
       var regTop = r.top - ttTop, h = Math.max(r.height, 4);
       if (ann.dataset.for === 'sep'){ regTop -= 6; h = 12; }
+      // v1.8: .ann.empty（「区域一为空」说明）无色条，文字块对齐区域二顶边；其后的区域二色条仍覆盖整个区域
       // 文字块不互相重叠：顶边取「区域顶边」与「上一条说明底边 + 10」的较大值；色条始终对齐区域
       var top = Math.max(regTop, prevBottom);
       if (ann.classList.contains('is-hidden')) top = regTop;
