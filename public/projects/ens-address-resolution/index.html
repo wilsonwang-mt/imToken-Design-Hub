@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Prototype — 转账地址解析 Tooltip v1.10 · imToken UXD</title>
+<title>Prototype — 转账地址解析 Tooltip v1.11 · imToken UXD</title>
 <style>
 /* v1.2 变更（Wilson 决定）：已删除「观察钱包」场景与「反向解析多域名」场景（当前均无该解析能力）。
    v1.9 变更（Wilson × PM Yiqun 口径，取代 v1.8）：C08「无交易记录」回到区域一（分割线以上），与 Warning / High risk 同一信息层级、
@@ -183,8 +183,14 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
 .skin-s1 .tt-body.tt-hex{font-family:var(--mono);font-size:12px;line-height:16px;color:var(--deep70)}   /* beat .skin-s1 .tt-body */
 .skin-s1 .tt-sub{font-size:12px;line-height:130%;color:var(--deep60);margin-top:2px}   /* v1.4: C01 第三行 Account Name（label / title / subtitle） */
 .skin-s1 .tt-hex .hx{font-weight:600}
+/* v1.11 Wilson：区域一条目去标题（Tag 已有 Info/Warning/High risk 文字），改为左侧 3px 色条 + 正文；色条：Warning 橙 / High risk 红 / 交易历史 = Info Tag 文字色 */
+.tt-risk{display:flex;align-items:stretch;gap:10px}
+.tt-risk .tt-bar{flex:0 0 3px;width:3px;border-radius:1.5px;background:var(--deep60)}
+.tt-risk[data-tone="warning"] .tt-bar{background:var(--warn)}
+.tt-risk[data-tone="high"] .tt-bar{background:var(--risk)}
+.tt-risk .tt-risk-title{display:none}
 .skin-s1 .tt-risk-title{font-size:14px;font-weight:600;line-height:140%;color:var(--deep)}
-.skin-s1 .tt-risk-body{font-size:14px;font-weight:400;line-height:140%;color:var(--deep)}
+.skin-s1 .tt-risk-body{font-size:14px;font-weight:400;line-height:140%;color:var(--deep);flex:1 1 auto;min-width:0}
 
 /* ============================================================
    3b. Skin S2 · 身份头 + 条件列   (.skin-s2)
@@ -205,7 +211,7 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
 .skin-s2 .s2-label{font-size:12px;line-height:16px;color:var(--deep60);margin-bottom:2px}
 .skin-s2 .tt-hex .hx{font-weight:500}
 .skin-s2 .tt-risk-title{font-size:14px;font-weight:600;line-height:20px;color:var(--deep)}
-.skin-s2 .tt-risk-body{font-size:14px;font-weight:400;line-height:20px;color:var(--deep)}
+.skin-s2 .tt-risk-body{font-size:14px;font-weight:400;line-height:20px;color:var(--deep);flex:1 1 auto;min-width:0}
 
 /* ============================================================
    3c. Compare view — S1 / S2 并排静态渲染（无动画）
@@ -388,7 +394,7 @@ html,body{background:var(--hub-ground)}
 </style>
 </head>
 <body class="skin-s1">
-<div class="ver" id="ver">v1.10</div>
+<div class="ver" id="ver">v1.11</div>
 <!-- ===================== INTRO · 解析对象与信息架构（2026-10-08 团队讨论口径） ===================== -->
 
 <div class="ambient" aria-hidden="true"><i class="b1"></i><i class="b2"></i><i class="b3"></i></div>
@@ -522,7 +528,7 @@ html,body{background:var(--hub-ground)}
       <div class="log-head"><span>状态机日志</span><span class="state" id="stateNow">idle</span></div>
       <ol class="log" id="log"></ol>
     </div>
-    <p class="hint">直达：<code>#scene=10&amp;step=expanded</code>（scene = 1…15 · step = typed / resolving / shown / expanded / dismissed）· 点手机空白处关闭 · 点 Tag 再次唤起 · Esc 关闭 · 折叠入口 ∨/∧ 可反复切换 · C08「Transaction Record」只在 Tag = Info 时出现在区域一（分割线以上，标题 + 正文）；Warning / High risk 时不显示、不进折叠区</p>
+    <p class="hint">直达：<code>#scene=10&amp;step=expanded</code>（scene = 1…15 · step = typed / resolving / shown / expanded / dismissed）· 点手机空白处关闭 · 点 Tag 再次唤起 · Esc 关闭 · 折叠入口 ∨/∧ 可反复切换 · C08「Transaction Record」只在 Tag = Info 时出现在区域一（分割线以上，左侧色条 + 正文，不带标题）；Warning / High risk 时不显示、不进折叠区</p>
   </aside>
 
   <!-- ===================== COMPARE (S1 | S2, static) ===================== -->
@@ -556,11 +562,11 @@ html,body{background:var(--hub-ground)}
     <div class="dim">
       <span class="no">分割线以上</span>
       <h2><span class="pill r1">区域一</span>判断辅助信息</h2>
-      <p>帮助用户评判这个地址有没有风险的输入，与区域二的解析事实分开承载。等级由风控系统返回，体验层只区分 Info / Warning / High risk；L2 以上时不显示交易历史。</p>
+      <p>帮助用户评判这个地址有没有风险的输入，与区域二的解析事实分开承载。等级由风控系统返回，体验层只区分 Info / Warning / High risk；Warning / High risk 时不显示交易历史。区域一条目不带标题（Tag 已说明等级），用左侧 3px 色条区分：橙 = Warning、红 = High risk、Info 文字色 = 交易历史（⏳ 探索中，与「popover 内无彩色」原则的例外）。</p>
       <ul class="lv">
-        <li><span><b>Transaction Record</b>（交易历史）<small>Tag = Info 时展示：标题「Transaction Record」+ 正文「You haven't transacted with this address before.」。无法检测是否有交易记录 → 不显示；检测到有交易记录 → 目前拿不到具体记录，也不显示（未来支持后同样在此区块显示）。</small></span><span class="tagx">Info</span></li>
-        <li><span><b>Warning</b><small>可能存在风险，但未确认；标题 + 正文常显，区域二折叠。</small></span><span class="tagx w">Warning</span></li>
-        <li><span><b>High risk</b><small>明确存在风险；与 Warning 同一结构，只有输入框 Tag 的颜色升级。</small></span><span class="tagx h">High risk</span></li>
+        <li><span><b>Transaction Record</b>（交易历史）<small>Tag = Info 时展示：色条（Info Tag 文字色）+ 正文「You haven't transacted with this address before.」，不带标题。无法检测是否有交易记录 → 不显示；检测到有交易记录 → 目前拿不到具体记录，也不显示（未来支持后同样在此区块显示）。</small></span><span class="tagx">Info</span></li>
+        <li><span><b>Warning</b><small>可能存在风险，但未确认；橙色色条 + 正文常显，区域二折叠。</small></span><span class="tagx w">Warning</span></li>
+        <li><span><b>High risk</b><small>明确存在风险；与 Warning 同一结构，色条与输入框 Tag 一起升级为红色。</small></span><span class="tagx h">High risk</span></li>
       </ul>
     </div>
 
@@ -601,7 +607,7 @@ html,body{background:var(--hub-ground)}
           <div class="tt" data-level="info" data-expanded="false">
             <div class="tt-arrow"><svg width="30" height="11" viewBox="0 0 30 11"><path d="M0 11 15 0l15 11z" fill="#fff"/></svg></div>
             <div class="tt-main" data-reg="r1">
-              <div class="tt-entry tt-risk" data-ctx="C08" data-type="record"><div class="tt-risk-title">Transaction Record</div><div class="tt-risk-body">You haven't transacted with this address before.</div></div>
+              <div class="tt-entry tt-risk" data-ctx="C08" data-type="record" data-tone="record"><span class="tt-bar" aria-hidden="true"></span><div class="tt-risk-title">Transaction Record</div><div class="tt-risk-body">You haven't transacted with this address before.</div></div>
             </div>
             <div class="tt-divider" data-reg="sep"></div>
             <div class="tt-main" data-reg="r2">
@@ -610,7 +616,7 @@ html,body{background:var(--hub-ground)}
             </div>
           </div>
           <div class="ana-side">
-            <div class="ann r1" data-for="r1"><span class="bar"></span><div class="txt"><b><span class="k">区域一</span>判断辅助信息</b>Tag = Info 且检测到无交易记录时，以「标题 + 正文」展示 Transaction Record，与 Warning / High risk 同一信息层级；无法检测、或已有交易记录时此区域不出现。</div></div>
+            <div class="ann r1" data-for="r1"><span class="bar"></span><div class="txt"><b><span class="k">区域一</span>判断辅助信息</b>Tag = Info 且检测到无交易记录时展示交易历史：左侧色条（Info Tag 文字色）+ 正文，不带标题——Tag 已经说明了等级；无法检测、或已有交易记录时此区域不出现。</div></div>
             <div class="ann sep" data-for="sep"><span class="bar"></span><div class="txt"><b><span class="k">分割线</span></b>区域一与区域二之间一条分割线；区域二为空时没有。</div></div>
             <div class="ann r2" data-for="r2"><span class="bar"></span><div class="txt"><b><span class="k">区域二</span>Address info 列表</b>顺序：① 专项信息识别 → ② 地址标记（地址本 &gt; 我的钱包）→ ③ ENS 解析结果。本例未命中专项信息，所以从地址本开始；若命中（IBC、未激活），它会排在地址本之前。条目之间只有正常间距。</div></div>
           </div>
@@ -624,7 +630,7 @@ html,body{background:var(--hub-ground)}
           <div class="tt" data-level="warning" data-expanded="false" id="anaBtt">
             <div class="tt-arrow"><svg width="30" height="11" viewBox="0 0 30 11"><path d="M0 11 15 0l15 11z" fill="#fff"/></svg></div>
             <div class="tt-main">
-              <div class="tt-entry tt-risk" data-reg="r1"><div class="tt-risk-title">Warning</div><div class="tt-risk-body">Recent activity on this address appears unusual. Double-check before sending.</div></div>
+              <div class="tt-entry tt-risk" data-reg="r1" data-tone="warning"><span class="tt-bar" aria-hidden="true"></span><div class="tt-risk-title">Warning</div><div class="tt-risk-body">Recent activity on this address appears unusual. Double-check before sending.</div></div>
               <div class="tt-divider"></div>
               <button type="button" class="tt-more" id="anaBMore" aria-expanded="false" aria-controls="anaBFold" data-reg="fold"><span>More address info (2)</span><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#111D4A" stroke-opacity=".6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l4 4 4-4"/></svg></button>
               <div class="tt-fold" id="anaBFold"><div><div class="tt-fold-inner" data-reg="r2">
@@ -634,7 +640,7 @@ html,body{background:var(--hub-ground)}
             </div>
           </div>
           <div class="ana-side">
-            <div class="ann r1" data-for="r1"><span class="bar"></span><div class="txt"><b><span class="k">区域一</span>风险条目常显</b>Warning / High risk 用「标题 + 正文」，颜色只在输入框 Tag 上；此时不显示交易历史。自动唤起后不自动消失，点空白或与其他控件交互才收起。</div></div>
+            <div class="ann r1" data-for="r1"><span class="bar"></span><div class="txt"><b><span class="k">区域一</span>风险条目常显</b>Warning / High risk 不带标题（Tag 已说明等级），左侧 3px 色条用对应的橙 / 红，正文无彩色；此时不显示交易历史。自动唤起后不自动消失，点空白或与其他控件交互才收起。</div></div>
             <div class="ann sep" data-for="fold"><span class="bar"></span><div class="txt"><b><span class="k">折叠入口</span></b>Warning / High risk 时区域二默认折叠为「More address info (N)」，N = 折叠条数；∨ / ∧ 可反复切换。</div></div>
             <div class="ann r2 is-hidden" data-for="r2"><span class="bar"></span><div class="txt"><b><span class="k">区域二</span>展开后同一套排序</b>本例命中专项信息（Osmosis / IBC），排在 ① 位，地址本 ② 紧随其后。</div></div>
           </div>
@@ -838,7 +844,8 @@ function initial(s){ var ch = Array.from(String(s || '').trim())[0] || '?'; retu
 function entryHTML_S1(e){
   // v1.9: risk（Warning / High risk）与 record（Transaction Record）同一「标题 + 正文」结构，只有 data-type 不同
   if (e.kind === 'risk' || e.kind === 'record'){
-    return '<div class="tt-entry tt-risk" data-ctx="' + e.id + '" data-type="' + e.kind + '"><div class="tt-risk-title">' + escapeHTML(e.title) + '</div><div class="tt-risk-body">' + escapeHTML(e.body) + '</div></div>';
+    var tone = e.kind === 'record' ? 'record' : (e.level || 'warning');
+    return '<div class="tt-entry tt-risk" data-ctx="' + e.id + '" data-type="' + e.kind + '" data-tone="' + tone + '"><span class="tt-bar" aria-hidden="true"></span><div class="tt-risk-title">' + escapeHTML(e.title) + '</div><div class="tt-risk-body">' + escapeHTML(e.body) + '</div></div>';
   }
   if (e.kind === 'sentence'){
     return '<div class="tt-entry tt-sentence" data-ctx="' + e.id + '" data-type="sentence">' + escapeHTML(e.body) + '</div>';
@@ -857,8 +864,9 @@ function entryHTML_S1(e){
 function entryHTML_S2(e){
   var type = S2_TYPE[e.id] || (e.kind === 'risk' || e.kind === 'record' ? e.kind : 'condition');
   var open = '<div class="tt-entry s2-' + type + '" data-ctx="' + e.id + '" data-type="' + type + '">';
-  if (type === 'risk' || type === 'record'){   // v1.9: Transaction Record 与 risk 同结构
-    return open + '<div class="tt-risk-title">' + escapeHTML(e.title) + '</div><div class="tt-risk-body">' + escapeHTML(e.body) + '</div></div>';
+  if (type === 'risk' || type === 'record'){   // v1.9: Transaction Record 与 risk 同结构；v1.11: 色条 + 正文，无标题
+    var tone = type === 'record' ? 'record' : (e.level || 'warning');
+    return '<div class="tt-entry s2-' + type + ' tt-risk" data-ctx="' + e.id + '" data-type="' + type + '" data-tone="' + tone + '"><span class="tt-bar" aria-hidden="true"></span><div class="tt-risk-title">' + escapeHTML(e.title) + '</div><div class="tt-risk-body">' + escapeHTML(e.body) + '</div></div>';
   }
   if (type === 'condition'){
     var g = S2_GLYPH[e.id] || 'info';
@@ -1138,8 +1146,8 @@ var EXPLAIN = {
         rule:'Tag = 无；无 Tooltip，Tag 位置为空；Next 可用；保留「Add to address book」入口。',
         why:'两个区域都没有内容时不显示 Tag，所以输入框右侧为空，也没有可唤起的 Tooltip。' },
   2:  { dim:'区域一：Transaction Record · 区域二为空。',
-        type:'C08 无交易记录：帮助用户评判风险的输入，Tag = Info 时放在区域一（分割线以上），与 Warning / High risk 同一信息层级，同一「标题 + 正文」结构。',
-        rule:'Tag = Info；标题「Transaction Record」+ 正文「You haven\'t transacted with this address before.」；不折叠；区域二为空，所以没有分割线；自动唤起后 4s 收起；点 Tag 可再次唤起。',
+        type:'C08 无交易记录：帮助用户评判风险的输入，Tag = Info 时放在区域一（分割线以上），与 Warning / High risk 同一信息层级，同一「色条 + 正文」结构（色条用 Info Tag 文字色）。',
+        rule:'Tag = Info；左侧色条（Info Tag 文字色）+ 正文「You haven\'t transacted with this address before.」，不带标题；不折叠；区域二为空，所以没有分割线；自动唤起后 4s 收起；点 Tag 可再次唤起。',
         why:'无交易记录不是解析出来的事实，而是判断输入，所以放在分割线以上；本例没有任何地址信息，Tooltip 只有区域一这一个区块。' },
   3:  { dim:'区域一：Transaction Record · 区域二 ②。',
         type:'C08 无交易记录 · C09 地址本命中（Alice）。',
@@ -1171,7 +1179,7 @@ var EXPLAIN = {
         why:'与未激活同属地址状态识别，提前告诉用户对方未激活时资金的去向。' },
   10: { dim:'区域一 Warning + 区域二 ③。',
         type:'C06 Warning 地址（近期活动异常）· C10 ENS 正向解析（bob.eth → 地址）。',
-        rule:'Tag = Warning；风险条目「标题 + 正文」常显；区域二折叠为「More address info (1)」，∨/∧ 可反复切换；自动唤起后不自动消失，点空白 / Esc 才收起。',
+        rule:'Tag = Warning；风险条目（橙色色条 + 正文，无标题）常显；区域二折叠为「More address info (1)」，∨/∧ 可反复切换；自动唤起后不自动消失，点空白 / Esc 才收起。',
         why:'Warning / High risk 时先只给风险判断，解析出的地址收进折叠区，用户需要时再展开核对全文。' },
   11: { dim:'区域一 Warning + 区域二 ③（C08 被剔除）。',
         type:'C07 域名含隐藏字符（可能仿冒）· C10 ENS 正向解析；风控同时返回了无交易记录（C08），但 Warning 时不显示。',

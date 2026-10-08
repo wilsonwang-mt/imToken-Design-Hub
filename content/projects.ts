@@ -56,7 +56,7 @@ export const projects: Project[] = [
     slug: 'ens-address-resolution',
     title: 'ENS V2 · 地址解析组件',
     en: 'Address Context Label & Tooltip',
-    status: '设计评审中 · v1.10',
+    status: '设计评审中 · v1.11',
     phase: '两个方向待定：S1 极简版 · S2 身份头 + 条件列',
     desc: '转账地址输入后的 context 标识与 Tooltip 规范：单一 Tag（Info / Warning / High risk）加无彩色 popover，按 PRD 的 15 条 context 排序与折叠。可操作原型：左侧是转账页，右侧按 Risk Level、专项信息、地址标记、ENS 解析、Unhappy Path 五类组织 15 个场景。',
     tags: ['ENS v2', 'Wallet App', 'Tooltip', 'Design Spec', 'Prototype'],
@@ -65,7 +65,7 @@ export const projects: Project[] = [
     stats: [
       { value: '15', label: '条 context：PRD 全覆盖' },
       { value: '2', label: '个方向：S1 极简版 · S2 新探索' },
-      { value: '833', label: '项原型自动化测试通过' },
+      { value: '916', label: '项原型自动化测试通过' },
     ],
   },
 ]
