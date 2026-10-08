@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Prototype — 转账地址解析 Tooltip v1.12 · imToken UXD</title>
+<title>Prototype — 转账地址解析 Tooltip v1.13 · imToken UXD</title>
 <style>
 /* v1.12 变更（Wilson 决定）：Warning / High risk 时「More address info (N)」默认收起，点击整行展开——但不提供手动收起：
    展开/收起是页面内次级信息的模式，tooltip 不适合复杂交互。点击后入口行本身消失（高度/透明度 160ms 过渡后 display:none），
@@ -400,7 +400,7 @@ html,body{background:var(--hub-ground)}
 </style>
 </head>
 <body class="skin-s1">
-<div class="ver" id="ver">v1.12</div>
+<div class="ver" id="ver">v1.13</div>
 <!-- ===================== INTRO · 解析对象与信息架构（2026-10-08 团队讨论口径） ===================== -->
 
 <div class="ambient" aria-hidden="true"><i class="b1"></i><i class="b2"></i><i class="b3"></i></div>
@@ -581,7 +581,7 @@ html,body{background:var(--hub-ground)}
       <h2><span class="pill r2">区域二</span>地址解析信息（Address info）</h2>
       <p>针对用户输入的地址 / 域名解析出来的事实，三类信息按下面的优先级在列表中排序：</p>
       <ol class="cls">
-        <li><span class="prio">优先级最高</span><b>专项信息识别</b><span>地址所属链类型（Cosmos / Osmosis，IBC 跨链）；地址状态（Polkadot / Kusama / Tron / Tezos 未激活地址、TON 反弹地址）</span></li>
+        <li><span class="prio">优先级最高</span><b>专项信息识别 · 特定网络的地址解析</b><span>label 标识这是哪个网络的地址：Cosmos address（IBC 跨链）/ Tron address（未激活，需 0.1 TRX）/ TON bounceable address（反弹退回）…；正文写该网络的具体说明。同一个地址不可能来自不同网络，所以这类条目只会出现一条，并排在 Address info 最前</span></li>
         <li><b>地址标记</b><span>是否是地址本存储的地址；是否是用户当前某个钱包中的账户地址。两者同时命中时同时显示（不二选一），「已存于地址本」排在「我的钱包」之前；多数情况下不会既是又是</span></li>
         <li><b>ENS 正向 / 反向解析结果</b><span>正向：域名 → 解析出的地址全文（等宽单行、首尾加重）；反向：地址 → 关联的单个域名</span></li>
       </ol>
@@ -640,7 +640,7 @@ html,body{background:var(--hub-ground)}
               <div class="tt-divider"></div>
               <button type="button" class="tt-more" id="anaBMore" aria-expanded="false" aria-controls="anaBFold" data-reg="fold"><span>More address info (2)</span><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#111D4A" stroke-opacity=".6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l4 4 4-4"/></svg></button>
               <div class="tt-fold" id="anaBFold"><div><div class="tt-fold-inner" data-reg="r2">
-                <div class="tt-entry tt-labeled"><div class="tt-label">Osmosis address</div><div class="tt-body">Funds will be sent via IBC cross-chain.</div></div>
+                <div class="tt-entry tt-labeled"><div class="tt-label">Cosmos address</div><div class="tt-body">Funds will be sent via IBC cross-chain.</div></div>
                 <div class="tt-entry tt-labeled"><div class="tt-label">Address book</div><div class="tt-body">Alice</div></div>
               </div></div></div>
             </div>
@@ -648,7 +648,7 @@ html,body{background:var(--hub-ground)}
           <div class="ana-side">
             <div class="ann r1" data-for="r1"><span class="bar"></span><div class="txt"><b><span class="k">区域一</span>风险条目常显</b>Warning / High risk 不带标题（Tag 已说明等级），左侧 3px 色条用对应的橙 / 红，正文无彩色；此时不显示交易历史。自动唤起后不自动消失，点空白或与其他控件交互才收起。</div></div>
             <div class="ann sep" data-for="fold"><span class="bar"></span><div class="txt"><b><span class="k">折叠入口</span></b>Warning / High risk 时区域二默认折叠为「More address info (N)」，N = 折叠条数；点击展开地址解析信息；不提供手动收起——看完点空白处关闭 tooltip。</div></div>
-            <div class="ann r2 is-hidden" data-for="r2"><span class="bar"></span><div class="txt"><b><span class="k">区域二</span>展开后同一套排序</b>入口行已消失、不可收起；本例命中专项信息（Osmosis / IBC），排在 ① 位，地址本 ② 紧随其后。</div></div>
+            <div class="ann r2 is-hidden" data-for="r2"><span class="bar"></span><div class="txt"><b><span class="k">区域二</span>展开后同一套排序</b>入口行已消失、不可收起；本例命中专项信息（Cosmos address · IBC），排在 ① 位，地址本 ② 紧随其后。</div></div>
           </div>
         </div>
       </div>
@@ -707,9 +707,10 @@ var CTX = {
   C07:{ rank:0, kind:'risk', level:'warning', title:'Warning',   body:'This domain contains hidden characters and may be impersonating another name.' },
   // v1.9 Wilson × Yiqun：C08 回到区域一，与 risk 同构（标题 + 正文，.tt-risk-title / .tt-risk-body）；只在 level === 'info' 时保留，Warning / High risk 时由 buildModel 剔除
   C08:{ rank:0, sub:1, kind:'record', title:'Transaction Record', body:"You haven't transacted with this address before." },
-  C02:{ rank:2, sub:0, kind:'labeled', label:'{chain} address', body:'Funds will be sent via IBC cross-chain.' },
-  C03:{ rank:2, sub:1, kind:'labeled', label:'Not activated',   body:"The recipient account isn't activated yet. At least {amount} is needed to activate it." },
-  C04:{ rank:2, sub:2, kind:'labeled', label:'Bounceable',      body:'If the recipient account is inactive, funds will be returned to you.' },
+  // v1.13 Wilson：专项信息 = 特定网络的地址解析；label 标识这是哪个网络的地址，正文写该网络的说明；同一地址只属一个网络，这类条目只会出现一条，且排 Address info 最前
+  C02:{ rank:2, sub:0, kind:'labeled', label:'{chain} address',       body:'Funds will be sent via IBC cross-chain.' },
+  C03:{ rank:2, sub:1, kind:'labeled', label:'Tron address',          body:"The recipient account isn't activated yet. At least {amount} is needed to activate it." },
+  C04:{ rank:2, sub:2, kind:'labeled', label:'TON bounceable address', body:'If the recipient account is inactive, funds will be returned to you.' },
   C09:{ rank:3, kind:'labeled', label:'Address book', body:'{nickname}' },
   C01:{ rank:4, kind:'labeled', label:'{wallet}',     body:'{account}' },   // v1.7 Wilson：第一行 = Wallet Name，第二行 = Account Name（Account 01/02/03，用户可改）；Text style 与地址本条目一致（label 12·60% / body 14）
   C10:{ rank:5, sub:0, kind:'labeled', label:'ENS · Resolved address', hex:true },
@@ -755,7 +756,7 @@ var SCENES = [
   { n:4,  title:'hex · 我的钱包「My DeFi Wallet」',       meta:'C01 · Account 01',       chain:'eth', input:HEX.s4, ctx:[{id:'C01', wallet:'My DeFi Wallet', account:'Account 01'}] },
   { n:5,  title:'ENS 正向解析 alice.eth',                meta:'C10 · hex 单行等宽',     chain:'eth', input:'alice.eth', ctx:[{id:'C10', hex:HEX_ALICE}] },
   { n:6,  title:'hex · 反向解析单域名',                  meta:'C11',                    chain:'eth', input:HEX_ALICE, ctx:[{id:'C11', name:'alice.eth'}] },
-  { n:7,  title:'Cosmos → Osmosis IBC',                 meta:'C02',                    chain:'cosmos', input:OSMO, ctx:[{id:'C02', chain:'Osmosis'}] },
+  { n:7,  title:'Cosmos → Osmosis IBC',                 meta:'C02',                    chain:'cosmos', input:OSMO, ctx:[{id:'C02', chain:'Cosmos'}] },
   { n:8,  title:'Tron 未激活',                           meta:'C03',                    chain:'tron', input:TRON, ctx:[{id:'C03', amount:'0.1 TRX'}] },
   { n:9,  title:'TON bounceable',                        meta:'C04',                    chain:'ton',  input:TONA, ctx:[{id:'C04'}] },
   { n:10, title:'Warning · warning 地址 + ENS 解析',     meta:'C06 + C10 · 折叠→点展开', chain:'eth', input:'bob.eth', ctx:[{id:'C10', hex:HEX.s10},{id:'C06'}] },
@@ -1186,7 +1187,7 @@ var CATS = [
     sub:'交易历史只在 Tag = Info 时出现；Warning / High risk 常显、区域二折叠且不自动消失。',
     scenes:[1, 2, 10, 11, 12, 16] },
   { key:'B', title:'专项信息识别', dim:'区域二 ① · 优先级最高',
-    sub:'链类型与地址状态是发送前必须知道的事实，在 Address info 列表中排最前。',
+    sub:'特定网络的地址解析：label 标识这是哪个网络的地址（Cosmos / Tron / TON bounceable…），同一地址只属一个网络，这类条目只有一条，排 Address info 最前。',
     scenes:[7, 8, 9, 15] },
   { key:'C', title:'地址标记', dim:'区域二 ②',
     sub:'地址本与我的钱包同时命中时两条都显示，地址本在前；标记只回答「这是谁」，不做风险判断。',
@@ -1226,15 +1227,15 @@ var EXPLAIN = {
         why:'用户输入的是地址，反向解析出的域名只是辅助识别，所以只展示单个域名（当前无多域名解析能力）。' },
   7:  { dim:'区域二 ①（区域一无内容）。',
         type:'C02 专项信息 · 链类型识别：输入的是 Osmosis 地址，资金将通过 IBC 跨链发送。',
-        rule:'Tag = Info；label「Osmosis address」+ 正文；不折叠；若与其他地址信息同时出现则排列表最前；4s 后收起。',
+        rule:'Tag = Info；label「Cosmos address」（标识网络）+ 正文「Funds will be sent via IBC cross-chain.」；不折叠；与其他地址信息同时出现时排列表最前；4s 后收起。',
         why:'没有风险信息，但「发到哪条链」是发送前必须知道的事实，所以独立成一条并置顶。' },
   8:  { dim:'区域二 ①（区域一无内容）。',
         type:'C03 专项信息 · 地址状态：Tron 收款账户未激活，至少需要 0.1 TRX 激活。',
-        rule:'Tag = Info；label「Not activated」+ 正文（含激活所需金额）；不折叠；排列表最前；4s 后收起。',
+        rule:'Tag = Info；label「Tron address」（标识网络）+ 正文（未激活，含激活所需金额）；不折叠；排列表最前；4s 后收起。',
         why:'未激活会影响这笔转账能否成功，属于必须先知道的地址状态，所以用独立条目直接说明金额门槛。' },
   9:  { dim:'区域二 ①（区域一无内容）。',
         type:'C04 专项信息 · 地址状态：TON 反弹地址（bounceable），对方账户未激活时资金会退回。',
-        rule:'Tag = Info；label「Bounceable」+ 正文；不折叠；排列表最前；4s 后收起。',
+        rule:'Tag = Info；label「TON bounceable address」（标识网络与地址类型）+ 正文；不折叠；排列表最前；4s 后收起。',
         why:'与未激活同属地址状态识别，提前告诉用户对方未激活时资金的去向。' },
   10: { dim:'区域一 Warning + 区域二 ③。',
         type:'C06 Warning 地址（近期活动异常）· C10 ENS 正向解析（bob.eth → 地址）。',
