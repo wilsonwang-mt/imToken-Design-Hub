@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Prototype — 转账地址解析 Tooltip v1.3 · imToken UXD</title>
+<title>Prototype — 转账地址解析 Tooltip v1.4 · imToken UXD</title>
 <style>
 /* v1.2 变更（Wilson 决定）：已删除「观察钱包」场景与「反向解析多域名」场景（当前均无该解析能力）；
    C08「无交易记录」之后若还有其它 Entry → 插入分割线（.tt-sep，任意皮肤 / Info 态 / 风险展开态折叠区 / 对比视图）。 */
@@ -177,6 +177,7 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
 .skin-s1 .tt-label{font-size:12px;line-height:130%;color:var(--deep60);margin-bottom:2px}
 .skin-s1 .tt-body{font-size:14px;line-height:140%;color:var(--deep)}
 .skin-s1 .tt-body.tt-hex{font-family:var(--mono);font-size:12px;line-height:16px;color:var(--deep70)}   /* beat .skin-s1 .tt-body */
+.skin-s1 .tt-sub{font-size:12px;line-height:130%;color:var(--deep60);margin-top:2px}   /* v1.4: C01 第三行 Account Name（label / title / subtitle） */
 .skin-s1 .tt-hex .hx{font-weight:600}
 .skin-s1 .tt-risk-title{font-size:14px;font-weight:600;line-height:140%;color:var(--deep)}
 .skin-s1 .tt-risk-body{font-size:14px;font-weight:400;line-height:140%;color:var(--deep)}
@@ -237,13 +238,34 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
 .switch input::after{content:"";position:absolute;left:2px;top:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform 160ms var(--ease)}
 .switch input:checked{background:var(--blue)}
 .switch input:checked::after{transform:translateX(14px)}
-.scenes{list-style:none;margin-top:14px;display:flex;flex-direction:column;gap:4px}
+/* v1.4: 场景按 01 口径分 5 类（A Risk Level → B 专项信息 → C 地址标记 → D ENS → E Unhappy Path），
+   点击场景行原地展开解释卡（解析维度 / 解析类型 / 展示规则 / 为什么左侧这样显示），同一时刻只展开当前激活场景 */
+.cats{margin-top:14px;display:flex;flex-direction:column;gap:10px}
+.cat{background:var(--page);border-radius:12px;padding:10px 8px 6px}
+.cat-head{display:flex;align-items:flex-start;gap:10px;padding:0 4px 8px}
+.cat-key{flex:0 0 22px;height:22px;border-radius:7px;background:var(--deep);color:#fff;font-family:var(--mono);font-size:11px;font-weight:600;line-height:22px;text-align:center}
+.cat-title{font-size:13px;font-weight:600;line-height:18px;display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}
+.cat-title .cat-dim{font-family:var(--mono);font-size:10px;font-weight:500;color:var(--blue);letter-spacing:.2px}
+.cat-sub{margin-top:2px;font-size:12px;line-height:16px;color:var(--deep60)}
+.scenes{list-style:none;display:flex;flex-direction:column;gap:2px}
 .scene-btn{display:flex;align-items:center;gap:10px;width:100%;padding:7px 10px;border-radius:10px;text-align:left;transition:background 120ms var(--ease)}
-.scene-btn:hover{background:var(--page)}
+.scene-btn:hover{background:#fff}
 .scene-btn.is-on{background:var(--blue20)}
-.scene-btn .num{font-family:var(--mono);font-size:11px;color:var(--deep60);width:18px;flex:0 0 auto}
+.scene-btn .num{font-family:var(--mono);font-size:11px;color:var(--deep60);width:20px;flex:0 0 auto}
 .scene-btn .name{font-size:13px;line-height:17px;flex:1 1 auto}
 .scene-btn .meta{font-size:11px;color:var(--deep60);white-space:nowrap}
+/* explain card: grid-template-rows 0fr → 1fr，160ms --ease；左侧 3px --blue20 边 */
+.scene-ex{display:grid;grid-template-rows:0fr;transition:grid-template-rows 160ms var(--ease)}
+.scene-ex > div{overflow:hidden;min-height:0}
+.scene.is-open .scene-ex{grid-template-rows:1fr}
+.ex-card{margin:4px 2px 6px;background:#fff;border-left:3px solid var(--blue20);border-radius:10px;padding:10px 12px 8px;box-shadow:0 1px 2px rgba(17,29,74,.05);opacity:0;transition:opacity 160ms var(--ease)}
+.scene.is-open .ex-card{opacity:1}
+.ex-head{display:flex;justify-content:space-between;gap:8px;font-family:var(--mono);font-size:10px;line-height:14px;color:var(--deep40);margin-bottom:4px}
+.ex-row{padding:6px 0;border-top:1px solid var(--deep08)}
+.ex-row:first-of-type{border-top:0;padding-top:2px}
+.ex-k{font-size:11px;line-height:15px;font-weight:600;color:var(--deep60)}
+.ex-v{margin-top:2px;font-size:12px;line-height:17px;color:var(--deep);word-break:break-word}
+.ex-v code{font-family:var(--mono);font-size:11px;background:var(--deep08);padding:0 4px;border-radius:4px}
 .dot{width:8px;height:8px;border-radius:50%;flex:0 0 auto;background:var(--deep20)}
 .dot.lv-info{background:#9598AB}.dot.lv-warning{background:var(--warn)}.dot.lv-high{background:var(--risk)}.dot.lv-none{background:transparent;border:1px solid var(--deep20)}.dot.lv-error{background:#000}
 .log-wrap{margin-top:14px;border-top:1px solid var(--deep08);padding-top:12px}
@@ -331,7 +353,7 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
 </style>
 </head>
 <body class="skin-s1">
-<div class="ver" id="ver">v1.3</div>
+<div class="ver" id="ver">v1.4</div>
 <!-- ===================== INTRO · 解析对象与信息架构（2026-10-08 团队讨论口径） ===================== -->
 <section class="intro" id="intro" aria-labelledby="intro-title">
   <p class="eyebrow">01 · WHAT THE TOOLTIP RESOLVES</p>
@@ -533,7 +555,7 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
   <!-- ===================== PANEL ===================== -->
   <aside class="panel">
     <h1>场景选择器</h1>
-    <p class="sub">转账地址解析 Tooltip v1 · 依据 P1 IA 矩阵 §3 顺序 / §4 状态机 / §6 动效</p>
+    <p class="sub">转账地址解析 Tooltip v1 · 依据 P1 IA 矩阵 §3 顺序 / §4 状态机 / §6 动效 · 场景按 01 口径分 5 类，点开即解释</p>
 
     <!-- 2026-10-08 Wilson：隐藏 S1/S2 切换与对比入口（代码保留，仅隐藏） -->
     <div class="row" id="skinRow" hidden>
@@ -551,13 +573,14 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
       <label class="switch"><input type="checkbox" id="autoplay"> 自动播放全部（每场景 6s）</label>
     </div>
 
-    <ol class="scenes" id="sceneList"></ol>
+    <!-- v1.4: 5 个类别卡（A–E），每类下的场景行点击后原地展开解释卡；由 CATS / EXPLAIN 渲染 -->
+    <div class="cats" id="sceneList"></div>
 
     <div class="log-wrap">
       <div class="log-head"><span>状态机日志</span><span class="state" id="stateNow">idle</span></div>
       <ol class="log" id="log"></ol>
     </div>
-    <p class="hint">直达：<code>#scene=10&amp;step=expanded</code>（scene = 1…13 · step = typed / resolving / shown / expanded / dismissed）· 点手机空白处关闭 · 点 Tag 再次唤起 · Esc 关闭 · 折叠入口 ∨/∧ 可反复切换 · C08「无交易记录」之后若还有其它地址信息会出现分割线</p>
+    <p class="hint">直达：<code>#scene=10&amp;step=expanded</code>（scene = 1…13 全局编号，类别内的 A1 / B2… 为局部编号 · step = typed / resolving / shown / expanded / dismissed）· 点手机空白处关闭 · 点 Tag 再次唤起 · Esc 关闭 · 折叠入口 ∨/∧ 可反复切换 · C08「无交易记录」之后若还有其它地址信息会出现分割线</p>
   </aside>
 
   <!-- ===================== COMPARE (S1 | S2, static) ===================== -->
@@ -598,7 +621,7 @@ var CTX = {
   C03:{ rank:2, sub:1, kind:'labeled', label:'Not activated',   body:"The recipient account isn't activated yet. At least {amount} is needed to activate it." },
   C04:{ rank:2, sub:2, kind:'labeled', label:'Bounceable',      body:'If the recipient account is inactive, funds will be returned to you.' },
   C09:{ rank:3, kind:'labeled', label:'Address book', body:'{nickname}' },
-  C01:{ rank:4, kind:'labeled', label:'My wallet',    body:'{wallet}' },
+  C01:{ rank:4, kind:'labeled', label:'My wallet',    body:'{wallet}', subtitle:'{account}' },   // v1.4: Title = 钱包名 · Subtitle = Account Name（Account 01/02/03，用户可改）
   C10:{ rank:5, sub:0, kind:'labeled', label:'ENS · Resolved address', hex:true },
   C13:{ rank:5, sub:0, kind:'labeled', label:'DAS · Resolved address', hex:true },
   C14:{ rank:5, sub:0, kind:'labeled', label:'UNS · Resolved address', hex:true },
@@ -638,7 +661,7 @@ var SCENES = [
   { n:1,  title:'hex · 陌生地址（无 context）',          meta:'S2 · 无 Tag 无 tooltip', chain:'eth', input:HEX.s1, ctx:[] },
   { n:2,  title:'hex · 无交易记录',                      meta:'C08',                    chain:'eth', input:HEX.s2, ctx:[{id:'C08'}] },
   { n:3,  title:'hex · 无交易记录 + 地址本「Alice」',     meta:'C08 + C09 · US2',        chain:'eth', input:HEX.s3, ctx:[{id:'C09', nickname:'Alice'},{id:'C08'}] },
-  { n:4,  title:'hex · 我的钱包「Main Wallet」',          meta:'C01',                    chain:'eth', input:HEX.s4, ctx:[{id:'C01', wallet:'Main Wallet'}] },
+  { n:4,  title:'hex · 我的钱包「DeFi Wallet」',          meta:'C01 · Account 03',       chain:'eth', input:HEX.s4, ctx:[{id:'C01', wallet:'DeFi Wallet', account:'Account 03'}] },
   { n:5,  title:'ENS 正向解析 alice.eth',                meta:'C10 · hex 单行等宽',     chain:'eth', input:'alice.eth', ctx:[{id:'C10', hex:HEX_ALICE}] },
   { n:6,  title:'hex · 反向解析单域名',                  meta:'C11',                    chain:'eth', input:HEX_ALICE, ctx:[{id:'C11', name:'alice.eth'}] },
   { n:7,  title:'Cosmos → Osmosis IBC',                 meta:'C02',                    chain:'cosmos', input:OSMO, ctx:[{id:'C02', chain:'Osmosis'}] },
@@ -732,6 +755,7 @@ function fillText(e, tpl){
     .replace('{chain}', e.chain || '')
     .replace('{nickname}', e.nickname || '')
     .replace('{wallet}', e.wallet || '')
+    .replace('{account}', e.account || '')
     .replace('{amount}', e.amount || '')
     .replace('{name}', e.name || '');
 }
@@ -757,7 +781,9 @@ function entryHTML_S1(e){
   var body, cls = 'tt-body';
   if (e.hex && typeof e.hex === 'string'){ body = hexHTML(e.hex); cls += ' tt-hex'; }
   else { body = escapeHTML(fillText(e, e.body)); }
-  return '<div class="tt-entry tt-labeled" data-ctx="' + e.id + '" data-type="labeled"><div class="tt-label">' + escapeHTML(label) + '</div><div class="' + cls + '">' + body + '</div></div>';
+  // v1.4: C01 三行结构 label「My wallet」/ title 钱包名 14 / subtitle Account Name 12·60%
+  var sub = (e.subtitle && fillText(e, e.subtitle)) ? '<div class="tt-sub">' + escapeHTML(fillText(e, e.subtitle)) + '</div>' : '';
+  return '<div class="tt-entry tt-labeled" data-ctx="' + e.id + '" data-type="labeled"><div class="tt-label">' + escapeHTML(label) + '</div><div class="' + cls + '">' + body + '</div>' + sub + '</div>';
 }
 
 /* ---- S2 · 身份头 + 条件列 ---- */
@@ -777,9 +803,11 @@ function entryHTML_S2(e){
   }
   if (type === 'identity'){
     // avatar = 昵称/钱包名首字母；来源小字：Address book / My wallet
+    // v1.4: C01 第二行 .s2-desc = Account Name（title 行保持「钱包名 + My wallet」，与地址本行结构一致）
     var src   = e.id === 'C01' ? 'My wallet' : 'Address book';
     var title = e.id === 'C01' ? (e.wallet || '') : (e.nickname || '');
-    return open + '<div class="s2-row"><span class="s2-avatar" aria-hidden="true">' + initial(title) + '</span><div class="s2-text"><div class="s2-titlerow"><span class="s2-title">' + escapeHTML(title) + '</span><span class="s2-src">' + escapeHTML(src) + '</span></div></div></div></div>';
+    var desc  = (e.id === 'C01' && e.account) ? '<div class="s2-desc">' + escapeHTML(e.account) + '</div>' : '';
+    return open + '<div class="s2-row"><span class="s2-avatar" aria-hidden="true">' + initial(title) + '</span><div class="s2-text"><div class="s2-titlerow"><span class="s2-title">' + escapeHTML(title) + '</span><span class="s2-src">' + escapeHTML(src) + '</span></div>' + desc + '</div></div></div>';
   }
   // resolved
   if (e.hex && typeof e.hex === 'string'){
@@ -954,7 +982,7 @@ function prepare(index, instant){
   state.model = buildModel(scene);
   applyChain(scene.chain);
   setAddbar(!scene.ctx.some(function(c){ return c.id === 'C09' || c.id === 'C01'; }));
-  Array.prototype.forEach.call(el.sceneList.querySelectorAll('.scene-btn'), function(b, i){ b.classList.toggle('is-on', i === index); b.setAttribute('aria-pressed', i === index ? 'true' : 'false'); });
+  setActiveScene(index);   // v1.4: by data-i (DOM order is categorical, not global)
   if (!instant && window.history && typeof history.replaceState === 'function'){
     try { history.replaceState(null, '', '#scene=' + scene.n); } catch (e) {}
   }
@@ -1016,14 +1044,116 @@ function scheduleAutoplay(){
   A.set(function(){ play((state.sceneIndex + 1) % SCENES.length); }, TIMING.autoplay);
 }
 
-/* ---------- panel ---------- */
+/* ---------- panel: 5 categories (v1.4, order = 01 section priority; Risk Level first, Unhappy Path last) ---------- */
+var CATS = [
+  { key:'A', title:'Risk Level 表达', dim:'区域一',
+    sub:'风控等级决定 Tag 与折叠：L0 无 Tag；L1 一句事实；L2/L3 风险条目常显、地址解析信息折叠且不自动消失。',
+    scenes:[1, 2, 10, 11, 12] },
+  { key:'B', title:'专项信息识别', dim:'区域二 ① · 优先级最高',
+    sub:'链类型与地址状态是发送前必须知道的事实，在 Address info 列表中排最前。',
+    scenes:[7, 8, 9] },
+  { key:'C', title:'地址标记', dim:'区域二 ②',
+    sub:'地址本标记优先于我的钱包；标记只回答「这是谁」，不做风险判断。',
+    scenes:[3, 4] },
+  { key:'D', title:'ENS 解析', dim:'区域二 ③',
+    sub:'正向解析展示地址全文供核对（等宽单行、首尾加重）；反向解析展示关联的单个域名；永远排在列表最后。',
+    scenes:[5, 6] },
+  { key:'E', title:'Unhappy Path', dim:'不进 Tooltip',
+    sub:'无法解析 / 当前链无记录不进 Tooltip，走现有 Alert；解析中只显示 spinner。',
+    scenes:[13] }
+];
+/* 每个场景的解释卡（口径来自 01 section + 场景数据）：dim 解析维度 / type 解析类型 / rule 展示规则 / why 为什么左侧这样显示 */
+var EXPLAIN = {
+  1:  { dim:'区域一 L0（无任何风险信息）· 区域二无命中。',
+        type:'无 context：风控未返回风险信息，地址也未命中专项信息、地址标记或 ENS 解析。',
+        rule:'Tag = 无；无 Tooltip，Tag 位置为空；Next 可用；保留「Add to address book」入口。',
+        why:'两个区域都没有内容，L0 规定不显示 Tag，所以输入框右侧为空，也没有可唤起的 Tooltip。' },
+  2:  { dim:'区域一 L1 · 区域二无命中。',
+        type:'C08 无交易记录：过往与该地址没有 transaction record 的事实陈述。',
+        rule:'Tag = Info；一句事实，无标题、无彩色；不折叠；自动唤起后 4s 收起；点 Tag 可再次唤起。',
+        why:'L1 只是一句事实，区域二又没有内容，所以 Tooltip 只有一行，不出现分割线。' },
+  3:  { dim:'区域一 L1 + 区域二 ②。',
+        type:'C08 无交易记录 · C09 地址本命中（Alice）。',
+        rule:'Tag = Info；不折叠；区域一与区域二之间一条分割线；自动唤起 4s 后收起；不显示「Add to address book」。',
+        why:'先告诉用户没转过，再告诉他这是地址本里的 Alice，顺序由区域一 → 区域二决定。' },
+  4:  { dim:'区域二 ②（区域一 L0，无风险信息）。',
+        type:'C01 我的钱包：地址是用户当前某个钱包里的账户。Title = 用户起的钱包名「DeFi Wallet」，Subtitle = Account Name「Account 03」（自动命名，可改）。',
+        rule:'Tag = Info（由区域二有内容触发，作为 Tooltip 入口）；label「My wallet」/ title 14 / subtitle 12·60% 三行；不折叠；若同时命中地址本，地址本排在前；4s 后收起；不显示「Add to address book」。',
+        why:'标记只回答「这是谁」——给自己的哪个钱包、哪个账户转账，所以用钱包名 + 账户名两级表达，不做风险判断。' },
+  5:  { dim:'区域二 ③（区域一 L0）。',
+        type:'C10 ENS 正向解析：alice.eth → 解析出的地址全文。',
+        rule:'Tag = Info；label「ENS · Resolved address」+ 地址等宽单行，0x 后首 4 / 末 4 加重、中段 70%；不折叠；永远排列表最后；4s 后收起。',
+        why:'用户输入的是域名，Tooltip 要给出真正要转去的地址全文供核对，首尾加重方便与对方给的地址比对。' },
+  6:  { dim:'区域二 ③（区域一 L0）。',
+        type:'C11 ENS 反向解析：hex 地址 → 关联的单个域名 alice.eth。',
+        rule:'Tag = Info；label「ENS name」+ 域名；不折叠；排列表最后；4s 后收起；42 位地址让输入框升到 72 高，Tooltip 随之下移。',
+        why:'用户输入的是地址，反向解析出的域名只是辅助识别，所以只展示单个域名（当前无多域名解析能力）。' },
+  7:  { dim:'区域二 ①（区域一 L0）。',
+        type:'C02 专项信息 · 链类型识别：输入的是 Osmosis 地址，资金将通过 IBC 跨链发送。',
+        rule:'Tag = Info；label「Osmosis address」+ 正文；不折叠；若与其他地址信息同时出现则排列表最前；4s 后收起。',
+        why:'没有风险信息，但「发到哪条链」是发送前必须知道的事实，所以独立成一条并置顶。' },
+  8:  { dim:'区域二 ①（区域一 L0）。',
+        type:'C03 专项信息 · 地址状态：Tron 收款账户未激活，至少需要 0.1 TRX 激活。',
+        rule:'Tag = Info；label「Not activated」+ 正文（含激活所需金额）；不折叠；排列表最前；4s 后收起。',
+        why:'未激活会影响这笔转账能否成功，属于必须先知道的地址状态，所以用独立条目直接说明金额门槛。' },
+  9:  { dim:'区域二 ①（区域一 L0）。',
+        type:'C04 专项信息 · 地址状态：TON 反弹地址（bounceable），对方账户未激活时资金会退回。',
+        rule:'Tag = Info；label「Bounceable」+ 正文；不折叠；排列表最前；4s 后收起。',
+        why:'与未激活同属地址状态识别，提前告诉用户对方未激活时资金的去向。' },
+  10: { dim:'区域一 L2 + 区域二 ③。',
+        type:'C06 Warning 地址（近期活动异常）· C10 ENS 正向解析（bob.eth → 地址）。',
+        rule:'Tag = Warning；风险条目「标题 + 正文」常显；区域二折叠为「More address info (1)」，∨/∧ 可反复切换；自动唤起后不自动消失，点空白 / Esc 才收起。',
+        why:'L ≥ 2 时先只给风险判断，解析出的地址收进折叠区，用户需要时再展开核对全文。' },
+  11: { dim:'区域一 L2（另含 L1 事实）+ 区域二 ③。',
+        type:'C07 域名含隐藏字符（可能仿冒）· C08 无交易记录 · C10 ENS 正向解析。',
+        rule:'Tag = Warning；C07 常显；折叠区「More address info (2)」内 C08 在前、其后一条分割线、再 C10；不自动消失。',
+        why:'等级最高的 C07 决定 Tag 与折叠；C08 虽属区域一但等级低于 Warning，随区域二一起收进折叠区，并用分割线与地址解析信息隔开。' },
+  12: { dim:'区域一 L3 + 区域二 ② ③。',
+        type:'C05 High risk 地址 · C09 地址本命中（Airdrop claim）· C10 ENS 正向解析。',
+        rule:'Tag = High risk；风险条目常显，Tooltip 内不用彩色；折叠「More address info (2)」：地址本 ② 排在 ENS ③ 前；不自动消失；不显示「Add to address book」。',
+        why:'L3 与 L2 同一结构，只有 Tag 颜色升级；地址本标记只回答「这是谁」，不抵消风险判断，所以仍折叠在风险条目之下。' },
+  13: { dim:'Unhappy Path · 不进 Tooltip（两个区域都不产生内容）。',
+        type:'figma.eth 在当前链（Ethereum）无法解析 / 无记录。',
+        rule:'解析中：Tag 位置只显示 spinner，无 Tooltip；解析失败：走现有 S3 Alert「Unable to resolve this name on Ethereum」，无 Tag、无 Tooltip；Next 不可用。',
+        why:'无法解析意味着没有可发送的目标，这不是地址信息，所以用阻断式 Alert 而不是 Tooltip 提示。' }
+};
+var EX_KEYS = [['dim','解析维度'], ['type','解析类型'], ['rule','展示规则'], ['why','为什么左侧这样显示']];
+
 function levelOf(scene){ return scene.unresolved ? 'error' : buildModel(scene).level; }
-SCENES.forEach(function(s, i){
-  var li = document.createElement('li');
-  var lv = levelOf(s);
-  li.innerHTML = '<button type="button" class="scene-btn" data-i="' + i + '" aria-pressed="false"><span class="num">' + String(s.n).padStart(2, '0') + '</span><span class="dot lv-' + lv + '"></span><span class="name">' + escapeHTML(s.title) + '</span><span class="meta">' + escapeHTML(s.meta) + '</span></button>';
-  el.sceneList.appendChild(li);
+CATS.forEach(function(cat){
+  var sec = document.createElement('section');
+  sec.className = 'cat'; sec.dataset.cat = cat.key; sec.setAttribute('aria-label', cat.key + ' · ' + cat.title);
+  sec.innerHTML = '<div class="cat-head"><span class="cat-key">' + cat.key + '</span><div><div class="cat-title">' + escapeHTML(cat.title) + '<span class="cat-dim">' + escapeHTML(cat.dim) + '</span></div><div class="cat-sub">' + escapeHTML(cat.sub) + '</div></div></div><ol class="scenes"></ol>';
+  var ol = sec.querySelector('.scenes');
+  cat.scenes.forEach(function(n, j){
+    var i = SCENES.findIndex(function(s){ return s.n === n; }); if (i < 0) return;
+    var s = SCENES[i], lv = levelOf(s), ex = EXPLAIN[n] || {}, local = cat.key + (j + 1);
+    var li = document.createElement('li');
+    li.className = 'scene'; li.dataset.n = String(n); li.dataset.local = local;
+    li.innerHTML =
+      '<button type="button" class="scene-btn" data-i="' + i + '" data-n="' + n + '" aria-pressed="false" aria-expanded="false" aria-controls="ex-' + n + '">' +
+        '<span class="num">' + local + '</span><span class="dot lv-' + lv + '"></span><span class="name">' + escapeHTML(s.title) + '</span><span class="meta">' + escapeHTML(s.meta) + '</span>' +
+      '</button>' +
+      '<div class="scene-ex" id="ex-' + n + '" aria-hidden="true"><div><div class="ex-card">' +
+        '<div class="ex-head"><span>' + local + ' · scene ' + n + '</span><span>#scene=' + n + '</span></div>' +
+        EX_KEYS.map(function(k){ return '<div class="ex-row" data-k="' + k[0] + '"><div class="ex-k">' + k[1] + '</div><div class="ex-v">' + escapeHTML(ex[k[0]] || '') + '</div></div>'; }).join('') +
+      '</div></div></div>';
+    ol.appendChild(li);
+  });
+  el.sceneList.appendChild(sec);
 });
+// 同一时刻只展开当前激活场景；切换时上一张收起（grid-template-rows 过渡）
+function setActiveScene(index){
+  Array.prototype.forEach.call(el.sceneList.querySelectorAll('.scene'), function(li){
+    var b = li.querySelector('.scene-btn'), ex = li.querySelector('.scene-ex');
+    var on = parseInt(b.dataset.i, 10) === index;
+    li.classList.toggle('is-open', on);
+    b.classList.toggle('is-on', on);
+    b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    b.setAttribute('aria-expanded', on ? 'true' : 'false');
+    ex.setAttribute('aria-hidden', on ? 'false' : 'true');
+  });
+}
 el.sceneList.addEventListener('click', function(ev){
   var b = ev.target.closest('.scene-btn'); if (!b) return;
   play(parseInt(b.dataset.i, 10));
@@ -1087,7 +1217,7 @@ window.addEventListener('hashchange', function(){ var q = parseInit(); if (q.sce
 
 /* ---------- public API (for tests / console) ---------- */
 window.proto = {
-  SCENES: SCENES, CTX: CTX, TIMING: TIMING,
+  SCENES: SCENES, CTX: CTX, TIMING: TIMING, CATS: CATS, EXPLAIN: EXPLAIN,
   play: play, jumpTo: jumpTo, expand: expand, collapse: collapse, toggleFold: toggleFold, showTooltip: showTooltip, hideTooltip: hideTooltip, setSkin: setSkin, setCompare: setCompare,
   buildModel: buildModel, tooltipHTML: tooltipHTML, hexHTML: hexHTML,
   getState: function(){ return { phase:state.phase, level:state.level, tooltipVisible:state.tooltipVisible, expanded:state.expanded, sceneIndex:state.sceneIndex, log:state.log.slice(), skin:state.skin, compare:state.compare }; }
