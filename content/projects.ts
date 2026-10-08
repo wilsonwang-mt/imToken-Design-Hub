@@ -10,6 +10,8 @@ export interface Project {
   desc: string
   tags: string[]
   href: string
+  /** true = a self-contained HTML under public/projects/<slug>/ (full page load, not a Next route) */
+  static?: boolean
   stats: { value: string; label: string }[]
 }
 
@@ -48,6 +50,22 @@ export const projects: Project[] = [
       { value: '53s', label: '主片 · 12 个镜头加片尾卡' },
       { value: '2', label: '份材料：项目概览 · 宣传语提案' },
       { value: '10/8', label: '集中宣发：PR · 视频 · Push' },
+    ],
+  },
+  {
+    slug: 'ens-address-resolution',
+    title: 'ENS V2 · 地址解析组件',
+    en: 'Address Context Label & Tooltip',
+    status: '设计评审中 · v1',
+    phase: '两个方向待定：S1 Zeid 方案优化 · S2 身份头 + 条件列',
+    desc: '转账地址输入后的 context 标识与 Tooltip 规范：单一 Tag（Info / Warning / High risk）加无彩色 popover，按 PRD 的 15 条 context 排序与折叠。可操作原型：左侧是转账页，右侧是场景选择器，15 种地址类型和解析状态自动演示，支持 S1 / S2 两套方案切换与并排对比。',
+    tags: ['ENS v2', 'Wallet App', 'Tooltip', 'Design Spec', 'Prototype'],
+    href: '/projects/ens-address-resolution/',
+    static: true,
+    stats: [
+      { value: '15', label: '条 context：PRD 全覆盖' },
+      { value: '2', label: '个方向：S1 优化 · S2 新探索' },
+      { value: '535', label: '项原型自动化测试通过' },
     ],
   },
 ]

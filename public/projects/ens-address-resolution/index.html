@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prototype — 转账地址解析 Tooltip v1.1 · S1+S2 · imToken UXD</title>
+<style>
+/* ============================================================
+   0. Base
+   ============================================================ */
+:root{
+  --deep:#111D4A;
+  --deep70:rgba(17,29,74,.7);
+  --deep60:rgba(17,29,74,.6);
+  --deep40:rgba(17,29,74,.4);
+  --deep20:rgba(17,29,74,.2);
+  --deep08:rgba(17,29,74,.08);
+  --blue:#007FFF;
+  --blue20:rgba(0,127,255,.2);
+  --warn:#FC8C4D; --warn20:rgba(252,140,77,.2);
+  --risk:#F3636F; --risk20:rgba(243,99,111,.2);
+  --screen:#F0F1F3;
+  --page:#F5F6F8;
+  --font:-apple-system,"SF Pro Text","SF Pro Display",Inter,sans-serif;
+  --mono:"SF Mono","JetBrains Mono",Menlo,monospace;
+  --ease:cubic-bezier(.2,0,0,1);
+  --d-in:160ms; --d-out:120ms; --d-fold:160ms;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--page);font-family:var(--font);color:var(--deep);-webkit-font-smoothing:antialiased}
+button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit}
+.stage{display:flex;flex-wrap:wrap;gap:32px;align-items:flex-start;justify-content:center;padding:28px 24px 40px}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{transition-duration:0ms !important;animation-duration:0ms !important}
+}
+
+/* ============================================================
+   1. Phone shell  375×812
+   ============================================================ */
+.phone{position:relative;width:399px;height:836px;flex:0 0 auto;border-radius:40px;background:#0F1420;padding:12px;box-shadow:0 20px 60px rgba(17,29,74,.18),0 2px 6px rgba(17,29,74,.12)}
+.phone::after{content:"";position:absolute;left:50%;top:22px;width:110px;height:28px;margin-left:-55px;border-radius:14px;background:#0F1420;z-index:3}
+.screen{position:relative;width:375px;height:812px;border-radius:30px;overflow:hidden;background:var(--screen);user-select:none}
+
+/* status bar */
+.statusbar{position:absolute;left:0;top:0;width:375px;height:50px}
+.statusbar .time{position:absolute;left:30px;top:16px;font-size:15px;font-weight:600;letter-spacing:-.2px;line-height:20px}
+.statusbar .sb{position:absolute;right:24px;top:17px;display:flex;gap:6px;align-items:center}
+
+/* nav (0,50) 375×44 */
+.nav{position:absolute;left:0;top:50px;width:375px;height:44px}
+.nav .back{position:absolute;left:16px;top:11px;width:20px;height:20px}
+.nav .scan{position:absolute;left:339px;top:13px;width:20px;height:20px}
+.nav .title{position:absolute;left:0;right:0;top:5px;text-align:center;font-size:14px;line-height:140%;color:var(--deep)}
+.nav .subtitle{position:absolute;left:0;right:0;top:26px;text-align:center;font-size:12px;line-height:130%;color:var(--deep60)}
+
+/* "To" (32,118) */
+.to-label{position:absolute;left:32px;top:118px;font-size:14px;font-weight:500;line-height:140%;color:var(--deep60)}
+
+/* address input (16,146) 343×51 r16 */
+.addr{position:absolute;left:16px;top:146px;width:343px;height:51px;border-radius:16px;background:#fff;transition:height 120ms var(--ease)}
+.addr.tall{height:72px}
+.addr-text{position:absolute;left:16px;top:16px;width:234px;font-size:14px;line-height:20px;color:var(--deep);word-break:break-all;white-space:pre-wrap}
+.addr-text .ph{color:var(--deep40)}
+.caret{display:inline-block;width:1px;height:18px;vertical-align:-4px;margin-left:1px;background:var(--blue);animation:blink 1s steps(1) infinite}
+.caret[hidden]{display:none}
+@keyframes blink{50%{opacity:0}}
+.addrbook{position:absolute;left:307px;top:16px;width:20px;height:20px}
+.addr.tall .addrbook{top:22px}
+
+/* tag slot: right edge at x=312 → 47px from input right edge */
+.tagslot{position:absolute;right:47px;top:15px;height:24px;display:flex;align-items:center}
+.addr.tall .tagslot{top:21px}
+.spinner{width:16px;height:16px;border-radius:50%;border:2px solid var(--deep08);border-top-color:var(--blue);animation:spin .8s linear infinite}
+.spinner[hidden]{display:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+.tag{position:relative;display:inline-flex;align-items:center;height:24px;padding:4px 8px;border-radius:8px;font-size:12px;font-weight:500;line-height:130%;white-space:nowrap;background:var(--deep08);color:var(--deep60)}
+.tag::before{content:"";position:absolute;inset:-4px -3px}     /* D14: 44×32 touch area */
+.tag[hidden]{display:none}
+.tag.lv-warning{background:var(--warn20);color:var(--warn)}
+.tag.lv-high{background:var(--risk20);color:var(--risk)}
+.tag:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+
+/* below-input region (add bar + amount + fee) — shifts with input height */
+.below{position:absolute;left:16px;top:210px;width:343px;transition:top 120ms var(--ease)}
+.addr.tall ~ .below{top:231px}
+.addbar{position:absolute;left:0;top:0;width:341px;height:44px;border-radius:16px;background:var(--blue20)}
+.addbar[hidden]{display:none}
+.addbar .ic{position:absolute;left:16px;top:13px;width:18px;height:18px}
+.addbar .txt{position:absolute;left:42px;top:13px;font-size:13px;line-height:17px;color:var(--blue)}
+.addbar .chev{position:absolute;right:12px;top:13px;width:17px;height:18px}
+.amount-group{position:absolute;left:0;top:68px;width:343px;transition:top 120ms var(--ease)}
+.amount-group.no-bar{top:11px}
+.amount-title{position:absolute;left:16px;top:0;font-size:14px;font-weight:500;line-height:140%;color:var(--deep60)}
+.balance{position:absolute;right:13px;top:0;font-size:14px;font-weight:500;line-height:140%;color:var(--deep)}
+.amount-card{position:absolute;left:0;top:28px;width:343px;height:138px;border-radius:16px;background:#fff}
+.amount-card .amt{position:absolute;left:16px;top:24px;font-size:32px;font-weight:700;line-height:38px;color:var(--deep20)}
+.amount-card .amt.filled{color:var(--deep)}
+.amount-card .amt .caret{height:26px;vertical-align:-3px}
+.amount-card .divider{position:absolute;left:16px;top:86px;width:311px;height:1px;background:var(--deep08)}
+.amount-card .memo{position:absolute;left:16px;top:102px;font-size:14px;line-height:140%;color:var(--deep20)}
+.fee-title{position:absolute;left:18px;top:190px;font-size:14px;font-weight:500;line-height:140%;color:var(--deep60)}
+.fee-card{position:absolute;left:0;top:218px;width:343px;height:72px;border-radius:16px;background:#fff}
+.fee-card .usd{position:absolute;left:16px;top:16px;font-size:14px;line-height:140%;color:var(--deep)}
+.fee-card .range{position:absolute;left:16px;top:40px;font-size:12px;line-height:130%;color:var(--deep60)}
+.fee-card .std{position:absolute;right:16px;top:28px;display:flex;align-items:center;gap:4px;font-size:12px;font-weight:500;line-height:130%;color:var(--deep60)}
+.est{position:absolute;left:18px;top:302px;width:325px;height:20px;font-size:14px;line-height:140%;color:var(--deep60);display:flex;align-items:center;gap:8px}
+.est .refresh{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--blue)}
+.est .refresh svg{animation:spin 1.2s linear infinite}
+.est .adv{margin-left:auto;display:flex;align-items:center;gap:6px;margin-right:0}
+
+/* bottom (0,693) 375×119 */
+.bottom{position:absolute;left:0;top:693px;width:375px;height:119px;background:rgba(240,241,243,.96);backdrop-filter:blur(4px)}
+.next{position:absolute;left:16px;top:14px;width:340px;height:54px;border-radius:12px;background:var(--blue20);color:#fff;font-size:16px;font-weight:500;transition:background 160ms var(--ease)}
+.next.on{background:var(--blue)}
+.home-ind{position:absolute;left:134px;bottom:8px;width:107px;height:5px;border-radius:3px;background:var(--deep)}
+
+/* alert (S3) */
+.alert-overlay{position:absolute;inset:0;background:rgba(0,0,0,.45);z-index:20;opacity:1;transition:opacity 160ms var(--ease)}
+.alert-overlay[hidden]{display:none}
+.alert{position:absolute;left:38px;top:302px;width:300px;border-radius:24px;background:#fff;padding:22px 22px 12px}
+.alert h2{font-size:17px;font-weight:600;line-height:22px;color:#000}
+.alert p{margin-top:10px;font-size:14px;line-height:18px;color:#475569}
+.alert .ok{margin-top:18px;width:100%;height:50px;border-radius:25px;background:var(--blue);color:#fff;font-size:16px;font-weight:500}
+
+/* ============================================================
+   2. Tooltip — wrapper geometry (shared)
+   ============================================================ */
+.tooltip-wrap{position:absolute;left:16px;width:343px;z-index:5;top:205px;transition:top 120ms var(--ease)}
+.addr.tall ~ .tooltip-wrap{top:226px}
+.tooltip-wrap[hidden]{display:none}
+.tt{position:relative;opacity:0;transform:translateY(-4px);transition:opacity var(--d-in) var(--ease),transform var(--d-in) var(--ease)}
+.tooltip-wrap.in .tt{opacity:1;transform:translateY(0)}
+.tooltip-wrap.out .tt{opacity:0;transform:translateY(-4px);transition-duration:var(--d-out)}
+.tt-arrow{position:absolute;top:-10px;width:30px;height:11px;left:266px}
+.tt-arrow svg{display:block}
+
+/* ============================================================
+   2b. Tooltip — shared container / fold (both skins)
+       容器：白底 343 r16 双层阴影，padding 16，箭头对 Tag
+       折叠：D8′ 可反复收起；整行 32 高可点；∨/∧ 旋转
+   ============================================================ */
+.skin-s1 .tt, .skin-s2 .tt{
+  background:#fff;border-radius:16px;padding:16px;
+  filter:drop-shadow(0 4px 40px rgba(0,0,0,.15)) drop-shadow(0 4px 24px rgba(0,0,0,.2));
+}
+.tt-main{display:flex;flex-direction:column;gap:12px}
+.tt-divider{height:1px;background:var(--deep08);margin:10px 0 4px}
+.tt-more{display:flex;width:100%;height:32px;align-items:center;justify-content:space-between;font-size:12px;line-height:16px;color:var(--deep60);text-align:left;cursor:pointer}
+.tt-more svg{transition:transform var(--d-fold) var(--ease)}
+.tt[data-expanded="true"] .tt-more svg{transform:rotate(180deg)}
+.tt-more:focus-visible{outline:2px solid var(--blue);outline-offset:2px;border-radius:4px}
+.tt-fold{display:grid;grid-template-rows:0fr;transition:grid-template-rows var(--d-fold) var(--ease)}
+.tt-fold > div{overflow:hidden;min-height:0}
+.tt-fold-inner{display:flex;flex-direction:column;gap:12px;padding-top:4px;opacity:0;transition:opacity var(--d-fold) var(--ease)}
+.tt[data-expanded="true"] .tt-fold{grid-template-rows:1fr}
+.tt[data-expanded="true"] .tt-fold-inner{opacity:1}
+.tt-truncate{font-size:12px;line-height:16px;color:var(--deep60)}
+/* hex (D17): 0x 普通 · 0x 后首 4 + 末 4 加重 · 中段 70% */
+.tt-hex{font-family:var(--mono);font-size:12px;line-height:16px;letter-spacing:-.2px;white-space:nowrap;overflow:hidden;color:var(--deep70)}
+.tt-hex .hx0{color:var(--deep70);font-weight:400}
+.tt-hex .hxm{color:var(--deep70);font-weight:400}
+.tt-hex .hx{color:var(--deep)}
+
+/* ============================================================
+   3. Skin S1 · Zeid 优化   (.skin-s1)
+      label 12/60% + 正文 14；Info 态组间 14；hex 加重 600
+   ============================================================ */
+.skin-s1 .tt[data-level="info"] .tt-main{gap:14px}
+.skin-s1 .tt[data-level="info"] .tt-fold-inner{gap:14px}
+.skin-s1 .tt-entry{font-size:14px;line-height:140%;color:var(--deep)}
+.skin-s1 .tt-label{font-size:12px;line-height:130%;color:var(--deep60);margin-bottom:2px}
+.skin-s1 .tt-body{font-size:14px;line-height:140%;color:var(--deep)}
+.skin-s1 .tt-body.tt-hex{font-family:var(--mono);font-size:12px;line-height:16px;color:var(--deep70)}   /* beat .skin-s1 .tt-body */
+.skin-s1 .tt-hex .hx{font-weight:600}
+.skin-s1 .tt-names{display:flex;flex-direction:column;gap:2px}
+.skin-s1 .tt-more-names{font-size:12px;line-height:130%;color:var(--deep60)}
+.skin-s1 .tt-risk-title{font-size:14px;font-weight:600;line-height:140%;color:var(--deep)}
+.skin-s1 .tt-risk-body{font-size:14px;font-weight:400;line-height:140%;color:var(--deep)}
+
+/* ============================================================
+   3b. Skin S2 · 身份头 + 条件列   (.skin-s2)
+       Figma 3205:14148 Converge；字号 14/12 + 等宽 12；无彩色
+       Risk / Condition(字形 ≤3) / Identity(头像) / Resolved / Fold
+   ============================================================ */
+.skin-s2 .tt-entry{font-size:14px;line-height:20px;color:var(--deep)}
+.skin-s2 .s2-row{display:flex;align-items:flex-start;gap:8px}
+.skin-s2 .s2-glyph{flex:0 0 16px;width:16px;height:20px;color:var(--deep60)}
+.skin-s2 .s2-glyph svg{display:block;width:16px;height:20px}
+.skin-s2 .s2-avatar{flex:0 0 20px;width:20px;height:20px;border-radius:50%;background:var(--deep08);color:var(--deep);font-size:11px;font-weight:500;line-height:20px;text-align:center;text-transform:uppercase}
+.skin-s2 .s2-text{flex:1 1 auto;min-width:0}
+.skin-s2 .s2-sentence{font-size:14px;font-weight:400;line-height:20px;color:var(--deep)}
+.skin-s2 .s2-title{font-size:14px;font-weight:500;line-height:20px;color:var(--deep)}
+.skin-s2 .s2-desc{font-size:12px;line-height:16px;color:var(--deep60);margin-top:2px}
+.skin-s2 .s2-titlerow{display:flex;flex-wrap:wrap;align-items:baseline;gap:0 6px}
+.skin-s2 .s2-src{font-size:12px;line-height:16px;color:var(--deep60)}
+.skin-s2 .s2-label{font-size:12px;line-height:16px;color:var(--deep60);margin-bottom:2px}
+.skin-s2 .tt-hex .hx{font-weight:500}
+.skin-s2 .s2-names{font-size:12px;line-height:16px;color:var(--deep60);margin-top:2px}
+.skin-s2 .s2-names .tt-name{color:var(--deep60)}
+.skin-s2 .tt-more-names{color:var(--deep60)}
+.skin-s2 .tt-risk-title{font-size:14px;font-weight:600;line-height:20px;color:var(--deep)}
+.skin-s2 .tt-risk-body{font-size:14px;font-weight:400;line-height:20px;color:var(--deep)}
+
+/* ============================================================
+   3c. Compare view — S1 / S2 并排静态渲染（无动画）
+   ============================================================ */
+.compare{width:100%;display:none;justify-content:center;gap:32px;flex-wrap:wrap;padding-top:4px}
+.compare.on{display:flex}
+.compare-col{width:343px;flex:0 0 auto}
+.compare-col h3{font-size:13px;font-weight:600;line-height:18px;color:var(--deep);margin-bottom:4px}
+.compare-col .cap{font-size:11px;line-height:15px;color:var(--deep60);margin-bottom:18px;font-family:var(--mono)}
+.compare-col .tt{opacity:1;transform:none;transition:none}
+.compare-col .tt *{transition:none !important}
+.compare-col .tt-more{cursor:default}
+.compare-empty{width:100%;text-align:center;font-size:12px;color:var(--deep60);padding:12px 0}
+.ver{position:fixed;right:16px;top:12px;z-index:50;font-family:var(--mono);font-size:11px;line-height:16px;color:var(--deep60);background:#fff;border:1px solid var(--deep08);border-radius:8px;padding:4px 8px}
+
+/* ============================================================
+   4. Panel 420
+   ============================================================ */
+.panel{width:420px;flex:0 0 auto;background:#fff;border-radius:16px;padding:20px 20px 16px;box-shadow:0 1px 2px rgba(17,29,74,.06),0 8px 24px rgba(17,29,74,.06)}
+.panel h1{font-size:18px;font-weight:600;line-height:24px}
+.panel .sub{font-size:12px;line-height:16px;color:var(--deep60);margin-top:4px}
+.row{display:flex;align-items:center;gap:10px;margin-top:14px;flex-wrap:wrap}
+.row .lbl{font-size:12px;color:var(--deep60);width:32px}
+.seg{display:inline-flex;background:var(--deep08);border-radius:10px;padding:3px;gap:2px}
+.seg button{padding:6px 12px;border-radius:8px;font-size:13px;color:var(--deep60)}
+.seg button.is-on{background:#fff;color:var(--deep);font-weight:500;box-shadow:0 1px 3px rgba(17,29,74,.12)}
+.skin-note{margin-top:8px;font-size:12px;color:var(--warn);background:var(--warn20);padding:6px 10px;border-radius:8px}
+.skin-note[hidden]{display:none}
+.btn{padding:8px 14px;border-radius:10px;background:var(--blue);color:#fff;font-size:13px;font-weight:500}
+.btn.ghost{background:var(--deep08);color:var(--deep)}
+.btn.ghost.is-on{background:var(--deep);color:#fff}
+.switch{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--deep);cursor:pointer}
+.switch input{appearance:none;width:34px;height:20px;border-radius:10px;background:var(--deep20);position:relative;transition:background 160ms var(--ease);cursor:pointer}
+.switch input::after{content:"";position:absolute;left:2px;top:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform 160ms var(--ease)}
+.switch input:checked{background:var(--blue)}
+.switch input:checked::after{transform:translateX(14px)}
+.scenes{list-style:none;margin-top:14px;display:flex;flex-direction:column;gap:4px}
+.scene-btn{display:flex;align-items:center;gap:10px;width:100%;padding:7px 10px;border-radius:10px;text-align:left;transition:background 120ms var(--ease)}
+.scene-btn:hover{background:var(--page)}
+.scene-btn.is-on{background:var(--blue20)}
+.scene-btn .num{font-family:var(--mono);font-size:11px;color:var(--deep60);width:18px;flex:0 0 auto}
+.scene-btn .name{font-size:13px;line-height:17px;flex:1 1 auto}
+.scene-btn .meta{font-size:11px;color:var(--deep60);white-space:nowrap}
+.dot{width:8px;height:8px;border-radius:50%;flex:0 0 auto;background:var(--deep20)}
+.dot.lv-info{background:#9598AB}.dot.lv-warning{background:var(--warn)}.dot.lv-high{background:var(--risk)}.dot.lv-none{background:transparent;border:1px solid var(--deep20)}.dot.lv-error{background:#000}
+.log-wrap{margin-top:14px;border-top:1px solid var(--deep08);padding-top:12px}
+.log-head{font-size:12px;font-weight:500;color:var(--deep60);display:flex;justify-content:space-between}
+.log-head .state{font-family:var(--mono);color:var(--deep)}
+.log{list-style:none;margin-top:8px;font-family:var(--mono);font-size:11px;line-height:18px;color:var(--deep);max-height:150px;overflow:auto;background:var(--page);border-radius:8px;padding:8px 10px}
+.log li{display:flex;gap:10px}
+.log .t{color:var(--deep60);width:62px;flex:0 0 auto}
+.hint{margin-top:10px;font-size:11px;line-height:15px;color:var(--deep60)}
+.hint code{font-family:var(--mono);background:var(--deep08);padding:0 4px;border-radius:4px}
+</style>
+</head>
+<body class="skin-s1">
+<div class="ver" id="ver">v1.1 · S1+S2</div>
+<div class="stage">
+
+  <!-- ===================== PHONE ===================== -->
+  <div class="phone">
+    <div class="screen" id="screen">
+      <div class="statusbar">
+        <span class="time">9:41</span>
+        <span class="sb" aria-hidden="true">
+          <svg width="17" height="11" viewBox="0 0 17 11"><rect x="0" y="7" width="3" height="4" rx=".8" fill="#111D4A"/><rect x="4.5" y="5" width="3" height="6" rx=".8" fill="#111D4A"/><rect x="9" y="2.5" width="3" height="8.5" rx=".8" fill="#111D4A"/><rect x="13.5" y="0" width="3" height="11" rx=".8" fill="#111D4A"/></svg>
+          <svg width="15" height="11" viewBox="0 0 15 11"><path d="M7.5 10.5 10.2 7.6a3.8 3.8 0 0 0-5.4 0zM3.1 5.2a6.3 6.3 0 0 1 8.8 0l1.6-1.7a8.7 8.7 0 0 0-12 0z" fill="#111D4A"/><path d="M.2 2.2a10.6 10.6 0 0 1 14.6 0" stroke="#111D4A" stroke-width="1.6" fill="none"/></svg>
+          <svg width="25" height="12" viewBox="0 0 25 12"><rect x=".5" y=".5" width="21" height="11" rx="3" stroke="#111D4A" stroke-opacity=".4" fill="none"/><rect x="2" y="2" width="18" height="8" rx="1.6" fill="#111D4A"/><path d="M23 4.5v3a1.6 1.6 0 0 0 0-3z" fill="#111D4A" fill-opacity=".4"/></svg>
+        </span>
+      </div>
+
+      <div class="nav">
+        <svg class="back" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M12.5 4.5 7 10l5.5 5.5" stroke="#111D4A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div class="title" id="navTitle">ETH Transfer</div>
+        <div class="subtitle" id="navSub">Ethereum</div>
+        <svg class="scan" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M2.5 7V4.5a2 2 0 0 1 2-2H7M13 2.5h2.5a2 2 0 0 1 2 2V7M17.5 13v2.5a2 2 0 0 1-2 2H13M7 17.5H4.5a2 2 0 0 1-2-2V13M2.5 10h15" stroke="#111D4A" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+
+      <div class="to-label">To</div>
+
+      <!-- address input -->
+      <div class="addr" id="addr">
+        <div class="addr-text" id="addrText"><span class="ph" id="addrPh">Ethereum address</span><span id="addrVal"></span><span class="caret" id="caret" hidden></span></div>
+        <div class="tagslot" id="tagSlot">
+          <span class="spinner" id="spinner" hidden aria-label="Resolving"></span>
+          <button class="tag" id="tag" hidden aria-expanded="false" aria-controls="tooltip" type="button"></button>
+        </div>
+        <svg class="addrbook" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="9.25" stroke="#111D4A" stroke-width="1.5"/><circle cx="10" cy="8" r="3" stroke="#111D4A" stroke-width="1.5"/><path d="M4.2 16.2c1.2-2.4 3.3-3.7 5.8-3.7s4.6 1.3 5.8 3.7" stroke="#111D4A" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+
+      <!-- tooltip (popover) -->
+      <div class="tooltip-wrap" id="tooltipWrap" hidden>
+        <div class="tt" id="tooltip" role="dialog" aria-live="polite" aria-label="Address info" data-level="" data-expanded="false">
+          <div class="tt-arrow" id="ttArrow"><svg width="30" height="11" viewBox="0 0 30 11"><path d="M0 11 15 0l15 11z" fill="#fff"/></svg></div>
+          <div id="ttContent"></div>
+        </div>
+      </div>
+
+      <!-- everything below the input -->
+      <div class="below" id="below">
+        <div class="addbar" id="addbar">
+          <svg class="ic" viewBox="0 0 18 18" fill="none" aria-hidden="true"><circle cx="7" cy="5.5" r="3" stroke="#007FFF" stroke-width="1.5"/><path d="M1.5 15.5c.6-3 2.9-4.7 5.5-4.7 1 0 1.9.2 2.7.6M13.5 9.5v6M10.5 12.5h6" stroke="#007FFF" stroke-width="1.5" stroke-linecap="round"/></svg>
+          <span class="txt">Add to address book</span>
+          <svg class="chev" viewBox="0 0 17 18" fill="none" aria-hidden="true"><path d="m6.5 4.5 4.5 4.5-4.5 4.5" stroke="#007FFF" stroke-width="1.125" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+
+        <div class="amount-group" id="amountGroup">
+          <div class="amount-title">Amount</div>
+          <div class="balance" id="balance">0.2005 ETH</div>
+          <div class="amount-card">
+            <div class="amt filled" id="amount">0.01</div>
+            <div class="divider"></div>
+            <div class="memo">Memo</div>
+          </div>
+          <div class="fee-title">Miner Fee</div>
+          <div class="fee-card">
+            <div class="usd" id="feeUsd">$0.01</div>
+            <div class="range" id="feeRange">0.000001523 ETH- 0.000002356 ETH</div>
+            <div class="std">Standard <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="m6 3.5 4.5 4.5L6 12.5" stroke="#111D4A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          </div>
+          <div class="est">
+            <span>Estimated fee</span>
+            <span class="refresh"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M13.5 8a5.5 5.5 0 1 1-1.6-3.9" stroke="#007FFF" stroke-width="1.5" stroke-linecap="round"/></svg>Refresh&nbsp; in 2s</span>
+            <span class="adv">Advanced <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="2" stroke="#111D4A" stroke-opacity=".6" stroke-width="1.4"/><path d="M8 1.8v1.6M8 12.6v1.6M1.8 8h1.6m9.2 0h1.6M3.6 3.6l1.1 1.1m6.6 6.6 1.1 1.1M3.6 12.4l1.1-1.1m6.6-6.6 1.1-1.1" stroke="#111D4A" stroke-opacity=".6" stroke-width="1.4" stroke-linecap="round"/></svg></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="bottom">
+        <button class="next" id="nextBtn" type="button">Next</button>
+        <div class="home-ind"></div>
+      </div>
+
+      <!-- S3 Alert -->
+      <div class="alert-overlay" id="alert" hidden>
+        <div class="alert" role="alertdialog" aria-labelledby="alertTitle">
+          <h2 id="alertTitle">Unable to resolve this name on Ethereum</h2>
+          <p>Please switch to the correct network or change the domain.</p>
+          <button class="ok" id="alertOk" type="button">Understand</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== PANEL ===================== -->
+  <aside class="panel">
+    <h1>场景选择器</h1>
+    <p class="sub">转账地址解析 Tooltip v1 · 依据 P1 IA 矩阵 §3 顺序 / §4 状态机 / §6 动效</p>
+
+    <div class="row">
+      <span class="lbl">皮肤</span>
+      <div class="seg" role="radiogroup" aria-label="皮肤">
+        <button type="button" class="is-on" data-skin="s1" role="radio" aria-checked="true">S1 · Zeid 优化</button>
+        <button type="button" data-skin="s2" role="radio" aria-checked="false">S2 · 身份头+条件列</button>
+      </div>
+    </div>
+    <div class="skin-note" id="skinNote" hidden>S2 · Converge「身份头 + 条件列」（Figma 3205:14148）：Condition 行单色字形 ≤3（history / chain / info）· Identity 首字母头像 · hex 等宽 0x 后首 4 / 末 4 加重 · 容器与折叠规则同 S1</div>
+
+    <div class="row">
+      <button type="button" class="btn" id="replay">重播</button>
+      <button type="button" class="btn ghost" id="compareBtn" aria-pressed="false">对比 S1 / S2</button>
+      <label class="switch"><input type="checkbox" id="autoplay"> 自动播放全部（每场景 6s）</label>
+    </div>
+
+    <ol class="scenes" id="sceneList"></ol>
+
+    <div class="log-wrap">
+      <div class="log-head"><span>状态机日志</span><span class="state" id="stateNow">idle</span></div>
+      <ol class="log" id="log"></ol>
+    </div>
+    <p class="hint">直达：<code>#scene=12&amp;step=expanded&amp;skin=s2&amp;compare=1</code>（step = typed / resolving / shown / expanded / dismissed）· 点手机空白处关闭 · 点 Tag 再次唤起 · Esc 关闭 · 折叠入口 ∨/∧ 可反复切换</p>
+  </aside>
+
+  <!-- ===================== COMPARE (S1 | S2, static) ===================== -->
+  <section class="compare" id="compare" aria-label="S1 / S2 对比">
+    <div class="compare-col skin-s1" id="cmpS1">
+      <h3>S1 · Zeid 优化</h3>
+      <div class="cap" id="cmpCapS1"></div>
+      <div class="tt" id="cmpTtS1" data-level="" data-expanded="false"><div class="tt-arrow" id="cmpArrowS1"><svg width="30" height="11" viewBox="0 0 30 11"><path d="M0 11 15 0l15 11z" fill="#fff"/></svg></div><div id="cmpContentS1"></div></div>
+    </div>
+    <div class="compare-col skin-s2" id="cmpS2">
+      <h3>S2 · 身份头 + 条件列</h3>
+      <div class="cap" id="cmpCapS2"></div>
+      <div class="tt" id="cmpTtS2" data-level="" data-expanded="false"><div class="tt-arrow" id="cmpArrowS2"><svg width="30" height="11" viewBox="0 0 30 11"><path d="M0 11 15 0l15 11z" fill="#fff"/></svg></div><div id="cmpContentS2"></div></div>
+    </div>
+    <div class="compare-empty" id="cmpEmpty" hidden>当前场景无 tooltip（无 context 或走 S3 Alert）</div>
+  </section>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+/* ---------- timing (IA §4/§6) ---------- */
+var REDUCED = (typeof window.matchMedia === 'function') && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+var TIMING = {
+  char: 30, charFast: 12, pause: 1000, resolve: 750,
+  tagToTip: 160, tipIn: 160, tipOut: REDUCED ? 0 : 120, infoAuto: 4000,
+  autoplay: 6000, autoExpand: 3200
+};
+
+/* ---------- context registry (IA §3, verbatim copy) ---------- */
+var CTX = {
+  C05:{ rank:0, kind:'risk', level:'high',    title:'High risk', body:'This address is flagged as high risk. Sending may result in loss of funds.' },
+  C06:{ rank:0, kind:'risk', level:'warning', title:'Warning',   body:'Recent activity on this address appears unusual. Double-check before sending.' },
+  C07:{ rank:0, kind:'risk', level:'warning', title:'Warning',   body:'This domain contains hidden characters and may be impersonating another name.' },
+  C08:{ rank:1, kind:'sentence', body:"You haven't transacted with this address before." },
+  C02:{ rank:2, sub:0, kind:'labeled', label:'{chain} address', body:'Funds will be sent via IBC cross-chain.' },
+  C03:{ rank:2, sub:1, kind:'labeled', label:'Not activated',   body:"The recipient account isn't activated yet. At least {amount} is needed to activate it." },
+  C04:{ rank:2, sub:2, kind:'labeled', label:'Bounceable',      body:'If the recipient account is inactive, funds will be returned to you.' },
+  C09:{ rank:3, kind:'labeled', label:'Address book', body:'{nickname}' },
+  C01:{ rank:4, kind:'labeled', label:'My wallet',    body:'{wallet}' },
+  C10:{ rank:5, sub:0, kind:'labeled', label:'ENS · Resolved address', hex:true },
+  C13:{ rank:5, sub:0, kind:'labeled', label:'DAS · Resolved address', hex:true },
+  C14:{ rank:5, sub:0, kind:'labeled', label:'UNS · Resolved address', hex:true },
+  C15:{ rank:5, sub:0, kind:'labeled', label:'ZNS · Resolved address', hex:true },
+  C11:{ rank:5, sub:1, kind:'labeled', label:'ENS name',  body:'{name}' },
+  C12:{ rank:5, sub:1, kind:'labeled', label:'ENS names', names:true }
+};
+var TAG_TEXT = { info:'Info', warning:'Warning', high:'High risk' };
+var TAG_W    = { info:38, warning:63, high:72 };   // fallback widths when layout is unavailable (jsdom)
+var MAX_ENTRIES = 4;                                // D7
+var MAX_NAMES   = 3;                                // D6
+
+/* ---------- chains ---------- */
+var CHAINS = {
+  eth:    { title:'ETH Transfer',  sub:'Ethereum', ph:'Ethereum address', balance:'0.2005 ETH', amount:'0.01', feeUsd:'$0.01', feeRange:'0.000001523 ETH- 0.000002356 ETH' },
+  cosmos: { title:'ATOM Transfer', sub:'Cosmos',   ph:'Cosmos address',   balance:'12.5 ATOM',  amount:'1',    feeUsd:'$0.003', feeRange:'0.0025 ATOM' },
+  tron:   { title:'TRX Transfer',  sub:'Tron',     ph:'Tron address',     balance:'1,250 TRX',  amount:'100',  feeUsd:'$0.27', feeRange:'1.1 TRX · Bandwidth' },
+  ton:    { title:'TON Transfer',  sub:'TON',      ph:'TON address',      balance:'32.8 TON',   amount:'1',    feeUsd:'$0.02', feeRange:'0.0055 TON' }
+};
+
+/* ---------- addresses ---------- */
+var HEX_ALICE = '0x9b5748e79638c895cD34B7aF5215eBc40ad71f72';
+var HEX = {
+  s1:'0x7a3Fd2C1e8B94a6F0c5D3e2A1b9C8d7E6f5A4b3C',
+  s2:'0x4E8b1C9d7A2f6B3e5D1c8A9f0E2b4C6d8A1f3E5b',
+  s3:'0xB140ED1e3bC2a7f94D8e6c5A1b3F7d9E2c4A6683',
+  s4:'0xb8c2E7a19F4d3C6b5A8e2D1f0C9b7A6e5D4c267d',
+  s5:'0x2F6a9C1e4B8d7E3f5A0c6D2b9E1f8C4a7B3d5E6f',
+  s8:'0xD3c7A1e9F2b6C8d4E5a0B7f1C9e3D6a2F8b4C1e7',
+  s12:'0x8aF3c1E7b2D9e4A6c0B5d8F1a3E7c9B2d6A4f0E1',
+  s13:'0x5C1e8A3f9B2d7E4c6A0f3D8b1E9c5A7d2F4b6C8e',
+  s14:'0xE9b2D4f7A1c6E3d8B5a0F2c9D7e1A4b6C8f3D5a2'
+};
+var OSMO = 'osmo1qy352eufqy352eufqy352eufqy35v9aj2kglhs';
+var TRON = 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t';
+var TONA = 'EQDtFpEwcFAEcRe5mLVh2N6C0x-_hJEM7W61_JLnSF74p4q2';
+
+/* ---------- scenes ---------- */
+var SCENES = [
+  { n:1,  title:'hex · 陌生地址（无 context）',          meta:'S2 · 无 Tag 无 tooltip', chain:'eth', input:HEX.s1, ctx:[] },
+  { n:2,  title:'hex · 无交易记录',                      meta:'C08',                    chain:'eth', input:HEX.s2, ctx:[{id:'C08'}] },
+  { n:3,  title:'hex · 无交易记录 + 地址本「Alice」',     meta:'C08 + C09 · US2',        chain:'eth', input:HEX.s3, ctx:[{id:'C09', nickname:'Alice'},{id:'C08'}] },
+  { n:4,  title:'hex · 我的钱包「Main Wallet」',          meta:'C01',                    chain:'eth', input:HEX.s4, ctx:[{id:'C01', wallet:'Main Wallet'}] },
+  { n:5,  title:'hex · 观察钱包',                        meta:'C01 · Watch-only',       chain:'eth', input:HEX.s5, ctx:[{id:'C01', wallet:'Cold Vault', watch:true}] },
+  { n:6,  title:'ENS 正向解析 alice.eth',                meta:'C10 · hex 单行等宽',     chain:'eth', input:'alice.eth', ctx:[{id:'C10', hex:HEX_ALICE}] },
+  { n:7,  title:'hex · 反向解析单域名',                  meta:'C11',                    chain:'eth', input:HEX_ALICE, ctx:[{id:'C11', name:'alice.eth'}] },
+  { n:8,  title:'hex · 反向解析多域名',                  meta:'C12 · 3 名 + +2 more',   chain:'eth', input:HEX.s8, ctx:[{id:'C12', names:['alice.eth','alicewallet.eth','alice-dao.eth','alice2.eth','alice-nft.eth']}] },
+  { n:9,  title:'Cosmos → Osmosis IBC',                 meta:'C02',                    chain:'cosmos', input:OSMO, ctx:[{id:'C02', chain:'Osmosis'}] },
+  { n:10, title:'Tron 未激活',                           meta:'C03',                    chain:'tron', input:TRON, ctx:[{id:'C03', amount:'0.1 TRX'}] },
+  { n:11, title:'TON bounceable',                        meta:'C04',                    chain:'ton',  input:TONA, ctx:[{id:'C04'}] },
+  { n:12, title:'Warning · warning 地址 + ENS 解析',     meta:'C06 + C10 · 折叠→点展开', chain:'eth', input:'bob.eth', ctx:[{id:'C10', hex:HEX.s12},{id:'C06'}] },
+  { n:13, title:'Warning · ENS 零宽字符',                meta:'C07 + C08 + C10',        chain:'eth', input:'alice​.eth', ctx:[{id:'C10', hex:HEX.s13},{id:'C08'},{id:'C07'}] },
+  { n:14, title:'High risk',                             meta:'C05 + C09 + C10 · 折叠', chain:'eth', input:'free-airdrop.eth', ctx:[{id:'C09', nickname:'Airdrop claim'},{id:'C05'},{id:'C10', hex:HEX.s14}] },
+  { n:15, title:'解析中 → 无法解析',                     meta:'S3 · 现有 Alert，无 tooltip', chain:'eth', input:'figma.eth', unresolved:true, ctx:[] }
+];
+
+/* ---------- DOM ---------- */
+function $(id){ return document.getElementById(id); }
+var el = {
+  screen:$('screen'), navTitle:$('navTitle'), navSub:$('navSub'),
+  addr:$('addr'), addrPh:$('addrPh'), addrVal:$('addrVal'), caret:$('caret'),
+  spinner:$('spinner'), tag:$('tag'), wrap:$('tooltipWrap'), tt:$('tooltip'), ttArrow:$('ttArrow'), ttContent:$('ttContent'),
+  addbar:$('addbar'), amountGroup:$('amountGroup'), balance:$('balance'), amount:$('amount'), feeUsd:$('feeUsd'), feeRange:$('feeRange'),
+  next:$('nextBtn'), alert:$('alert'), alertOk:$('alertOk'),
+  sceneList:$('sceneList'), replay:$('replay'), autoplay:$('autoplay'), log:$('log'), stateNow:$('stateNow'), skinNote:$('skinNote'),
+  compare:$('compare'), compareBtn:$('compareBtn'), cmpS1:$('cmpS1'), cmpS2:$('cmpS2'), cmpEmpty:$('cmpEmpty'),
+  cmpTtS1:$('cmpTtS1'), cmpTtS2:$('cmpTtS2'), cmpContentS1:$('cmpContentS1'), cmpContentS2:$('cmpContentS2'),
+  cmpArrowS1:$('cmpArrowS1'), cmpArrowS2:$('cmpArrowS2'), cmpCapS1:$('cmpCapS1'), cmpCapS2:$('cmpCapS2')
+};
+
+/* ---------- timers (looked up at call time so tests can fake them) ---------- */
+function makeTimerSet(){
+  var ids = [];
+  return {
+    set: function(fn, ms){ var id = window.setTimeout(function(){ fn(); }, ms); ids.push(id); return id; },
+    clearAll: function(){ ids.forEach(function(id){ window.clearTimeout(id); }); ids = []; }
+  };
+}
+var T = makeTimerSet();   // scene timers
+var A = makeTimerSet();   // autoplay timers
+
+/* ---------- state ---------- */
+var state = {
+  sceneIndex: -1, scene: null, phase:'idle', level:'none',
+  tooltipVisible:false, expanded:false, frozen:false, sceneStart:0, log:[], skin:'s1',
+  model:null, compare:false
+};
+
+function now(){ return Date.now(); }
+function log(name){
+  var t = (now() - state.sceneStart) / 1000;
+  state.log.push({ t:t, name:name });
+  var li = document.createElement('li');
+  li.innerHTML = '<span class="t">+' + t.toFixed(2) + 's</span><span>' + escapeHTML(name) + '</span>';
+  el.log.appendChild(li);
+  el.log.scrollTop = el.log.scrollHeight;
+  el.stateNow.textContent = name;
+}
+function escapeHTML(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+
+/* ---------- model: sort contexts, split risk/rest, compute level ---------- */
+function buildModel(scene){
+  var list = scene.ctx.map(function(c, i){
+    var base = CTX[c.id];
+    var e = {}; for (var k in base) e[k] = base[k]; for (var k2 in c) e[k2] = c[k2];
+    e._i = i; return e;
+  }).sort(function(a, b){
+    return (a.rank - b.rank) || ((a.sub || 0) - (b.sub || 0)) || (a._i - b._i);
+  });
+  var risk = list.filter(function(e){ return e.kind === 'risk'; });
+  var rest = list.filter(function(e){ return e.kind !== 'risk'; });
+  var level = 'none';
+  if (risk.some(function(e){ return e.level === 'high'; })) level = 'high';
+  else if (risk.length) level = 'warning';
+  else if (list.length) level = 'info';
+  // D7: max 4 entries total
+  var truncated = 0;
+  var room = MAX_ENTRIES - risk.length;
+  if (rest.length > room){ truncated = rest.length - room; rest = rest.slice(0, room); }
+  return { all:list, risk:risk, rest:rest, level:level, folded: risk.length > 0 && rest.length > 0, truncated:truncated };
+}
+
+/* ---------- entry rendering (shared helpers) ---------- */
+// D17: `0x` plain · first 4 after 0x + last 4 emphasised · middle 70%
+function hexHTML(h){
+  var has0x = /^0x/i.test(h);
+  var p = has0x ? h.slice(0,2) : '';
+  var r = has0x ? h.slice(2) : h;
+  return (p ? '<span class="hx0">' + escapeHTML(p) + '</span>' : '') +
+         '<span class="hx">' + escapeHTML(r.slice(0,4)) + '</span>' +
+         '<span class="hxm">' + escapeHTML(r.slice(4,-4)) + '</span>' +
+         '<span class="hx">' + escapeHTML(r.slice(-4)) + '</span>';
+}
+function fillText(e, tpl){
+  return tpl
+    .replace('{chain}', e.chain || '')
+    .replace('{nickname}', e.nickname || '')
+    .replace('{wallet}', (e.wallet || '') + (e.watch ? ' · Watch-only' : ''))
+    .replace('{amount}', e.amount || '')
+    .replace('{name}', e.name || '');
+}
+function namesSplit(e){
+  var shown = e.names.slice(0, MAX_NAMES);
+  return { shown: shown, more: e.names.length - shown.length };
+}
+// S2 entry type per IA id (D20: glyphs ≤ 3 — history / chain / info)
+var S2_TYPE  = { C05:'risk', C06:'risk', C07:'risk', C08:'condition', C02:'condition', C03:'condition', C04:'condition', C09:'identity', C01:'identity', C10:'resolved', C13:'resolved', C14:'resolved', C15:'resolved', C11:'resolved', C12:'resolved' };
+var S2_GLYPH = { C08:'history', C02:'chain', C03:'info', C04:'info' };
+var GLYPH = {
+  history: '<svg viewBox="0 0 16 20" fill="none" aria-hidden="true"><circle cx="8" cy="10" r="6.25" stroke="currentColor" stroke-width="1.5"/><path d="M8 6.75V10l2.4 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  chain:   '<svg viewBox="0 0 16 20" fill="none" aria-hidden="true"><path d="M2.5 7.5h11M11 5l2.5 2.5L11 10M13.5 12.5h-11M5 10l-2.5 2.5L5 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  info:    '<svg viewBox="0 0 16 20" fill="none" aria-hidden="true"><circle cx="8" cy="10" r="6.25" stroke="currentColor" stroke-width="1.5"/><path d="M8 9.25v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="6.9" r=".9" fill="currentColor"/></svg>'
+};
+function initial(s){ var ch = Array.from(String(s || '').trim())[0] || '?'; return escapeHTML(ch.toUpperCase()); }
+
+/* ---- S1 · Zeid 优化：label 12 + 正文 14 ---- */
+function entryHTML_S1(e){
+  if (e.kind === 'risk'){
+    return '<div class="tt-entry tt-risk" data-ctx="' + e.id + '" data-type="risk"><div class="tt-risk-title">' + escapeHTML(e.title) + '</div><div class="tt-risk-body">' + escapeHTML(e.body) + '</div></div>';
+  }
+  if (e.kind === 'sentence'){
+    return '<div class="tt-entry tt-sentence" data-ctx="' + e.id + '" data-type="sentence">' + escapeHTML(e.body) + '</div>';
+  }
+  var label = fillText(e, e.label);
+  var body, cls = 'tt-body';
+  if (e.hex && typeof e.hex === 'string'){ body = hexHTML(e.hex); cls += ' tt-hex'; }
+  else if (Array.isArray(e.names)){
+    var ns = namesSplit(e);
+    body = '<div class="tt-names">' + ns.shown.map(function(n){ return '<div class="tt-name">' + escapeHTML(n) + '</div>'; }).join('') +
+           (ns.more > 0 ? '<div class="tt-more-names">+' + ns.more + ' more</div>' : '') + '</div>';
+  } else {
+    body = escapeHTML(fillText(e, e.body));
+  }
+  return '<div class="tt-entry tt-labeled" data-ctx="' + e.id + '" data-type="labeled"><div class="tt-label">' + escapeHTML(label) + '</div><div class="' + cls + '">' + body + '</div></div>';
+}
+
+/* ---- S2 · 身份头 + 条件列 ---- */
+function entryHTML_S2(e){
+  var type = S2_TYPE[e.id] || (e.kind === 'risk' ? 'risk' : 'condition');
+  var open = '<div class="tt-entry s2-' + type + '" data-ctx="' + e.id + '" data-type="' + type + '">';
+  if (type === 'risk'){
+    return open + '<div class="tt-risk-title">' + escapeHTML(e.title) + '</div><div class="tt-risk-body">' + escapeHTML(e.body) + '</div></div>';
+  }
+  if (type === 'condition'){
+    var g = S2_GLYPH[e.id] || 'info';
+    var glyph = '<span class="s2-glyph" data-glyph="' + g + '">' + GLYPH[g] + '</span>';
+    if (e.kind === 'sentence'){
+      return open + '<div class="s2-row">' + glyph + '<div class="s2-text"><div class="s2-sentence">' + escapeHTML(e.body) + '</div></div></div></div>';
+    }
+    return open + '<div class="s2-row">' + glyph + '<div class="s2-text"><div class="s2-title">' + escapeHTML(fillText(e, e.label)) + '</div><div class="s2-desc">' + escapeHTML(fillText(e, e.body)) + '</div></div></div></div>';
+  }
+  if (type === 'identity'){
+    // avatar = 昵称/钱包名首字母；来源小字：Address book / My wallet / My wallet · Watch-only（D9）
+    var src   = e.id === 'C01' ? ('My wallet' + (e.watch ? ' · Watch-only' : '')) : 'Address book';
+    var title = e.id === 'C01' ? (e.wallet || '') : (e.nickname || '');
+    return open + '<div class="s2-row"><span class="s2-avatar" aria-hidden="true">' + initial(title) + '</span><div class="s2-text"><div class="s2-titlerow"><span class="s2-title">' + escapeHTML(title) + '</span><span class="s2-src">' + escapeHTML(src) + '</span></div></div></div></div>';
+  }
+  // resolved
+  if (e.hex && typeof e.hex === 'string'){
+    return open + '<div class="s2-label">' + escapeHTML(fillText(e, e.label)) + '</div><div class="tt-hex">' + hexHTML(e.hex) + '</div></div>';
+  }
+  if (Array.isArray(e.names)){
+    var ns = namesSplit(e);
+    var primary = ns.shown[0] || '';
+    var others = ns.shown.slice(1).map(function(n){ return '<span class="tt-name">' + escapeHTML(n) + '</span>'; });
+    if (ns.more > 0) others.push('<span class="tt-more-names">+' + ns.more + ' more</span>');
+    return open + '<div class="s2-row"><span class="s2-avatar" aria-hidden="true">' + initial(primary) + '</span><div class="s2-text"><div class="s2-titlerow"><span class="s2-title tt-name">' + escapeHTML(primary) + '</span><span class="s2-src">' + escapeHTML(fillText(e, e.label)) + '</span></div>' +
+           (others.length ? '<div class="s2-names">' + others.join('<span class="s2-sep"> · </span>') + '</div>' : '') + '</div></div></div>';
+  }
+  var nm = fillText(e, e.body);
+  return open + '<div class="s2-row"><span class="s2-avatar" aria-hidden="true">' + initial(nm) + '</span><div class="s2-text"><div class="s2-titlerow"><span class="s2-title">' + escapeHTML(nm) + '</span><span class="s2-src">' + escapeHTML(fillText(e, e.label)) + '</span></div></div></div></div>';
+}
+function entryRenderer(skin){ return skin === 's2' ? entryHTML_S2 : entryHTML_S1; }
+
+var CHEV = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="m2.5 4.5 3.5 3.5 3.5-3.5" stroke="#111D4A" stroke-opacity=".6" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+// Shared structure (IA §3 order + fold rule) — identical for both skins; only entries differ.
+function tooltipHTML(m, skin, ids){
+  var E = entryRenderer(skin);
+  ids = ids || { more:'ttMore', fold:'ttFold' };
+  var html = '';
+  if (m.folded){
+    html += '<div class="tt-main">' + m.risk.map(E).join('') + '</div>';
+    html += '<div class="tt-divider"></div>';
+    html += '<button type="button" class="tt-more" id="' + ids.more + '" aria-expanded="false" aria-controls="' + ids.fold + '"><span>More address info (' + (m.rest.length + m.truncated) + ')</span>' + CHEV + '</button>';
+    html += '<div class="tt-fold" id="' + ids.fold + '" aria-hidden="true"><div><div class="tt-fold-inner">' + m.rest.map(E).join('') +
+            (m.truncated ? '<div class="tt-truncate">+' + m.truncated + ' more details</div>' : '') + '</div></div></div>';
+  } else {
+    html += '<div class="tt-main">' + m.risk.concat(m.rest).map(E).join('') +
+            (m.truncated ? '<div class="tt-truncate">+' + m.truncated + ' more details</div>' : '') + '</div>';
+  }
+  return html;
+}
+function renderTooltip(m){
+  el.ttContent.innerHTML = tooltipHTML(m, state.skin);
+  el.tt.dataset.level = m.level;
+  el.tt.dataset.expanded = 'false';
+  el.tt.dataset.folded = m.folded ? 'true' : 'false';
+  el.tt.dataset.skin = state.skin;
+  state.expanded = false;
+  var more = $('ttMore');
+  if (more) more.addEventListener('click', function(ev){ ev.stopPropagation(); toggleFold(); });
+  updateCompare();
+}
+
+/* ---------- compare view (static S1 | S2 of the current scene) ---------- */
+function setStaticExpanded(tt, more, fold, expanded){
+  tt.dataset.expanded = expanded ? 'true' : 'false';
+  if (more) more.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+  if (fold) fold.setAttribute('aria-hidden', expanded ? 'false' : 'true');
+}
+function updateCompare(){
+  if (!state.compare) return;
+  var m = state.model;
+  var has = !!(m && m.level !== 'none' && state.scene && !state.scene.unresolved);
+  el.cmpEmpty.hidden = has;
+  el.cmpS1.hidden = !has; el.cmpS2.hidden = !has;
+  if (!has) return;
+  var w = TAG_W[m.level] || 38, left = Math.round(296 - w / 2 - 15) + 'px';
+  var cap = 'scene ' + state.scene.n + ' · ' + m.level + (m.folded ? (state.expanded ? ' · expanded' : ' · collapsed') : '');
+  [['s1', el.cmpTtS1, el.cmpContentS1, el.cmpArrowS1, el.cmpCapS1], ['s2', el.cmpTtS2, el.cmpContentS2, el.cmpArrowS2, el.cmpCapS2]].forEach(function(r){
+    var skin = r[0], tt = r[1], content = r[2], arrow = r[3], capEl = r[4];
+    var ids = { more:'cmpMore-' + skin, fold:'cmpFold-' + skin };
+    content.innerHTML = tooltipHTML(m, skin, ids);
+    tt.dataset.level = m.level; tt.dataset.folded = m.folded ? 'true' : 'false';
+    arrow.style.left = left;
+    capEl.textContent = cap;
+    setStaticExpanded(tt, $(ids.more), $(ids.fold), state.expanded);
+    var more = $(ids.more); if (more) more.addEventListener('click', function(ev){ ev.stopPropagation(); toggleFold(); });
+  });
+}
+function setCompare(on){
+  state.compare = !!on;
+  el.compare.classList.toggle('on', state.compare);
+  el.compareBtn.classList.toggle('is-on', state.compare);
+  el.compareBtn.setAttribute('aria-pressed', state.compare ? 'true' : 'false');
+  if (state.compare) updateCompare();
+}
+
+/* ---------- view helpers ---------- */
+function applyChain(key){
+  var c = CHAINS[key];
+  el.navTitle.textContent = c.title; el.navSub.textContent = c.sub; el.addrPh.textContent = c.ph;
+  el.balance.textContent = c.balance; el.amount.textContent = c.amount; el.feeUsd.textContent = c.feeUsd; el.feeRange.textContent = c.feeRange;
+}
+function setInput(text){
+  el.addrVal.textContent = text;
+  el.addrPh.hidden = text.length > 0;
+  el.addr.classList.toggle('tall', Array.from(text).length > 27);   // 2-line hex → 72 high (P0-A B1)
+}
+function setAddbar(show){
+  el.addbar.hidden = !show;
+  el.amountGroup.classList.toggle('no-bar', !show);
+}
+function setTag(level){
+  if (level === 'none'){ el.tag.hidden = true; el.tag.textContent = ''; el.tag.className = 'tag'; return; }
+  el.tag.hidden = false;
+  el.tag.textContent = TAG_TEXT[level];
+  el.tag.className = 'tag lv-' + level;
+  el.tag.setAttribute('aria-expanded', 'false');
+}
+function positionArrow(){
+  // arrow center = tag center. tag right edge is 296px from popover left; width from layout or fallback.
+  var w = el.tag.offsetWidth || TAG_W[state.level] || 38;
+  var center = 296 - w / 2;
+  el.ttArrow.style.left = Math.round(center - 15) + 'px';
+}
+function setNext(on){ el.next.classList.toggle('on', !!on); }
+
+/* ---------- tooltip visibility ---------- */
+var autoHideId = null;
+function showTooltip(reason){
+  if (state.level === 'none' || state.tooltipVisible) return;
+  el.wrap.classList.remove('out');
+  el.wrap.hidden = false;
+  positionArrow();
+  void el.wrap.offsetWidth; // reflow so the transition runs
+  el.wrap.classList.add('in');
+  state.tooltipVisible = true;
+  el.tag.setAttribute('aria-expanded', 'true');
+  log('tooltip shown' + (reason ? ' (' + reason + ')' : '') + (el.tt.dataset.folded === 'true' ? (state.expanded ? ' · expanded' : ' · collapsed') : ''));
+  if (state.level === 'info' && !state.frozen){
+    autoHideId = T.set(function(){ hideTooltip('auto 4s'); }, TIMING.infoAuto);
+  }
+}
+function hideTooltip(reason){
+  if (!state.tooltipVisible) return;
+  if (autoHideId !== null){ window.clearTimeout(autoHideId); autoHideId = null; }
+  state.tooltipVisible = false;
+  el.tag.setAttribute('aria-expanded', 'false');
+  el.wrap.classList.remove('in');
+  el.wrap.classList.add('out');
+  log('dismissed' + (reason ? ' (' + reason + ')' : ''));
+  T.set(function(){ el.wrap.hidden = true; el.wrap.classList.remove('out'); }, TIMING.tipOut);
+}
+// D8′: fold entry toggles repeatedly (∨ expand / ∧ collapse); state survives dismiss → re-open
+function setExpanded(on, silent){
+  if (el.tt.dataset.folded !== 'true') return;
+  on = !!on;
+  if (state.expanded === on) return;
+  state.expanded = on;
+  el.tt.dataset.expanded = on ? 'true' : 'false';
+  var more = $('ttMore'), fold = $('ttFold');
+  if (more) more.setAttribute('aria-expanded', on ? 'true' : 'false');
+  if (fold) fold.setAttribute('aria-hidden', on ? 'false' : 'true');
+  if (!silent) log(on ? 'expanded (More address info ∨)' : 'collapsed (More address info ∧)');
+  updateCompare();
+}
+function expand(){ setExpanded(true); }
+function collapse(){ setExpanded(false); }
+function toggleFold(){ setExpanded(!state.expanded); }
+
+/* ---------- scene flow ---------- */
+function resetView(){
+  T.clearAll(); autoHideId = null;
+  state.phase = 'idle'; state.level = 'none'; state.tooltipVisible = false; state.expanded = false; state.frozen = false; state.model = null;
+  state.log = []; el.log.innerHTML = '';
+  el.wrap.hidden = true; el.wrap.classList.remove('in', 'out');
+  el.ttContent.innerHTML = '';
+  el.spinner.hidden = true; setTag('none'); el.caret.hidden = true;
+  el.alert.hidden = true;
+  setInput(''); setNext(false);
+  updateCompare();
+}
+function prepare(index, instant){
+  var scene = SCENES[index];
+  resetView();
+  state.sceneIndex = index; state.scene = scene; state.sceneStart = now();
+  state.model = buildModel(scene);
+  applyChain(scene.chain);
+  setAddbar(!scene.ctx.some(function(c){ return c.id === 'C09' || c.id === 'C01'; }));
+  Array.prototype.forEach.call(el.sceneList.querySelectorAll('.scene-btn'), function(b, i){ b.classList.toggle('is-on', i === index); b.setAttribute('aria-pressed', i === index ? 'true' : 'false'); });
+  if (!instant && window.history && typeof history.replaceState === 'function'){
+    try { history.replaceState(null, '', '#scene=' + scene.n); } catch (e) {}
+  }
+  log('idle');
+  return scene;
+}
+function resolveNow(scene){
+  el.spinner.hidden = true;
+  el.caret.hidden = true;
+  if (scene.unresolved){
+    state.phase = 'error'; log('unresolved → S3 Alert'); el.alert.hidden = false; return;
+  }
+  var m = state.model; state.level = m.level; setNext(true);
+  if (m.level === 'none'){ state.phase = 'resolved'; log('resolved(none) → S2 no tag'); return; }
+  setTag(m.level); renderTooltip(m);
+  state.phase = 'resolved'; log('resolved(' + m.level + ') → tag "' + TAG_TEXT[m.level] + '"');
+}
+function play(index){
+  var scene = prepare(index, false);
+  var chars = Array.from(scene.input);
+  var per = chars.length > 30 ? TIMING.charFast : TIMING.char;
+  var i = 0;
+  state.phase = 'typing'; log('typing (' + chars.length + ' chars, ' + per + 'ms/char' + (/​/.test(scene.input) ? ', contains U+200B' : '') + ')');
+  el.caret.hidden = false;
+  function step(){
+    i++; setInput(chars.slice(0, i).join(''));
+    if (i < chars.length) T.set(step, per);
+    else { state.phase = 'paused'; log('pause ' + TIMING.pause + 'ms'); T.set(resolving, TIMING.pause); }
+  }
+  function resolving(){
+    state.phase = 'resolving'; log('resolving (spinner ' + TIMING.resolve + 'ms)');
+    el.spinner.hidden = false;
+    T.set(function(){
+      resolveNow(scene);
+      if (state.phase === 'resolved' && state.level !== 'none'){
+        T.set(function(){ showTooltip('auto'); }, TIMING.tagToTip);
+      }
+    }, TIMING.resolve);
+  }
+  T.set(step, per);
+  scheduleAutoplay();
+}
+function jumpTo(index, step){
+  var scene = prepare(index, true);
+  state.frozen = true;
+  var order = ['idle','typed','resolving','dismissed','shown','expanded'];
+  var k = order.indexOf(step); if (k < 0) k = order.indexOf('shown');
+  if (k >= 1){ setInput(scene.input); state.phase = 'typed'; log('typing (instant)'); el.caret.hidden = false; }
+  if (k === 2){ el.spinner.hidden = false; state.phase = 'resolving'; log('resolving'); return; }
+  if (k >= 3){ resolveNow(scene); }
+  if (k >= 4 && state.level !== 'none'){ showTooltip('instant'); }
+  if (k >= 5) expand();
+  if (k === 3 && state.level !== 'none') log('(tooltip not shown — jump to dismissed)');
+}
+function scheduleAutoplay(){
+  A.clearAll();
+  if (!el.autoplay.checked) return;
+  if (state.model && state.model.folded) A.set(function(){ expand(); }, TIMING.autoExpand);
+  A.set(function(){ play((state.sceneIndex + 1) % SCENES.length); }, TIMING.autoplay);
+}
+
+/* ---------- panel ---------- */
+function levelOf(scene){ return scene.unresolved ? 'error' : buildModel(scene).level; }
+SCENES.forEach(function(s, i){
+  var li = document.createElement('li');
+  var lv = levelOf(s);
+  li.innerHTML = '<button type="button" class="scene-btn" data-i="' + i + '" aria-pressed="false"><span class="num">' + String(s.n).padStart(2, '0') + '</span><span class="dot lv-' + lv + '"></span><span class="name">' + escapeHTML(s.title) + '</span><span class="meta">' + escapeHTML(s.meta) + '</span></button>';
+  el.sceneList.appendChild(li);
+});
+el.sceneList.addEventListener('click', function(ev){
+  var b = ev.target.closest('.scene-btn'); if (!b) return;
+  play(parseInt(b.dataset.i, 10));
+});
+el.replay.addEventListener('click', function(){ play(state.sceneIndex < 0 ? 0 : state.sceneIndex); });
+el.autoplay.addEventListener('change', function(){
+  if (el.autoplay.checked) play(state.sceneIndex < 0 ? 0 : state.sceneIndex); else A.clearAll();
+});
+Array.prototype.forEach.call(document.querySelectorAll('.seg [data-skin]'), function(b){
+  b.addEventListener('click', function(){ setSkin(b.dataset.skin); });
+});
+function setSkin(skin){
+  if (skin !== 's1' && skin !== 's2') skin = 's1';
+  var changed = state.skin !== skin;
+  state.skin = skin;
+  document.body.classList.remove('skin-s1', 'skin-s2');
+  document.body.classList.add('skin-' + skin);
+  Array.prototype.forEach.call(document.querySelectorAll('.seg [data-skin]'), function(b){
+    var on = b.dataset.skin === skin; b.classList.toggle('is-on', on); b.setAttribute('aria-checked', on ? 'true' : 'false');
+  });
+  el.skinNote.hidden = skin !== 's2';
+  // keep current scene + state: re-render the tooltip in the new skin, preserving expanded
+  if (changed && state.model && state.level !== 'none' && el.ttContent.innerHTML){
+    var wasExpanded = state.expanded;
+    renderTooltip(state.model);
+    if (wasExpanded) setExpanded(true, true);
+    if (state.sceneStart) log('skin → ' + skin.toUpperCase() + ' (re-rendered' + (wasExpanded ? ', expanded kept' : '') + ')');
+  }
+}
+el.compareBtn.addEventListener('click', function(){ setCompare(!state.compare); });
+
+/* ---------- phone interactions ---------- */
+el.tag.addEventListener('click', function(ev){
+  ev.stopPropagation();
+  if (state.tooltipVisible) hideTooltip('tag click'); else showTooltip('tag click');
+});
+el.screen.addEventListener('click', function(ev){
+  if (ev.target.closest('.tt') || ev.target.closest('.tag')) return;
+  if (state.tooltipVisible) hideTooltip('click outside');
+});
+el.tt.addEventListener('click', function(ev){ ev.stopPropagation(); });
+el.alertOk.addEventListener('click', function(ev){ ev.stopPropagation(); el.alert.hidden = true; log('alert dismissed (Understand)'); });
+document.addEventListener('keydown', function(ev){ if (ev.key === 'Escape' && state.tooltipVisible) hideTooltip('Esc'); });
+
+/* ---------- boot: hash / data-init ---------- */
+function parseInit(){
+  var src = document.documentElement.getAttribute('data-init') || (location.hash || '').replace(/^#/, '');
+  var out = {};
+  src.split('&').forEach(function(kv){ var p = kv.split('='); if (p[0]) out[decodeURIComponent(p[0])] = decodeURIComponent(p[1] || ''); });
+  return out;
+}
+function boot(){
+  var q = parseInit();
+  if (q.skin) setSkin(q.skin);
+  if (q.compare === '1') setCompare(true);
+  var idx = q.scene ? SCENES.findIndex(function(s){ return String(s.n) === String(q.scene); }) : -1;
+  if (idx < 0) idx = 0;
+  if (q.step || q.instant === '1') jumpTo(idx, q.step || 'shown'); else play(idx);
+}
+window.addEventListener('hashchange', function(){ var q = parseInit(); if (q.scene) boot(); });
+
+/* ---------- public API (for tests / console) ---------- */
+window.proto = {
+  SCENES: SCENES, CTX: CTX, TIMING: TIMING,
+  play: play, jumpTo: jumpTo, expand: expand, collapse: collapse, toggleFold: toggleFold, showTooltip: showTooltip, hideTooltip: hideTooltip, setSkin: setSkin, setCompare: setCompare,
+  buildModel: buildModel, tooltipHTML: tooltipHTML, hexHTML: hexHTML,
+  getState: function(){ return { phase:state.phase, level:state.level, tooltipVisible:state.tooltipVisible, expanded:state.expanded, sceneIndex:state.sceneIndex, log:state.log.slice(), skin:state.skin, compare:state.compare }; }
+};
+
+boot();
+})();
+</script>
+<script src="/projects/site-nav.js" defer></script>
+</body>
+</html>

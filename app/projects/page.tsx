@@ -29,8 +29,10 @@ export default function Projects() {
 
         <section className="wrap block tight" aria-label="项目列表">
           <div className="proj-grid">
-            {projects.map((p) => (
-              <Link key={p.slug} href={p.href} className="glass proj">
+            {projects.map((p) => {
+              const Card = p.static ? 'a' : Link
+              return (
+              <Card key={p.slug} href={p.href} className="glass proj">
                 <div className="proj-top">
                   <span className="proj-mark" aria-hidden="true">
                     <i />
@@ -59,8 +61,9 @@ export default function Projects() {
                     </div>
                   ))}
                 </div>
-              </Link>
-            ))}
+              </Card>
+              )
+            })}
             <div className="glass proj proj-soon" aria-disabled="true">
               <span className="sec-icon"><Icon name="projects" size={22} /></span>
               <h2 className="proj-title muted">更多项目陆续加入</h2>
