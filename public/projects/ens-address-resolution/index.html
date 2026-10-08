@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Prototype — 转账地址解析 Tooltip v1.5 · imToken UXD</title>
+<title>Prototype — 转账地址解析 Tooltip v1.6 · imToken UXD</title>
 <style>
 /* v1.2 变更（Wilson 决定）：已删除「观察钱包」场景与「反向解析多域名」场景（当前均无该解析能力）；
    C08「无交易记录」之后若还有其它 Entry → 插入分割线（.tt-sep，任意皮肤 / Info 态 / 风险展开态折叠区 / 对比视图）。 */
@@ -341,111 +341,64 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
 .ann.r1 .txt .k{color:var(--blue)}
 .ann.r2 .txt .k{color:var(--deep)}
 .ann.sep .txt .k{color:#9598AB}
+
+/* ============================================================
+   0. Page chrome — 对齐 imToken Design Hub 视觉体系（light glass）
+   ============================================================ */
+:root{
+  --hub-sans:"Noto Sans SC","PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+  --hub-ground:#f6f9fe; --hub-text:rgba(17,29,74,.78); --hub-text2:rgba(17,29,74,.62); --hub-secondary:#a0a5b7;
+  --hub-ease:cubic-bezier(.2,.7,.2,1);
+  --hub-shadow:0 0 0 1px rgba(17,29,74,.05),0 20px 60px -20px rgba(17,29,74,.18),inset 0 1px 0 rgba(255,255,255,.9);
+}
+html,body{background:var(--hub-ground)}
+.ambient{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none}
+.ambient i{position:absolute;border-radius:50%;filter:blur(40px);animation:drift 52s ease-in-out infinite alternate}
+.ambient .b1{width:860px;height:860px;top:-320px;right:-180px;background:radial-gradient(circle,rgba(0,127,255,.12),transparent 65%)}
+.ambient .b2{width:700px;height:700px;top:38%;left:-260px;background:radial-gradient(circle,rgba(0,127,255,.07),transparent 65%);animation-duration:60s}
+.ambient .b3{width:640px;height:640px;bottom:-280px;right:18%;background:radial-gradient(circle,rgba(0,127,255,.06),transparent 65%);animation-duration:44s}
+@keyframes drift{from{transform:translate3d(0,0,0)}to{transform:translate3d(-40px,30px,0)}}
+.wrap{max-width:1248px;margin:0 auto;padding:0 24px}
+.hub{font-family:var(--hub-sans);color:var(--hub-text)}
+.page-hero{padding:72px 0 8px}
+.page-hero .eyebrow{font-family:var(--hub-sans);font-size:13px;font-weight:500;line-height:1.4;letter-spacing:.04em;color:var(--blue);text-transform:uppercase;margin-bottom:16px}
+.h1-page{font-size:48px;font-weight:900;line-height:1.1;letter-spacing:-.02em;color:var(--deep);margin-bottom:16px}
+.page-hero .lead{font-size:18px;line-height:1.65;color:var(--hub-text);max-width:720px}
+.glass{background:rgba(255,255,255,.58);backdrop-filter:blur(20px) saturate(1.4);-webkit-backdrop-filter:blur(20px) saturate(1.4);border:1px solid rgba(255,255,255,.85);border-radius:24px;box-shadow:var(--hub-shadow)}
+.part{margin-top:40px;padding:40px 40px 44px}
+.part-head{margin-bottom:28px}
+.part-head .eyebrow{font-family:var(--hub-sans);font-size:13px;font-weight:500;line-height:1.4;letter-spacing:.04em;color:var(--blue);text-transform:uppercase;margin-bottom:12px}
+.part-head h2{font-size:32px;font-weight:900;line-height:1.15;letter-spacing:-.01em;color:var(--deep);text-wrap:balance}
+.part-head .sub{font-size:16px;line-height:1.7;color:var(--hub-text2);max-width:720px;margin-top:10px}
+.page-foot{padding:48px 0 40px;font-size:13px;color:var(--hub-secondary)}
+@media (max-width:760px){.part{padding:24px 20px 28px}.h1-page{font-size:34px}.part-head h2{font-size:26px}.page-hero{padding-top:48px}}
+/* 把原型舞台与信息架构内容放进 Part 卡片里 */
+.part .stage{padding:0;justify-content:flex-start}
+.part .panel{flex:1 1 420px;max-width:640px}
+.part .intro{max-width:none;padding:0}
+.part .dims{margin-top:0}
 </style>
 </head>
 <body class="skin-s1">
-<div class="ver" id="ver">v1.5</div>
+<div class="ver" id="ver">v1.6</div>
 <!-- ===================== INTRO · 解析对象与信息架构（2026-10-08 团队讨论口径） ===================== -->
-<section class="intro" id="intro" aria-labelledby="intro-title">
-  <p class="eyebrow">01 · WHAT THE TOOLTIP RESOLVES</p>
-  <h1 id="intro-title">Tooltip 解析的对象：两个内容区域，决定了信息架构</h1>
-  <p class="lead">地址输入后，Tooltip 要表达的信息分为两部分：<b>区域一</b>是对这个地址的风险判断（Risk Level），<b>区域二</b>是对用户输入的地址 / 域名解析出来的事实（Address info）。两部分性质不同，所以在组件里分区承载、用分割线隔开，并有各自的排序与折叠规则。</p>
 
-  <div class="dims">
-    <div class="dim">
-      <span class="no">区域一</span>
-      <h2><span class="pill r1">RISK LEVEL</span>风险等级的表达</h2>
-      <p>由风控引擎返回，决定输入框右侧 Tag 的等级与颜色；0–1 不折叠，2–3 触发折叠。</p>
-      <ul class="lv">
-        <li><span class="k">L0</span><span>无任何风险信息 → 不显示</span><span class="tagx none">无 Tag</span></li>
-        <li><span class="k">L1</span><span>过往没有 transaction record</span><span class="tagx">Info</span></li>
-        <li><span class="k">L2</span><span>Warning 地址</span><span class="tagx w">Warning</span></li>
-        <li><span class="k">L3</span><span>High Risk 地址</span><span class="tagx h">High risk</span></li>
-      </ul>
-    </div>
+<div class="ambient" aria-hidden="true"><i class="b1"></i><i class="b2"></i><i class="b3"></i></div>
+<main class="hub">
+  <section class="page-hero wrap">
+    <p class="eyebrow">Projects · ENS V2 · 地址解析组件</p>
+    <h1 class="h1-page">转账地址解析 Tooltip</h1>
+    <p class="lead">地址输入后，输入框右侧出现一个 Tag，Tooltip 里分两个区域说明「这个地址有没有风险」和「它解析出了什么」。先在 Part 1 里切换场景感受实际效果，再到 Part 2 看这套信息架构是怎么定出来的。</p>
+  </section>
 
-    <div class="dim">
-      <span class="no">区域二</span>
-      <h2><span class="pill r2">ADDRESS INFO</span>地址解析信息（事实）</h2>
-      <p>针对用户输入的地址 / 域名解析出来的事实，三类信息按下面的优先级在列表中排序：</p>
-      <ol class="cls">
-        <li><span class="prio">优先级最高</span><b>专项信息识别</b><span>地址所属链类型（Cosmos / Osmosis，IBC 跨链）；地址状态（Polkadot / Kusama / Tron / Tezos 未激活地址、TON 反弹地址）</span></li>
-        <li><b>地址标记</b><span>是否是地址本存储的地址；是否是用户当前某个钱包中的账户地址。「已存于地址本」的标记优先级高于「我的钱包」</span></li>
-        <li><b>ENS 正向 / 反向解析结果</b><span>正向：域名 → 解析出的地址全文（等宽单行、首尾加重）；反向：地址 → 关联的单个域名</span></li>
-      </ol>
-    </div>
-
-    <div class="dim">
-      <span class="no">附加规则</span>
-      <h2>折叠与唤起</h2>
-      <p>风险类信息与地址解析信息同时存在时的展示规则。</p>
-      <ul class="rules">
-        <li><b>Risk Level ≥ 2 → 区域二默认折叠</b><span>Tooltip 只常显风险条目，地址解析信息收进「More address info (N)」，可反复展开 / 收起。</span></li>
-        <li><b>Risk Level ≥ 2 → 自动唤起后不自动消失</b><span>用户点击空白区域、或与其他控件交互时才收起。</span></li>
-        <li><b>Risk Level 0–1 → 不折叠</b><span>区域一（若有）与区域二并列展示，中间一条分割线；L1 态自动唤起后 4s 自动收起。</span></li>
-      </ul>
-    </div>
-  </div>
-
-  <div class="anatomy">
-    <div class="ahead">
-      <h2>组件解剖：两个内容区域在 Tooltip 中的位置</h2>
-      <p>组件按 S1 极简版原样渲染；右侧色条标出对应区域，文字说明其规则。</p>
-    </div>
-    <div class="ana-grid">
-
-      <!-- Anatomy A · Level 1 -->
-      <div class="ana skin-s1" id="anaA">
-        <div class="acap"><span class="tagx">Info</span>Risk Level 1 · 无交易记录 + 地址本 + ENS 正向解析</div>
-        <div class="ana-body">
-          <div class="tt" data-level="info" data-expanded="false">
-            <div class="tt-arrow"><svg width="30" height="11" viewBox="0 0 30 11"><path d="M0 11 15 0l15 11z" fill="#fff"/></svg></div>
-            <div class="tt-main">
-              <div class="tt-entry tt-sentence" data-reg="r1">You haven't transacted with this address before.</div>
-              <div class="tt-sep" data-reg="sep"></div>
-              <div class="tt-main" data-reg="r2">
-                <div class="tt-entry tt-labeled"><div class="tt-label">Address book</div><div class="tt-body">Alice</div></div>
-                <div class="tt-entry tt-labeled"><div class="tt-label">ENS · Resolved address</div><div class="tt-body tt-hex"><span class="hx0">0x</span><span class="hx">9b57</span><span class="hxm">48e79638c895cD34B7aF5215eBc40ad7</span><span class="hx">1f72</span></div></div>
-              </div>
-            </div>
-          </div>
-          <div class="ana-side">
-            <div class="ann r1" data-for="r1"><span class="bar"></span><div class="txt"><b><span class="k">区域一</span>Risk Level 表达</b>L1 是一句事实陈述，无标题、无彩色。L0 时整个区域不出现，Tooltip 直接从区域二开始。</div></div>
-            <div class="ann sep" data-for="sep"><span class="bar"></span><div class="txt"><b><span class="k">分割线</span></b>区域一与区域二之间固定一条 1px 分割线。</div></div>
-            <div class="ann r2" data-for="r2"><span class="bar"></span><div class="txt"><b><span class="k">区域二</span>Address info 列表</b>按 ① 专项信息识别 → ② 地址标记（地址本 &gt; 我的钱包）→ ③ ENS 解析结果排序。本例未命中专项信息，所以从地址本开始；若命中（IBC、未激活），它会排在最前。</div></div>
-          </div>
-        </div>
+  <!-- ===================== PART 1 · PROTOTYPE ===================== -->
+  <section class="wrap">
+    <div class="part glass" id="part1" aria-labelledby="part1-title">
+      <div class="part-head">
+        <p class="eyebrow">Part 1 · Prototype</p>
+        <h2 id="part1-title">Prototype 与场景切换</h2>
+        <p class="sub">左侧是 imToken 转账页的可操作原型：输入地址 → 解析 → Tag 出现 → Tooltip 自动唤起。右侧按五类场景切换，每一类的标题下写了这一类的展示原则。</p>
       </div>
-
-      <!-- Anatomy B · Level 2 (default collapsed, click to expand) -->
-      <div class="ana skin-s1" id="anaB">
-        <div class="acap"><span class="tagx w">Warning</span>Risk Level 2 / 3 · 同一样式，默认折叠<span class="hintx">点「More address info」展开</span></div>
-        <div class="ana-body">
-          <div class="tt" data-level="warning" data-expanded="false" id="anaBtt">
-            <div class="tt-arrow"><svg width="30" height="11" viewBox="0 0 30 11"><path d="M0 11 15 0l15 11z" fill="#fff"/></svg></div>
-            <div class="tt-main">
-              <div class="tt-entry tt-risk" data-reg="r1"><div class="tt-risk-title">Warning</div><div class="tt-risk-body">Recent activity on this address appears unusual. Double-check before sending.</div></div>
-              <div class="tt-divider"></div>
-              <button type="button" class="tt-more" id="anaBMore" aria-expanded="false" aria-controls="anaBFold" data-reg="fold"><span>More address info (2)</span><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#111D4A" stroke-opacity=".6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l4 4 4-4"/></svg></button>
-              <div class="tt-fold" id="anaBFold"><div><div class="tt-fold-inner" data-reg="r2">
-                <div class="tt-entry tt-labeled"><div class="tt-label">Osmosis address</div><div class="tt-body">Funds will be sent via IBC cross-chain.</div></div>
-                <div class="tt-entry tt-labeled"><div class="tt-label">Address book</div><div class="tt-body">Alice</div></div>
-              </div></div></div>
-            </div>
-          </div>
-          <div class="ana-side">
-            <div class="ann r1" data-for="r1"><span class="bar"></span><div class="txt"><b><span class="k">区域一</span>风险条目常显</b>L2 / L3 用「标题 + 正文」，颜色只在输入框 Tag 上。自动唤起后不自动消失，点空白或与其他控件交互才收起。</div></div>
-            <div class="ann sep" data-for="fold"><span class="bar"></span><div class="txt"><b><span class="k">折叠入口</span></b>Risk Level ≥ 2 时区域二默认折叠为「More address info (N)」，N = 折叠条数；∨ / ∧ 可反复切换。</div></div>
-            <div class="ann r2 is-hidden" data-for="r2"><span class="bar"></span><div class="txt"><b><span class="k">区域二</span>展开后同一套排序</b>本例命中专项信息（Osmosis / IBC），排在 ① 位，地址本 ② 紧随其后。</div></div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-</section>
-
-<p class="eyebrow" style="max-width:1160px;margin:28px auto 0;padding:0 24px;font-family:var(--mono);font-size:11px;color:var(--blue);letter-spacing:.4px">02 · PROTOTYPE</p>
 <div class="stage">
 
   <!-- ===================== PHONE ===================== -->
@@ -579,6 +532,115 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
     <div class="compare-empty" id="cmpEmpty" hidden>当前场景无 tooltip（无 context 或走 S3 Alert）</div>
   </section>
 </div>
+    </div>
+  </section>
+
+  <!-- ===================== PART 2 · INFORMATION ARCHITECTURE ===================== -->
+  <section class="wrap">
+    <div class="part glass" id="part2" aria-labelledby="part2-title">
+      <div class="part-head">
+        <p class="eyebrow">Part 2 · Information Architecture</p>
+        <h2 id="part2-title">地址解析组件的信息架构</h2>
+        <p class="sub">Tooltip 要表达的信息分为两部分：区域一是对这个地址的风险判断（Risk Level），区域二是对用户输入的地址 / 域名解析出来的事实（Address info）。两部分性质不同，所以分区承载、用分割线隔开，并有各自的排序与折叠规则。</p>
+      </div>
+<div class="intro" id="intro">
+  <div class="dims">
+    <div class="dim">
+      <span class="no">区域一</span>
+      <h2><span class="pill r1">RISK LEVEL</span>风险等级的表达</h2>
+      <p>由风控引擎返回，决定输入框右侧 Tag 的等级与颜色；0–1 不折叠，2–3 触发折叠。</p>
+      <ul class="lv">
+        <li><span class="k">L0</span><span>无任何风险信息 → 不显示</span><span class="tagx none">无 Tag</span></li>
+        <li><span class="k">L1</span><span>过往没有 transaction record</span><span class="tagx">Info</span></li>
+        <li><span class="k">L2</span><span>Warning 地址</span><span class="tagx w">Warning</span></li>
+        <li><span class="k">L3</span><span>High Risk 地址</span><span class="tagx h">High risk</span></li>
+      </ul>
+    </div>
+
+    <div class="dim">
+      <span class="no">区域二</span>
+      <h2><span class="pill r2">ADDRESS INFO</span>地址解析信息（事实）</h2>
+      <p>针对用户输入的地址 / 域名解析出来的事实，三类信息按下面的优先级在列表中排序：</p>
+      <ol class="cls">
+        <li><span class="prio">优先级最高</span><b>专项信息识别</b><span>地址所属链类型（Cosmos / Osmosis，IBC 跨链）；地址状态（Polkadot / Kusama / Tron / Tezos 未激活地址、TON 反弹地址）</span></li>
+        <li><b>地址标记</b><span>是否是地址本存储的地址；是否是用户当前某个钱包中的账户地址。「已存于地址本」的标记优先级高于「我的钱包」</span></li>
+        <li><b>ENS 正向 / 反向解析结果</b><span>正向：域名 → 解析出的地址全文（等宽单行、首尾加重）；反向：地址 → 关联的单个域名</span></li>
+      </ol>
+    </div>
+
+    <div class="dim">
+      <span class="no">附加规则</span>
+      <h2>折叠与唤起</h2>
+      <p>风险类信息与地址解析信息同时存在时的展示规则。</p>
+      <ul class="rules">
+        <li><b>Risk Level ≥ 2 → 区域二默认折叠</b><span>Tooltip 只常显风险条目，地址解析信息收进「More address info (N)」，可反复展开 / 收起。</span></li>
+        <li><b>Risk Level ≥ 2 → 自动唤起后不自动消失</b><span>用户点击空白区域、或与其他控件交互时才收起。</span></li>
+        <li><b>Risk Level 0–1 → 不折叠</b><span>区域一（若有）与区域二并列展示，中间一条分割线；L1 态自动唤起后 4s 自动收起。</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="anatomy">
+    <div class="ahead">
+      <h2>组件解剖：两个内容区域在 Tooltip 中的位置</h2>
+      <p>组件按 S1 极简版原样渲染；右侧色条标出对应区域，文字说明其规则。</p>
+    </div>
+    <div class="ana-grid">
+
+      <!-- Anatomy A · Level 1 -->
+      <div class="ana skin-s1" id="anaA">
+        <div class="acap"><span class="tagx">Info</span>Risk Level 1 · 无交易记录 + 地址本 + ENS 正向解析</div>
+        <div class="ana-body">
+          <div class="tt" data-level="info" data-expanded="false">
+            <div class="tt-arrow"><svg width="30" height="11" viewBox="0 0 30 11"><path d="M0 11 15 0l15 11z" fill="#fff"/></svg></div>
+            <div class="tt-main">
+              <div class="tt-entry tt-sentence" data-reg="r1">You haven't transacted with this address before.</div>
+              <div class="tt-sep" data-reg="sep"></div>
+              <div class="tt-main" data-reg="r2">
+                <div class="tt-entry tt-labeled"><div class="tt-label">Address book</div><div class="tt-body">Alice</div></div>
+                <div class="tt-entry tt-labeled"><div class="tt-label">ENS · Resolved address</div><div class="tt-body tt-hex"><span class="hx0">0x</span><span class="hx">9b57</span><span class="hxm">48e79638c895cD34B7aF5215eBc40ad7</span><span class="hx">1f72</span></div></div>
+              </div>
+            </div>
+          </div>
+          <div class="ana-side">
+            <div class="ann r1" data-for="r1"><span class="bar"></span><div class="txt"><b><span class="k">区域一</span>Risk Level 表达</b>L1 是一句事实陈述，无标题、无彩色。L0 时整个区域不出现，Tooltip 直接从区域二开始。</div></div>
+            <div class="ann sep" data-for="sep"><span class="bar"></span><div class="txt"><b><span class="k">分割线</span></b>区域一与区域二之间固定一条 1px 分割线。</div></div>
+            <div class="ann r2" data-for="r2"><span class="bar"></span><div class="txt"><b><span class="k">区域二</span>Address info 列表</b>按 ① 专项信息识别 → ② 地址标记（地址本 &gt; 我的钱包）→ ③ ENS 解析结果排序。本例未命中专项信息，所以从地址本开始；若命中（IBC、未激活），它会排在最前。</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Anatomy B · Level 2 (default collapsed, click to expand) -->
+      <div class="ana skin-s1" id="anaB">
+        <div class="acap"><span class="tagx w">Warning</span>Risk Level 2 / 3 · 同一样式，默认折叠<span class="hintx">点「More address info」展开</span></div>
+        <div class="ana-body">
+          <div class="tt" data-level="warning" data-expanded="false" id="anaBtt">
+            <div class="tt-arrow"><svg width="30" height="11" viewBox="0 0 30 11"><path d="M0 11 15 0l15 11z" fill="#fff"/></svg></div>
+            <div class="tt-main">
+              <div class="tt-entry tt-risk" data-reg="r1"><div class="tt-risk-title">Warning</div><div class="tt-risk-body">Recent activity on this address appears unusual. Double-check before sending.</div></div>
+              <div class="tt-divider"></div>
+              <button type="button" class="tt-more" id="anaBMore" aria-expanded="false" aria-controls="anaBFold" data-reg="fold"><span>More address info (2)</span><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#111D4A" stroke-opacity=".6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l4 4 4-4"/></svg></button>
+              <div class="tt-fold" id="anaBFold"><div><div class="tt-fold-inner" data-reg="r2">
+                <div class="tt-entry tt-labeled"><div class="tt-label">Osmosis address</div><div class="tt-body">Funds will be sent via IBC cross-chain.</div></div>
+                <div class="tt-entry tt-labeled"><div class="tt-label">Address book</div><div class="tt-body">Alice</div></div>
+              </div></div></div>
+            </div>
+          </div>
+          <div class="ana-side">
+            <div class="ann r1" data-for="r1"><span class="bar"></span><div class="txt"><b><span class="k">区域一</span>风险条目常显</b>L2 / L3 用「标题 + 正文」，颜色只在输入框 Tag 上。自动唤起后不自动消失，点空白或与其他控件交互才收起。</div></div>
+            <div class="ann sep" data-for="fold"><span class="bar"></span><div class="txt"><b><span class="k">折叠入口</span></b>Risk Level ≥ 2 时区域二默认折叠为「More address info (N)」，N = 折叠条数；∨ / ∧ 可反复切换。</div></div>
+            <div class="ann r2 is-hidden" data-for="r2"><span class="bar"></span><div class="txt"><b><span class="k">区域二</span>展开后同一套排序</b>本例命中专项信息（Osmosis / IBC），排在 ① 位，地址本 ② 紧随其后。</div></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+    </div>
+  </section>
+  <p class="page-foot wrap">imToken UXD · 转账地址解析 Tooltip 原型 · 口径以 2026-10-08 团队讨论为准</p>
+</main>
 
 <script>
 (function(){
