@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Prototype — 转账地址解析 Tooltip v2.3 · imToken UXD</title>
+<title>Prototype — 转账地址解析 Tooltip v2.4 · imToken UXD</title>
 <style>
 /* v2.3 变更（Wilson 定稿 2026-10-09）：专项信息（区域二 ①）正文文案定稿——label 已标明网络，正文不再重复「This address is…」，先说对用户的后果，一句话 ≤ 2 行：
    C02「{chain} address」（IBC 场景 chain = 收款地址自身的格式 Osmosis，场景 7 ctx Cosmos → Osmosis）+「Funds will be sent via IBC cross-chain transfer.」；
@@ -433,10 +433,54 @@ html,body{background:var(--hub-ground)}
 .part .panel{flex:1 1 420px;max-width:640px}
 .part .intro{max-width:none;padding:0}
 .part .dims{margin-top:0}
+
+/* ============================================================
+   Infographic — Tooltip 内容区块与显示规则一图（Part 2 开头）
+   ============================================================ */
+.infog{display:grid;grid-template-columns:343px 1fr;gap:28px;align-items:start;background:#fff;border-radius:16px;padding:22px 24px;margin-bottom:20px;box-shadow:0 1px 2px rgba(17,29,74,.06),0 8px 24px rgba(17,29,74,.06)}
+@media (max-width:760px){.infog{grid-template-columns:1fr}}
+.infog .ig-cap{grid-column:1/-1;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:4px}
+.infog .ig-cap h3{font-size:15px;font-weight:600;line-height:22px;color:var(--deep)}
+.infog .ig-cap p{font-size:12px;line-height:17px;color:var(--deep60)}
+/* schematic tooltip */
+.ig-tt{position:relative;background:#fff;border:1px solid var(--deep08);border-radius:16px;padding:14px 16px;filter:drop-shadow(0 4px 24px rgba(0,0,0,.10))}
+.ig-tag{position:absolute;right:16px;top:-30px;display:inline-flex;align-items:center;height:24px;padding:4px 8px;border-radius:8px;font-size:12px;font-weight:500;background:var(--deep08);color:var(--deep60)}
+.ig-tt .ig-arrow{position:absolute;top:-10px;right:36px;width:30px;height:11px}
+.ig-zone{position:relative;border-radius:10px;padding:10px 12px 10px 14px}
+.ig-zone.z1{background:rgba(0,127,255,.06);outline:1px dashed rgba(0,127,255,.45)}
+.ig-zone.z2{background:rgba(17,29,74,.04);outline:1px dashed rgba(17,29,74,.35)}
+.ig-zone .ig-zt{font-family:var(--mono);font-size:10px;letter-spacing:.3px;line-height:14px;margin-bottom:6px}
+.ig-zone.z1 .ig-zt{color:var(--blue)}
+.ig-zone.z2 .ig-zt{color:var(--deep)}
+.ig-row{display:flex;align-items:stretch;gap:8px;margin-top:6px;font-size:12px;line-height:16px;color:var(--deep)}
+.ig-row .b{flex:0 0 3px;border-radius:1.5px;background:transparent}
+.ig-row .b.w{background:var(--warn)}
+.ig-row .b.h{background:var(--risk)}
+.ig-row .t{flex:1 1 auto}
+.ig-row .t small{display:block;font-size:10px;line-height:13px;color:var(--deep60)}
+.ig-row .lab{font-size:10px;line-height:13px;color:var(--deep60);display:block}
+.ig-row .n{flex:0 0 16px;width:16px;height:16px;border-radius:50%;background:var(--deep);color:#fff;font-size:10px;font-weight:600;line-height:16px;text-align:center;margin-top:1px}
+.ig-sep{height:1px;background:var(--deep08);margin:10px 2px}
+.ig-more{display:flex;justify-content:space-between;align-items:center;font-size:12px;line-height:16px;color:var(--deep60);margin:6px 2px 0}
+/* rules */
+.ig-rules{display:flex;flex-direction:column;gap:12px}
+.ig-rule{display:grid;grid-template-columns:76px 1fr;gap:12px;align-items:start}
+.ig-rule .k{font-family:var(--mono);font-size:10px;letter-spacing:.3px;line-height:14px;padding-top:2px}
+.ig-rule.r1 .k{color:var(--blue)}
+.ig-rule.r2 .k{color:var(--deep)}
+.ig-rule.rx .k{color:#9598AB}
+.ig-rule b{display:block;font-size:13px;font-weight:600;line-height:18px;color:var(--deep)}
+.ig-rule p{font-size:12px;line-height:17px;color:var(--deep60);margin-top:2px}
+.ig-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.ig-chip{display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 8px;border-radius:7px;background:var(--page);font-size:11px;color:var(--deep);white-space:nowrap}
+.ig-chip .tg{display:inline-flex;align-items:center;height:16px;padding:0 5px;border-radius:5px;font-size:10px;font-weight:500;background:var(--deep08);color:var(--deep60)}
+.ig-chip .tg.w{background:var(--warn20);color:var(--warn)}
+.ig-chip .tg.h{background:var(--risk20);color:var(--risk)}
+.ig-chip .tg.none{background:transparent;border:1px dashed var(--deep20)}
 </style>
 </head>
 <body class="skin-s1">
-<div class="ver" id="ver">v2.3</div>
+<div class="ver" id="ver">v2.4</div>
 <!-- ===================== INTRO · 解析对象与信息架构（2026-10-08 团队讨论口径） ===================== -->
 
 <div class="ambient" aria-hidden="true"><i class="b1"></i><i class="b2"></i><i class="b3"></i></div>
@@ -585,6 +629,44 @@ html,body{background:var(--hub-ground)}
         <p class="sub">Tooltip 要表达的信息分为两部分：区域一是帮助用户评判这个地址风险的判断辅助信息（交易历史 / Warning / High risk），区域二是对用户输入的地址 / 域名解析出来的事实（Address info）。两部分性质不同，所以分区承载：区域一与区域二之间用一条分割线隔开；Warning / High risk 时区域二折叠进「More address info」；只有区域二时没有分割线。</p>
       </div>
 <div class="intro" id="intro">
+  <!-- ===================== Infographic · 内容区块与显示规则一图 ===================== -->
+  <div class="infog" id="infog" aria-labelledby="infog-title">
+    <div class="ig-cap"><h3 id="infog-title">一图看懂：Tooltip 里有什么，什么时候显示</h3><p>两个信息区 + 一条分割线；Tag 决定区域一显示什么、区域二折不折叠。</p></div>
+
+    <div class="ig-tt" aria-label="Tooltip 结构示意">
+      <span class="ig-tag">Info / Warning / High risk</span>
+      <svg class="ig-arrow" width="30" height="11" viewBox="0 0 30 11"><path d="M0 11 15 0l15 11z" fill="#fff"/></svg>
+      <div class="ig-zone z1">
+        <div class="ig-zt">区域一 · 判断 — 帮助用户识别风险</div>
+        <div class="ig-row"><span class="b"></span><div class="t">Transaction Record<small>仅 Tag = Info · 纯正文，无色条</small></div></div>
+        <div class="ig-row"><span class="b w"></span><div class="t">Warning<small>橙色色条 · 可多条叠放</small></div></div>
+        <div class="ig-row"><span class="b h"></span><div class="t">High risk<small>红色色条</small></div></div>
+      </div>
+      <div class="ig-sep"></div>
+      <div class="ig-more"><span>More address info (N)</span><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#111D4A" stroke-opacity=".6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l4 4 4-4"/></svg></div>
+      <div class="ig-zone z2" style="margin-top:8px">
+        <div class="ig-zt">区域二 · 事实 — 帮助用户理解解析结果</div>
+        <div class="ig-row"><span class="n">1</span><div class="t"><span class="lab">Osmosis / Tron / TON bounceable address</span>专项信息识别<small>只会出现一条</small></div></div>
+        <div class="ig-row"><span class="n">2</span><div class="t"><span class="lab">Saved in address book · My wallet</span>地址标记<small>同时命中时都显示，地址本在前</small></div></div>
+        <div class="ig-row"><span class="n">3</span><div class="t"><span class="lab">Resolved full address · ENS domain name</span>ENS 解析<small>永远在最后</small></div></div>
+      </div>
+    </div>
+
+    <div class="ig-rules">
+      <div class="ig-rule r1"><span class="k">TAG → 区域一</span><div><b>Tag 决定区域一显示什么</b>
+        <div class="ig-chips">
+          <span class="ig-chip"><span class="tg none">无 Tag</span>两区都空，不出 Tooltip</span>
+          <span class="ig-chip"><span class="tg">Info</span>Transaction Record（若检测到无交易记录）</span>
+          <span class="ig-chip"><span class="tg w">Warning</span>Warning 条目，不显示交易历史</span>
+          <span class="ig-chip"><span class="tg h">High risk</span>High risk 条目，不显示交易历史</span>
+        </div></div></div>
+      <div class="ig-rule r2"><span class="k">折叠</span><div><b>Warning / High risk 时区域二默认折叠</b><p>点「More address info (N)」展开；展开后入口行消失，不提供手动收起。Info 时不折叠，两区并列、中间一条分割线。</p></div></div>
+      <div class="ig-rule r2"><span class="k">排序</span><div><b>区域二固定顺序 ① → ② → ③</b><p>专项信息识别只出现一条且在最前；地址标记两种可同现、地址本优先；ENS 解析永远在最后。</p></div></div>
+      <div class="ig-rule rx"><span class="k">唤起 / 收起</span><div><b>解析完成自动唤起一次</b><p>Info：4s 后自动收起；Warning / High risk：不自动消失，点空白或与其他控件交互才收起。点 Tag 可再次唤起。</p></div></div>
+      <div class="ig-rule rx"><span class="k">颜色</span><div><b>颜色只用于 Tag 和 Warning / High risk 的色条</b><p>Tooltip 内文字一律不用彩色；地址全文与其他内容同字体字号，可换行。</p></div></div>
+    </div>
+  </div>
+
   <div class="dims">
     <div class="dim">
       <span class="no">分割线以上</span>
