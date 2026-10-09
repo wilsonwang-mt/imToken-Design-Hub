@@ -6,7 +6,7 @@ export const meta = {
   sub: 'Bulu 与沉睡的 ETH',
   en: 'Bulu and the Sleeping ETH',
   eyebrow: 'PROJECT · imToken Stake 上线',
-  status: '制作中 · v12',
+  status: '已发布 · 中文正式版',
   lead:
     '为 imToken Stake（ETH 质押）上线制作的社媒推广短片，以及配套的宣传语和物料。主角 Bulu 多年持有一颗沉睡的 ETH；在 imToken 里质押之后，ETH 醒来开始工作，而且始终没有离开 Bulu 身边。',
   message: 'ETH 不离开你的钱包，也能工作。',
@@ -15,8 +15,8 @@ export const meta = {
 
 export const headline = [
   { value: '10/8', label: '集中宣发：垂直媒体 PR、主视频、App Push' },
-  { value: '53 s', label: '主片时长，12 个镜头加片尾卡' },
-  { value: '4K', label: '当前版本 v12，24 fps，中文旁白' },
+  { value: '59 s', label: '主片时长，含片头封面和片尾卡' },
+  { value: '1080p', label: '中文正式版，24 fps；4K 按需另出' },
   { value: '6', label: '条视觉语法，每一帧都按它检查' },
 ]
 
@@ -55,7 +55,7 @@ export const pipeline = [
   { step: '关键帧', tools: 'ChatGPT Images · Nano Banana Pro', note: '按 Style Block 生成，Figma 管理分镜' },
   { step: '视频', tools: 'LibTV · Seedance 2.5', note: '首尾帧生成，一律固定机位' },
   { step: '3D 与信息层', tools: 'Three.js · Remotion', note: 'ETH 晶体、容器、计数器、价格卡、手机界面' },
-  { step: '合成与母版', tools: 'Remotion · ffmpeg', note: '4K 母版、−14 LUFS 响度、中英文与多比例输出' },
+  { step: '合成与母版', tools: 'Remotion · ffmpeg', note: '1080p 主交付（4K 按需）、−14 LUFS 响度、中英文与多比例输出' },
 ]
 
 export type MilestoneState = 'done' | 'now' | 'next'
@@ -65,17 +65,17 @@ export const milestones: { date: string; title: string; note: string; state: Mil
   { date: '10/02', title: '固定机位与第一批镜头', note: '客厅空间布局和 4 个机位；夜间生成第一批视频', state: 'done' },
   { date: '10/05', title: '视觉语法定稿', note: '计数器只显示增量；小 ETH 的位置和大小规则', state: 'done' },
   { date: '10/06', title: 'v9 – v12', note: '日历年份 2022→2026；Bulu 形象修正（只保留鳍变成的手，表面改回光滑清晰）；4K 母版', state: 'done' },
-  { date: '10/07', title: '宣传语中文修订', note: '线上调研竞品，按中文 Mkt 的写法重写宣传语', state: 'now' },
-  { date: '10/08', title: '集中宣发', note: '垂直媒体 PR、主视频、App Push 全量推送', state: 'next' },
+  { date: '10/07', title: '宣传语中文修订', note: '线上调研竞品，按中文 Mkt 的写法重写宣传语', state: 'done' },
+  { date: '10/08', title: '集中宣发', note: '中文正式版发布；垂直媒体 PR、App Push 全量推送', state: 'done' },
   { date: '10/12–16', title: '系列视频与物料', note: '主片之后的系列内容', state: 'next' },
   { date: '10/19', title: '衔接 Lido 活动', note: '和 Lido 活动的叙事衔接', state: 'next' },
 ]
 
 export const open = [
-  '三屏手机界面（行情、质押页、片尾页）合成进片子，出 v13',
-  '合规确认：幻想气泡、常驻风险提示、界面里的「安全」字样',
-  '语言版本（中文 / 英文 / 繁中）与 9:16、1:1 竖版',
-  '宣传语：中文修订版已出，当前倾向和待回答的问题见「宣传语提案」',
+  '英文版：旁白、字幕、推送和封面文案',
+  '9:16、1:1 竖版',
+  '法务确认片尾风险提示和片尾文案',
+  '宣传语和 PR 标题：还在讨论，见「宣传语提案」「媒体 PR 稿方案」',
 ]
 
 export interface StakeLink {
@@ -104,9 +104,10 @@ export const links: StakeLink[] = [
     hosted: true,
   },
   {
-    title: '成片 v12',
-    desc: '4K 母版和手机预览版。10/8 发布前不放在公开页面上。',
-    note: '发布后补链接',
+    title: '成片 · 中文正式版',
+    desc: '10/8 发布的中文正式版，1080p，约 59 秒。',
+    href: 'https://drive.google.com/file/d/1tTakuu2XnSJFPUPlFeQEEH6gzKzbEuLT/view?usp=drive_link',
+    note: 'Google Drive',
   },
   {
     title: 'Figma 关键帧',
