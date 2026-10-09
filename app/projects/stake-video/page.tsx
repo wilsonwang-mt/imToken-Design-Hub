@@ -182,6 +182,13 @@ export default function StakeVideo() {
                   </div>
                 )
               }
+              if (l.hosted) {
+                return (
+                  <a key={l.title} href={l.href} className="glass sv-link primary">
+                    {body}
+                  </a>
+                )
+              }
               return l.internal ? (
                 <Link key={l.title} href={l.href} className="glass sv-link primary">
                   {body}
