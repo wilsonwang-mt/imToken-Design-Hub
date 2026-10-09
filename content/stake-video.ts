@@ -84,6 +84,7 @@ export interface StakeLink {
   href?: string // undefined = not available yet
   note: string
   internal?: boolean
+  hosted?: boolean // static page under public/, open with a plain link
 }
 
 export const links: StakeLink[] = [
@@ -93,6 +94,14 @@ export const links: StakeLink[] = [
     href: '/projects/stake-video/taglines/',
     note: '本站',
     internal: true,
+  },
+  {
+    title: '媒体 PR 稿方案',
+    desc: 'PR 标题推荐、写作原则、标题要不要带 imToken、数据核查和文章结构。',
+    href: '/projects/stake-video/pr/',
+    note: '本站',
+    internal: true,
+    hosted: true,
   },
   {
     title: '成片 v12',

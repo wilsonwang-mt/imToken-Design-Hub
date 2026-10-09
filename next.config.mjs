@@ -7,6 +7,7 @@ const nextConfig = {
     return [
       { source: '/confu/:ep/', destination: '/confu/:ep/index.html' },
       { source: '/projects/ens-address-resolution/', destination: '/projects/ens-address-resolution/index.html' },
+      { source: '/projects/stake-video/pr/', destination: '/projects/stake-video/pr/index.html' },
       { source: '/toolbox/atlas/', destination: '/toolbox/atlas/index.html' },
       { source: '/confu/:ep/:page/', destination: '/confu/:ep/:page/index.html' },
     ]

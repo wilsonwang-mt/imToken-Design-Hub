@@ -38,6 +38,7 @@ public/
   confu/ep02/         EP02 演示文稿、Claude Design 专题页、资料包
   toolbox/atlas/      设计工具图鉴（由 sources/tool-atlas/build.py 生成，不要手改）
   toolbox/copy-workflow/  文案管理工作流（原仓库内容，已迁移到这里）
+  projects/stake-video/pr/  Stake 视频制作 · 媒体 PR 稿方案（托管的静态页）
 sources/
   tool-atlas/         设计工具图鉴的源数据：data-*.json、atlas.css / atlas.js、logos/
   brand/              imToken logo
@@ -73,7 +74,7 @@ python3 sources/tool-atlas/build.py
 
 **在项目追踪里加一个项目**
 
-在 `content/projects.ts` 里追加一项；如果它有自己的页面，在 `app/projects/<slug>/page.tsx` 新建。Agentic Wallet 的卡片文字全部在 `content/agentic-wallet.ts`。Stake 视频制作的文字在 `content/stake-video.ts`，宣传语卡片在 `content/stake-taglines.ts`。
+在 `content/projects.ts` 里追加一项；如果它有自己的页面，在 `app/projects/<slug>/page.tsx` 新建。Agentic Wallet 的卡片文字全部在 `content/agentic-wallet.ts`。Stake 视频制作的文字在 `content/stake-video.ts`，宣传语卡片在 `content/stake-taglines.ts`；媒体 PR 稿方案是托管的静态页 `public/projects/stake-video/pr/index.html`（地址 `/projects/stake-video/pr/`，在 `next.config.mjs` 里有对应的 rewrite），由视频项目的生成脚本产出，改内容时整页替换。
 
 **开放一个新板块**
 
