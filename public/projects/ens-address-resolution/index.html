@@ -3,8 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Prototype — 转账地址解析 Tooltip v2.4 · imToken UXD</title>
+<title>Prototype — 转账地址解析 Tooltip v2.5 · imToken UXD</title>
 <style>
+/* v2.5 变更（Wilson 决策 2026-10-09）：① ENS 正向解析（C10）及 DAS / UNS / ZNS（C13–C15）条目的 label 直接用用户在输入框输入 / 粘贴的域名
+   （如 alice.eth / bob.eth），内容仍是解析出的完整地址（正文样式不变）——取代 v2.1 的固定 label。② 域名含零宽字符时 label 同样展示域名，
+   在零宽字符所在位置插入系统现有的橙色三角感叹号图标（.zw-mark，内联 SVG 12×12 #FC8C4D，aria-label="hidden character"），
+   例：b + U+200B + inance.eth → label「b⚠inance.eth」；这是 Tooltip 内「文字不用彩色」原则的唯一例外。输入框里不加图标（零宽字符保持不可见）。
+   实现：ensLabelHTML(name) 逐字符输出，遇 U+200B / 200C / 200D / FEFF / 2060 输出图标 span，其余转义；正向解析 label 用 innerHTML 渲染，其余 label 仍 escapeHTML。
+   场景 11 输入改为 b + U+200B + inance.eth；场景 16 输入改为 bin + U+200B + ance.eth（原 alíce.eth 是同形字、不是零宽字符，与 C07 不符）。
+   ③ 反向解析（C11）label 改为「ENS name」，内容 = 解析出的 ENS name。④ 场景 6 标题「hex · 反向解析域名」。
+   S1 / S2 皮肤、Part 2 infographic / Address info ③ / 解剖图 A·C / 颜色规则 / EXPLAIN 5·6·10·11·15·16 / hint 同步。 */
 /* v2.3 变更（Wilson 定稿 2026-10-09）：专项信息（区域二 ①）正文文案定稿——label 已标明网络，正文不再重复「This address is…」，先说对用户的后果，一句话 ≤ 2 行：
    C02「{chain} address」（IBC 场景 chain = 收款地址自身的格式 Osmosis，场景 7 ctx Cosmos → Osmosis）+「Funds will be sent via IBC cross-chain transfer.」；
    C03「Tron address」+「Not activated yet. An extra {amount} will be spent to activate it.」（amount = 0.1 TRX）；
@@ -12,12 +20,12 @@
    解剖图 B IBC 条目 / Part 2 Address info ① / EXPLAIN 7·8·9·15 同步；新增「专项信息文案优化 · 线上 → 定稿」对照块（#copyCmp，解剖图之后）。 */
 /* v2.2 变更（Wilson 决定 2026-10-09）：① Transaction Record（data-tone="record"）不再带色条——色条只用于 Warning（橙）/ High risk（红）；
    交易历史条目 = 纯正文一行 / 两行，无标题、无色条，与其他正文左对齐（entryHTML_S1 / S2 在 tone === 'record' 时不输出 .tt-bar，
-   默认 .tt-bar 背景改为 transparent）。② Resolved full address 的地址内容采用与其他解析内容一致的字体 / 颜色 / 字号：SF Pro 14 / 140% / --deep / 400，
+   默认 .tt-bar 背景改为 transparent）。② 正向解析条目的地址内容采用与其他解析内容一致的字体 / 颜色 / 字号：SF Pro 14 / 140% / --deep / 400，
    不再等宽、不再 12px、不再首 4 / 末 4 加重、不再中段变淡；允许自然换行（word-break:break-all），不再 nowrap / overflow hidden。
    hexHTML 直接输出纯文本（escapeHTML），.hx0 / .hx / .hxm 规则与 D17 分段全部删除。Part 2 文案 / 解剖图 A·B·C / EXPLAIN / hint 同步。 */
 /* v2.1 变更（Wilson 定稿 2026-10-09）：区域二 label 文案定稿——C09「Saved in address book」（昵称示例改为更普遍的地址本名「Binance Deposit」，
    场景 12 的「Airdrop claim」保留）；C01 label「My wallet」+ 正文一行「{wallet} · {account}」（示例「DeFi Exploration · Account 01」）；
-   C10/C13/C14/C15 四个正向解析服务统一「Resolved full address」（不再带 ENS/DAS/UNS/ZNS 前缀）；C11「ENS domain name」。
+   C10/C13/C14/C15 四个正向解析服务统一一个固定 label（不再带 ENS/DAS/UNS/ZNS 前缀；v2.5 起改为输入的域名）；C11 定为固定 label（v2.5 起「ENS name」）。
    S2 皮肤 Identity 行与 S1 同一套 label / body：title = body、来源小字 = label，头像首字母随之（B / D）。Part 2 解剖图与解释文字同步。 */
 /* v2.0 变更（Wilson 决定）：Part 1 拆成两个 Prototype 区，各自一台手机 + 一个场景面板，上下排列。
    Prototype 1「常见场景」：面板顶部两个大 Tab（粘贴哈希地址 / 输入 ENS 域名），切 Tab 自动播放该 Tab 的第一个场景；
@@ -191,9 +199,15 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
 /* v1.12: 入口行消失后分割线直接接区域二，上边距补到 12，与 Info 态 .tt-divider[data-reg="sep"] 线到正文的距离一致 */
 .tt[data-expanded="true"] .tt-fold-inner{opacity:1;padding-top:12px}
 .tt-truncate{font-size:12px;line-height:16px;color:var(--deep60)}
-/* v2.2 Wilson：Resolved full address 的地址全文与其他解析内容同一正文样式（继承 .tt-body / .tt-entry：14 / 140% / --deep / 400），
+/* v2.2 Wilson：正向解析条目的地址全文与其他解析内容同一正文样式（继承 .tt-body / .tt-entry：14 / 140% / --deep / 400），
    不再等宽、不再 12px、不加重、不变淡；允许自然换行（break-all），不再 nowrap / overflow hidden。D17 分段（.hx0 / .hx / .hxm）已删除 */
 .tt-hex{font:inherit;color:inherit;letter-spacing:0;white-space:normal;word-break:break-all;overflow-wrap:anywhere;overflow:visible}
+/* v2.5 Wilson：正向解析 label = 用户输入的域名；零宽字符所在位置插入系统现有的橙色三角感叹号（12×12 #FC8C4D，与文字中线对齐）。
+   Tooltip 内「文字不用彩色」原则的唯一例外——它不是文字颜色，而是标出一个看不见的字符 */
+.zw-mark{display:inline-block;width:12px;height:12px;margin:0 1px;vertical-align:middle;position:relative;top:-1px;line-height:0}
+.zw-mark svg{display:block;width:12px;height:12px}
+.ig-zw{display:inline-block;width:12px;height:12px;margin:0 1px;vertical-align:middle;position:relative;top:-1px;line-height:0}   /* Part 2 颜色规则里的示例图标（非 tooltip label，故不用 .zw-mark） */
+.ig-zw svg{display:block;width:12px;height:12px}
 
 /* ============================================================
    3. Skin S1 · 极简版   (.skin-s1)
@@ -480,7 +494,7 @@ html,body{background:var(--hub-ground)}
 </style>
 </head>
 <body class="skin-s1">
-<div class="ver" id="ver">v2.4</div>
+<div class="ver" id="ver">v2.5</div>
 <!-- ===================== INTRO · 解析对象与信息架构（2026-10-08 团队讨论口径） ===================== -->
 
 <div class="ambient" aria-hidden="true"><i class="b1"></i><i class="b2"></i><i class="b3"></i></div>
@@ -601,7 +615,7 @@ html,body{background:var(--hub-ground)}
       <!-- v2.0: 两个 Prototype 区由 PROTOS 渲染（各自一台手机 + 一个场景面板） -->
       <div class="protos" id="protos"></div>
 
-      <p class="hint">直达：<code>#scene=10&amp;step=expanded</code>（scene = 1…16 · step = typed / resolving / shown / expanded / dismissed · 场景属于哪个 Prototype 就在哪台手机上播放并选中对应 Tab / 卡片）· 点手机空白处只关闭该台的 tooltip · 点 Tag 再次唤起（回到默认收起态） · Esc 关闭 · 折叠入口点击展开、展开后不可收起 · C08「Transaction Record」只在 Tag = Info 时出现在区域一（分割线以上，纯正文，不带标题、不带色条——色条只用于 Warning / High risk）；Warning / High risk 时不显示、不进折叠区 · Resolved full address 的地址全文与其他内容同字体字号，可换行</p>
+      <p class="hint">直达：<code>#scene=10&amp;step=expanded</code>（scene = 1…16 · step = typed / resolving / shown / expanded / dismissed · 场景属于哪个 Prototype 就在哪台手机上播放并选中对应 Tab / 卡片）· 点手机空白处只关闭该台的 tooltip · 点 Tag 再次唤起（回到默认收起态） · Esc 关闭 · 折叠入口点击展开、展开后不可收起 · C08「Transaction Record」只在 Tag = Info 时出现在区域一（分割线以上，纯正文，不带标题、不带色条——色条只用于 Warning / High risk）；Warning / High risk 时不显示、不进折叠区 · ENS 正向解析条目的 label = 用户输入的域名（含零宽字符时在其位置插入橙色三角感叹号，输入框里不加），地址全文与其他内容同字体字号，可换行 · 反向解析 label「ENS name」</p>
 
       <!-- ===================== COMPARE (S1 | S2, static · 隐藏，跟随最近操作的那台手机) ===================== -->
       <section class="compare" id="compare" aria-label="S1 / S2 对比">
@@ -648,7 +662,7 @@ html,body{background:var(--hub-ground)}
         <div class="ig-zt">区域二 · 事实 — 帮助用户理解解析结果</div>
         <div class="ig-row"><span class="n">1</span><div class="t"><span class="lab">Osmosis / Tron / TON bounceable address</span>专项信息识别<small>只会出现一条</small></div></div>
         <div class="ig-row"><span class="n">2</span><div class="t"><span class="lab">Saved in address book · My wallet</span>地址标记<small>同时命中时都显示，地址本在前</small></div></div>
-        <div class="ig-row"><span class="n">3</span><div class="t"><span class="lab">Resolved full address · ENS domain name</span>ENS 解析<small>永远在最后</small></div></div>
+        <div class="ig-row"><span class="n">3</span><div class="t"><span class="lab">{输入的 ENS name} · ENS name</span>ENS 解析<small>永远在最后 · 正向 label = 输入的域名，反向 label = ENS name</small></div></div>
       </div>
     </div>
 
@@ -663,7 +677,7 @@ html,body{background:var(--hub-ground)}
       <div class="ig-rule r2"><span class="k">折叠</span><div><b>Warning / High risk 时区域二默认折叠</b><p>点「More address info (N)」展开；展开后入口行消失，不提供手动收起。Info 时不折叠，两区并列、中间一条分割线。</p></div></div>
       <div class="ig-rule r2"><span class="k">排序</span><div><b>区域二固定顺序 ① → ② → ③</b><p>专项信息识别只出现一条且在最前；地址标记两种可同现、地址本优先；ENS 解析永远在最后。</p></div></div>
       <div class="ig-rule rx"><span class="k">唤起 / 收起</span><div><b>解析完成自动唤起一次</b><p>Info：4s 后自动收起；Warning / High risk：不自动消失，点空白或与其他控件交互才收起。点 Tag 可再次唤起。</p></div></div>
-      <div class="ig-rule rx"><span class="k">颜色</span><div><b>颜色只用于 Tag 和 Warning / High risk 的色条</b><p>Tooltip 内文字一律不用彩色；地址全文与其他内容同字体字号，可换行。</p></div></div>
+      <div class="ig-rule rx"><span class="k">颜色</span><div><b>颜色只用于 Tag 和 Warning / High risk 的色条</b><p>Tooltip 内文字一律不用彩色；地址全文与其他内容同字体字号，可换行。唯一例外：零宽字符位置用系统现有的橙色三角感叹号标记，是 Tooltip 内唯一的彩色字形（例：b<span class="ig-zw" role="img" aria-label="hidden character"><svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true" focusable="false"><path d="M5.13 1.5a1 1 0 0 1 1.74 0l4.5 7.8a1 1 0 0 1-.87 1.5h-9a1 1 0 0 1-.87-1.5z" fill="#FC8C4D"/><path d="M6 4.3v2.9" stroke="#fff" stroke-width="1.2" stroke-linecap="round"/><circle cx="6" cy="8.85" r=".7" fill="#fff"/></svg></span>inance.eth）。</p></div></div>
     </div>
   </div>
 
@@ -686,7 +700,7 @@ html,body{background:var(--hub-ground)}
       <ol class="cls">
         <li><span class="prio">优先级最高</span><b>专项信息识别 · 特定网络的地址解析</b><span>label 标识这是哪个网络的地址：Osmosis address（IBC 跨链转账）/ Tron address（尚未激活，额外消耗 TRX 激活）/ TON bounceable address（转账失败自动退回）…；正文写该网络的具体说明。同一个地址不可能来自不同网络，所以这类条目只会出现一条，并排在 Address info 最前</span></li>
         <li><b>地址标记</b><span>是否是地址本存储的地址；是否是用户当前某个钱包中的账户地址。两者同时命中时同时显示（不二选一），「已存于地址本」排在「我的钱包」之前；多数情况下不会既是又是</span></li>
-        <li><b>ENS 正向 / 反向解析结果</b><span>正向：域名 → 解析出的地址全文（与其他内容同字体字号，可换行）；反向：地址 → 关联的单个域名</span></li>
+        <li><b>ENS 正向 / 反向解析结果</b><span>正向：域名 → 解析出的地址全文，label 直接用用户输入的域名（如 alice.eth；DAS / UNS / ZNS 同理），地址与其他内容同字体字号，可换行；域名含零宽字符时，在其位置插入橙色三角感叹号（如 b⚠inance.eth）。反向：地址 → 关联的域名，label「ENS name」</span></li>
       </ol>
     </div>
 
@@ -721,13 +735,13 @@ html,body{background:var(--hub-ground)}
             <div class="tt-divider" data-reg="sep"></div>
             <div class="tt-main" data-reg="r2">
               <div class="tt-entry tt-labeled"><div class="tt-label">Saved in address book</div><div class="tt-body">Binance Deposit</div></div>
-              <div class="tt-entry tt-labeled"><div class="tt-label">Resolved full address</div><div class="tt-body tt-hex">0x9b5748e79638c895cD34B7aF5215eBc40ad71f72</div></div>
+              <div class="tt-entry tt-labeled"><div class="tt-label">alice.eth</div><div class="tt-body tt-hex">0x9b5748e79638c895cD34B7aF5215eBc40ad71f72</div></div>
             </div>
           </div>
           <div class="ana-side">
             <div class="ann r1" data-for="r1"><span class="bar"></span><div class="txt"><b><span class="k">区域一</span>判断辅助信息</b>Tag = Info 且检测到无交易记录时展示交易历史：纯正文，不带标题也不带色条——Tag 已说明等级；无法检测、或已有交易记录时此区域不出现。</div></div>
             <div class="ann sep" data-for="sep"><span class="bar"></span><div class="txt"><b><span class="k">分割线</span></b>区域一与区域二之间一条分割线；区域二为空时没有。</div></div>
-            <div class="ann r2" data-for="r2"><span class="bar"></span><div class="txt"><b><span class="k">区域二</span>Address info 列表</b>顺序：① 专项信息识别 → ② 地址标记（地址本 &gt; 我的钱包）→ ③ ENS 解析结果。本例未命中专项信息，所以从地址本开始；若命中（IBC、未激活），它会排在地址本之前。条目之间只有正常间距；Resolved full address 的地址全文与其他内容同字体字号，可换行。</div></div>
+            <div class="ann r2" data-for="r2"><span class="bar"></span><div class="txt"><b><span class="k">区域二</span>Address info 列表</b>顺序：① 专项信息识别 → ② 地址标记（地址本 &gt; 我的钱包）→ ③ ENS 解析结果。本例未命中专项信息，所以从地址本开始；若命中（IBC、未激活），它会排在地址本之前。条目之间只有正常间距；ENS 正向解析条目的 label 直接用用户输入的域名（alice.eth），内容是解析出的地址全文，与其他内容同字体字号，可换行。</div></div>
           </div>
         </div>
       </div>
@@ -770,14 +784,14 @@ html,body{background:var(--hub-ground)}
               <div class="tt-divider" data-reg="sep"></div>
               <div class="tt-main" data-reg="r2">
                 <div class="tt-entry tt-labeled"><div class="tt-label">Saved in address book</div><div class="tt-body">Binance Deposit</div></div>
-                <div class="tt-entry tt-labeled"><div class="tt-label">Resolved full address</div><div class="tt-body tt-hex">0x5C1e8A3f9B2d7E4c6A0f3D8b1E9c5A7d2F4b6C8e</div></div>
+                <div class="tt-entry tt-labeled"><div class="tt-label">b<span class="zw-mark" role="img" aria-label="hidden character"><svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true" focusable="false"><path d="M5.13 1.5a1 1 0 0 1 1.74 0l4.5 7.8a1 1 0 0 1-.87 1.5h-9a1 1 0 0 1-.87-1.5z" fill="#FC8C4D"/><path d="M6 4.3v2.9" stroke="#fff" stroke-width="1.2" stroke-linecap="round"/><circle cx="6" cy="8.85" r=".7" fill="#fff"/></svg></span>inance.eth</div><div class="tt-body tt-hex">0x5C1e8A3f9B2d7E4c6A0f3D8b1E9c5A7d2F4b6C8e</div></div>
               </div>
             </div>
           </div>
           <div class="ana-side">
             <div class="ann r1" data-for="r1"><span class="bar"></span><div class="txt"><b><span class="k">区域一</span>帮助用户识别风险</b>判断类信息：Transaction Record / Warning / High risk。色条只用于 Warning / High risk；多条 warning 同时命中时直接上下排列，每条一根色条引导逐条阅读——用「标题 + 副标题」则两条都叫 Warning，标题重复、层级会乱。</div></div>
             <div class="ann sep" data-for="sep"><span class="bar"></span><div class="txt"><b><span class="k">分割线</span></b>两个信息维度的边界：上面是判断，下面是事实。</div></div>
-            <div class="ann r2" data-for="r2"><span class="bar"></span><div class="txt"><b><span class="k">区域二</span>帮助用户理解解析出来的 facts</b>事实类信息，按 ① 专项信息识别 → ② 地址标记 → ③ ENS 解析 排序；Warning / High risk 时默认折叠，展开后入口行消失、不可收起。</div></div>
+            <div class="ann r2" data-for="r2"><span class="bar"></span><div class="txt"><b><span class="k">区域二</span>帮助用户理解解析出来的 facts</b>事实类信息，按 ① 专项信息识别 → ② 地址标记 → ③ ENS 解析 排序；Warning / High risk 时默认折叠，展开后入口行消失、不可收起。ENS 解析条目的 label 是用户粘贴的域名，零宽字符所在位置插入橙色三角感叹号（b⚠inance.eth）——与第二条 warning「域名含隐藏字符」对应，用户能看到隐藏字符藏在哪里。</div></div>
           </div>
         </div>
       </div>
@@ -829,15 +843,17 @@ var CTX = {
   C03:{ rank:2, sub:1, kind:'labeled', label:'Tron address',          body:'Not activated yet. An extra {amount} will be spent to activate it.' },
   C04:{ rank:2, sub:2, kind:'labeled', label:'TON bounceable address', body:'Transfers work as usual. If the transfer fails, funds are returned to you automatically.' },
   // v2.1 Wilson（2026-10-09）定稿 label：地址本 =「Saved in address book」；我的钱包 = label「My wallet」+ body 一行「{wallet} · {account}」；
-  //      四个正向解析服务统一「Resolved full address」（不再带 ENS/DAS/UNS/ZNS 前缀）；反向解析 =「ENS domain name」
+  //      四个正向解析服务统一一个固定 label（不再带 ENS/DAS/UNS/ZNS 前缀）；反向解析一个固定 label
+  // v2.5 Wilson（2026-10-09）：正向解析 C10 / C13–C15 的 label = 用户输入 / 粘贴的域名（{input}，ensLabel:true → ensLabelHTML 渲染，
+  //      零宽字符位置插入橙色三角感叹号）；反向解析 C11 label =「ENS name」，内容 = 解析出的 ENS name
   C09:{ rank:3, kind:'labeled', label:'Saved in address book', body:'{nickname}' },
   C01:{ rank:4, kind:'labeled', label:'My wallet', body:'{wallet} · {account}' },   // v1.7 → v2.1：label 固定「My wallet」，body 一行 = Wallet Name · Account Name（Account 01/02/03，用户可改）；Text style 与地址本条目一致（label 12·60% / body 14）
-  C10:{ rank:5, sub:0, kind:'labeled', label:'Resolved full address', hex:true },
-  C13:{ rank:5, sub:0, kind:'labeled', label:'Resolved full address', hex:true },
-  C14:{ rank:5, sub:0, kind:'labeled', label:'Resolved full address', hex:true },
-  C15:{ rank:5, sub:0, kind:'labeled', label:'Resolved full address', hex:true },
-  C11:{ rank:5, sub:1, kind:'labeled', label:'ENS domain name',  body:'{name}' }
-  // v1.2: 反向解析多域名条目已删除（目前只支持反向解析单域名 C11）
+  C10:{ rank:5, sub:0, kind:'labeled', label:'{input}', ensLabel:true, hex:true },
+  C13:{ rank:5, sub:0, kind:'labeled', label:'{input}', ensLabel:true, hex:true },
+  C14:{ rank:5, sub:0, kind:'labeled', label:'{input}', ensLabel:true, hex:true },
+  C15:{ rank:5, sub:0, kind:'labeled', label:'{input}', ensLabel:true, hex:true },
+  C11:{ rank:5, sub:1, kind:'labeled', label:'ENS name', body:'{name}' }
+  // v1.2: 反向解析多域名条目已删除（目前只支持反向解析域名 C11，展示一个关联的域名）
 };
 var TAG_TEXT = { info:'Info', warning:'Warning', high:'High risk' };
 var TAG_W    = { info:38, warning:63, high:72 };   // fallback widths when layout is unavailable (jsdom)
@@ -874,12 +890,12 @@ var SCENES = [
   { n:3,  title:'hex · 无交易记录 + 地址本「Binance Deposit」', meta:'C08 + C09 · US2',    chain:'eth', input:HEX.s3, ctx:[{id:'C09', nickname:'Binance Deposit'},{id:'C08'}] },
   { n:4,  title:'hex · 我的钱包「DeFi Exploration」',     meta:'C01 · Account 01',       chain:'eth', input:HEX.s4, ctx:[{id:'C01', wallet:'DeFi Exploration', account:'Account 01'}] },
   { n:5,  title:'ENS 正向解析 alice.eth',                meta:'C10 · 地址全文可换行',   chain:'eth', input:'alice.eth', ctx:[{id:'C10', hex:HEX_ALICE}] },
-  { n:6,  title:'hex · 反向解析单域名',                  meta:'C11',                    chain:'eth', input:HEX_ALICE, ctx:[{id:'C11', name:'alice.eth'}] },
+  { n:6,  title:'hex · 反向解析域名',                    meta:'C11',                    chain:'eth', input:HEX_ALICE, ctx:[{id:'C11', name:'alice.eth'}] },
   { n:7,  title:'Cosmos → Osmosis IBC',                 meta:'C02',                    chain:'cosmos', input:OSMO, ctx:[{id:'C02', chain:'Osmosis'}] },   // v2.3: chain = 收款地址自身的格式（Osmosis），不是用户所在链
   { n:8,  title:'Tron 未激活',                           meta:'C03',                    chain:'tron', input:TRON, ctx:[{id:'C03', amount:'0.1 TRX'}] },
   { n:9,  title:'TON bounceable',                        meta:'C04',                    chain:'ton',  input:TONA, ctx:[{id:'C04'}] },
   { n:10, title:'Warning · warning 地址 + ENS 解析',     meta:'C06 + C10 · 折叠→点展开', chain:'eth', input:'bob.eth', ctx:[{id:'C10', hex:HEX.s10},{id:'C06'}] },
-  { n:11, title:'Warning · ENS 零宽字符',                meta:'C07 + C10 · C08 被剔除',  chain:'eth', input:'alice​.eth', ctx:[{id:'C10', hex:HEX.s11},{id:'C08'},{id:'C07'}] },   // v1.9: 风控同时返回了 C08，但 Warning 时由模型剔除（不进折叠区、不计入 N）
+  { n:11, title:'Warning · ENS 零宽字符',                meta:'C07 + C10 · C08 被剔除',  chain:'eth', input:'b\u200Binance.eth', ctx:[{id:'C10', hex:HEX.s11},{id:'C08'},{id:'C07'}] },   // v1.9: 风控同时返回了 C08，但 Warning 时由模型剔除（不进折叠区、不计入 N）
   { n:12, title:'High risk',                             meta:'C05 + C09 + C10 · 折叠', chain:'eth', input:'free-airdrop.eth', ctx:[{id:'C09', nickname:'Airdrop claim'},{id:'C05'},{id:'C10', hex:HEX.s12}] },
   { n:13, title:'解析中 → 无法解析',                     meta:'S3 · 现有 Alert，无 tooltip', chain:'eth', input:'figma.eth', unresolved:true, ctx:[] },
   // v1.10 Wilson：地址本与我的钱包同时命中——两条都显示，地址本在前（多数情况下不会既是又是）
@@ -887,7 +903,8 @@ var SCENES = [
   // v1.10 Wilson：专项信息识别会与地址标记、ENS 解析同时出现，次序固定 专项 → 地址标记 → ENS（ctx 故意乱序，由模型排序）
   { n:15, title:'Tron · alice.eth → 未激活 + 地址本', meta:'C03 + C09 + C10 · 三者同现', chain:'tron', input:'alice.eth', ctx:[{id:'C10', hex:TRON},{id:'C09', nickname:'Binance Deposit'},{id:'C03', amount:'0.1 TRX'}] },
   // v1.12 Wilson：多条 Warning 上下排列，色条引导阅读（标题 + 副标题方式在多条 warning 时难处理）
-  { n:16, title:'Warning × 2 · warning 地址 + ENS 零宽字符', meta:'C06 + C07 + C10 · 两条 warning 叠放', chain:'eth', input:'alíce.eth', ctx:[{id:'C10', hex:HEX.s11},{id:'C06'},{id:'C07'}] }
+  // v2.5：场景 16 输入 = bin + U+200B（零宽空格）+ ance.eth（原 alíce.eth 是同形字、不是零宽字符，与 C07 不符）；与场景 11 的 b + U+200B + inance.eth 同属仿冒 binance.eth，解析到同一地址 HEX.s11
+  { n:16, title:'Warning × 2 · warning 地址 + ENS 零宽字符', meta:'C06 + C07 + C10 · 两条 warning 叠放', chain:'eth', input:'bin\u200Bance.eth', ctx:[{id:'C10', hex:HEX.s11},{id:'C06'},{id:'C07'}] }
 ];
 
 /* ---------- DOM (page-level) ---------- */
@@ -921,7 +938,9 @@ function escapeHTML(s){ return String(s).replace(/[&<>"]/g, function(c){ return 
 function buildModel(scene){
   var sorted = scene.ctx.map(function(c, i){
     var base = CTX[c.id];
-    var e = {}; for (var k in base) e[k] = base[k]; for (var k2 in c) e[k2] = c[k2];
+    var e = {}; for (var k in base) e[k] = base[k];
+    e.input = scene.input;   // v2.5: 正向解析 label = 用户输入的域名（{input}）
+    for (var k2 in c) e[k2] = c[k2];
     e._i = i; return e;
   }).sort(function(a, b){
     return (a.rank - b.rank) || ((a.sub || 0) - (b.sub || 0)) || (a._i - b._i);
@@ -961,8 +980,17 @@ function fillText(e, tpl){
     .replace('{wallet}', e.wallet || '')
     .replace('{account}', e.account || '')
     .replace('{amount}', e.amount || '')
-    .replace('{name}', e.name || '');
+    .replace('{name}', e.name || '')
+    .replace('{input}', e.input || '');
 }
+// v2.5 Wilson：正向解析 label = 用户输入的域名；零宽字符（U+200B / 200C / 200D / FEFF / 2060）所在位置插入系统现有的橙色三角感叹号图标，
+//   其余字符照常转义输出。返回 HTML（label 用 innerHTML 渲染）——只用于 ensLabel 条目，其余 label 仍走 escapeHTML
+var ZW_RE = /[\u200B\u200C\u200D\uFEFF\u2060]/;
+var ZW_MARK = '<span class="zw-mark" role="img" aria-label="hidden character"><svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true" focusable="false"><path d="M5.13 1.5a1 1 0 0 1 1.74 0l4.5 7.8a1 1 0 0 1-.87 1.5h-9a1 1 0 0 1-.87-1.5z" fill="#FC8C4D"/><path d="M6 4.3v2.9" stroke="#fff" stroke-width="1.2" stroke-linecap="round"/><circle cx="6" cy="8.85" r=".7" fill="#fff"/></svg></span>';
+function ensLabelHTML(name){
+  return Array.from(String(name || '')).map(function(ch){ return ZW_RE.test(ch) ? ZW_MARK : escapeHTML(ch); }).join('');
+}
+function labelHTML(e, text){ return e.ensLabel ? ensLabelHTML(text) : escapeHTML(text); }
 // S2 entry type per IA id (D20: glyphs ≤ 3 — history / chain / info)
 // v1.9: C08 → 'record'（区域一，与 risk 同一「标题 + 正文」结构；S2 皮肤也不再用 history 字形）
 var S2_TYPE  = { C05:'risk', C06:'risk', C07:'risk', C08:'record', C02:'condition', C03:'condition', C04:'condition', C09:'identity', C01:'identity', C10:'resolved', C13:'resolved', C14:'resolved', C15:'resolved', C11:'resolved' };
@@ -991,7 +1019,7 @@ function entryHTML_S1(e){
   else { body = escapeHTML(fillText(e, e.body)); }
   // v1.7: C01 两行结构 title = Wallet Name 14 / subtitle = Account Name 12·60%（label 为空时不输出 label 行）
   var sub = (e.subtitle && fillText(e, e.subtitle)) ? '<div class="tt-sub">' + escapeHTML(fillText(e, e.subtitle)) + '</div>' : '';
-  var lab = label ? '<div class="tt-label">' + escapeHTML(label) + '</div>' : '';
+  var lab = label ? '<div class="tt-label">' + labelHTML(e, label) + '</div>' : '';   // v2.5: 正向解析 label = 输入的域名（ensLabelHTML）
   return '<div class="tt-entry tt-labeled" data-ctx="' + e.id + '" data-type="labeled">' + lab + '<div class="' + cls + '">' + body + '</div>' + sub + '</div>';
 }
 
@@ -1021,7 +1049,7 @@ function entryHTML_S2(e){
   }
   // resolved
   if (e.hex && typeof e.hex === 'string'){
-    return open + '<div class="s2-label">' + escapeHTML(fillText(e, e.label)) + '</div><div class="tt-hex">' + hexHTML(e.hex) + '</div></div>';
+    return open + '<div class="s2-label">' + labelHTML(e, fillText(e, e.label)) + '</div><div class="tt-hex">' + hexHTML(e.hex) + '</div></div>';   // v2.5: label = 输入的域名
   }
   var nm = fillText(e, e.body);
   return open + '<div class="s2-row"><span class="s2-avatar" aria-hidden="true">' + initial(nm) + '</span><div class="s2-text"><div class="s2-titlerow"><span class="s2-title">' + escapeHTML(nm) + '</span><span class="s2-src">' + escapeHTML(fillText(e, e.label)) + '</span></div></div></div></div>';
@@ -1129,12 +1157,12 @@ var EXPLAIN = {
         why:'标记只回答「这是谁」——给自己的哪个钱包、哪个账户转账，所以 label 固定「My wallet」，正文用「钱包名 · 账户名」一行表达，不做风险判断。' },
   5:  { dim:'区域二 ③（区域一无内容）。',
         type:'C10 ENS 正向解析：alice.eth → 解析出的地址全文。',
-        rule:'Tag = Info；label「Resolved full address」（ENS / DAS / UNS / ZNS 四个服务统一）+ 地址全文，与其他解析内容同字体字号颜色（SF Pro 14 / 400，不加粗），可换行；不折叠；永远排列表最后；4s 后收起。',
-        why:'用户输入的是域名，Tooltip 要给出真正要转去的地址全文供核对；地址与其他内容同一正文样式、完整换行显示，不做任何加粗或变淡处理。' },
+        rule:'Tag = Info；label 直接用用户输入的域名「alice.eth」（ENS / DAS / UNS / ZNS 四个服务同理）+ 地址全文，与其他解析内容同字体字号颜色（SF Pro 14 / 400，不加粗），可换行；不折叠；永远排列表最后；4s 后收起。',
+        why:'用户输入的是域名，Tooltip 要给出真正要转去的地址全文供核对；label 就是用户刚输入的域名，「哪个域名 → 哪个地址」一眼对上；地址与其他内容同一正文样式、完整换行显示，不做任何加粗或变淡处理。' },
   6:  { dim:'区域二 ③（区域一无内容）。',
-        type:'C11 ENS 反向解析：hex 地址 → 关联的单个域名 alice.eth。',
-        rule:'Tag = Info；label「ENS domain name」+ 域名；不折叠；排列表最后；4s 后收起；42 位地址让输入框升到 72 高，Tooltip 随之下移。',
-        why:'用户输入的是地址，反向解析出的域名只是辅助识别，所以只展示单个域名（当前无多域名解析能力）。' },
+        type:'C11 ENS 反向解析：hex 地址 → 关联的域名 alice.eth。',
+        rule:'Tag = Info；label「ENS name」+ 解析出的 ENS name；不折叠；排列表最后；4s 后收起；42 位地址让输入框升到 72 高，Tooltip 随之下移。',
+        why:'用户输入的是地址，反向解析出的域名只是辅助识别，所以只展示关联的域名（当前无多域名解析能力）。' },
   7:  { dim:'区域二 ①（区域一无内容）。',
         type:'C02 专项信息 · 链类型识别：输入的是 Osmosis 格式的地址，将以 IBC 跨链方式转账（Funds will be sent via IBC cross-chain transfer.）。',
         rule:'Tag = Info；label「Osmosis address」（标识收款地址自身的网络格式，{chainName} = Osmosis）+ 正文「Funds will be sent via IBC cross-chain transfer.」（将以 IBC 跨链方式转账）；不折叠；与其他地址信息同时出现时排列表最前；4s 后收起。',
@@ -1149,12 +1177,12 @@ var EXPLAIN = {
         why:'与未激活同属地址状态识别，提前告诉用户转账失败时资金的去向。' },
   10: { dim:'区域一 Warning + 区域二 ③。',
         type:'C06 Warning 地址（近期活动异常）· C10 ENS 正向解析（bob.eth → 地址）。',
-        rule:'Tag = Warning；风险条目（橙色色条 + 正文，无标题）常显；区域二折叠为「More address info (1)」，点击展开、入口行消失、展开后不可收起；自动唤起后不自动消失，点空白 / Esc 才关闭。',
+        rule:'Tag = Warning；风险条目（橙色色条 + 正文，无标题）常显；区域二折叠为「More address info (1)」，点击展开、入口行消失、展开后不可收起；展开后 C10 的 label 是输入的域名 bob.eth；自动唤起后不自动消失，点空白 / Esc 才关闭。',
         why:'Warning / High risk 时先只给风险判断，解析出的地址收进折叠区，用户需要时再展开核对全文；展开/收起是页面内次级信息的模式，tooltip 不做复杂交互，看完直接点空白处关闭。' },
   11: { dim:'区域一 Warning + 区域二 ③（C08 被剔除）。',
-        type:'C07 域名含隐藏字符（可能仿冒）· C10 ENS 正向解析；风控同时返回了无交易记录（C08），但 Warning 时不显示。',
-        rule:'Tag = Warning；C07 常显；折叠区「More address info (1)」只有 C10，点击展开后不可收起；C08 不进区域一、不进折叠区、不计入 N；不自动消失。',
-        why:'交易历史只在 Tag = Info 时作为判断输入展示；已经有 Warning / High risk 时它不再增加信息量，所以整条剔除；唯一的分割线在区域一与折叠入口之间。' },
+        type:'C07 域名含隐藏字符（用户粘贴的 b⚠inance.eth 在 b 与 inance 之间藏了一个零宽字符，可能仿冒 binance.eth）· C10 ENS 正向解析；风控同时返回了无交易记录（C08），但 Warning 时不显示。',
+        rule:'Tag = Warning；C07 常显；折叠区「More address info (1)」只有 C10，点击展开后不可收起；C10 label = 粘贴的域名，零宽字符位置插入橙色三角感叹号（b⚠inance.eth），输入框里不加图标；C08 不进区域一、不进折叠区、不计入 N；不自动消失。',
+        why:'交易历史只在 Tag = Info 时作为判断输入展示；已经有 Warning / High risk 时它不再增加信息量，所以整条剔除；唯一的分割线在区域一与折叠入口之间。零宽字符本身看不见，所以在 label 里用系统现有的橙色三角感叹号把它的位置标出来——这是 Tooltip 内唯一的彩色字形。' },
   12: { dim:'区域一 High risk + 区域二 ② ③。',
         type:'C05 High risk 地址 · C09 地址本命中（Airdrop claim）· C10 ENS 正向解析。',
         rule:'Tag = High risk；风险条目（红色色条 + 正文，无标题）常显，正文无彩色；折叠「More address info (2)」：地址本 ② 排在 ENS ③ 前，点击展开后不可收起；不自动消失；不显示「Add to address book」。',
@@ -1168,12 +1196,12 @@ var EXPLAIN = {
         rule:'Tag = Info；两条都显示、不二选一，地址本排在我的钱包之前；不折叠；4s 后收起；不显示「Add to address book」。',
         why:'两个标记回答的是同一个问题「这是谁」，但来源不同，所以都保留；地址本是用户主动存的，优先级更高。多数情况下不会既是又是。' },
   15: { dim:'区域二 ① + ② + ③（区域一无内容）。',
-        type:'C03 专项信息 · Tron 收款账户未激活（Not activated yet. An extra 0.1 TRX will be spent to activate it.）· C09 地址本命中（Binance Deposit）· C10 ENS 正向解析（alice.eth → Tron 地址）。',
+        type:'C03 专项信息 · Tron 收款账户未激活（Not activated yet. An extra 0.1 TRX will be spent to activate it.）· C09 地址本命中（Binance Deposit）· C10 ENS 正向解析（alice.eth → Tron 地址，label = alice.eth）。',
         rule:'Tag = Info；三类同时出现，固定次序 ① 专项信息识别（label「Tron address」+ 尚未激活、额外消耗 0.1 TRX）→ ② 地址标记 → ③ ENS 解析；不折叠；4s 后收起；不显示「Add to address book」。',
         why:'先说这笔转账要多花什么（未激活，额外消耗 0.1 TRX），再说这是谁（Binance Deposit），最后给解析出的地址全文供核对——按用户发送前要回答的问题的先后排。' },
   16: { dim:'区域一 Warning × 2 + 区域二 ③。',
-        type:'C06 Warning 地址（近期活动异常）· C07 域名含隐藏字符（可能仿冒）· C10 ENS 正向解析。',
-        rule:'Tag = Warning；两条 warning 上下排列，各自一根橙色色条，不带标题；区域二折叠为「More address info (1)」，展开后不可收起；不自动消失。',
+        type:'C06 Warning 地址（近期活动异常）· C07 域名含隐藏字符（bin⚠ance.eth，bin 与 ance 之间藏了一个零宽字符，可能仿冒 binance.eth）· C10 ENS 正向解析。',
+        rule:'Tag = Warning；两条 warning 上下排列，各自一根橙色色条，不带标题；区域二折叠为「More address info (1)」，展开后不可收起；C10 label = 粘贴的域名，零宽字符位置插入橙色三角感叹号（bin⚠ance.eth）；不自动消失。',
         why:'多条 warning 时色条天然把每一条分开并引导阅读；如果用「标题 + 副标题」，两条都叫 Warning，标题会重复、层级会乱——这是采用色条的一个直接好处。' }
 };
 var EX_KEYS = [['dim','解析维度'], ['type','解析类型'], ['rule','展示规则'], ['why','为什么左侧这样显示']];
@@ -1557,7 +1585,7 @@ window.addEventListener('hashchange', function(){ var q = parseInit(); if (q.sce
 /* ---------- public API (for tests / console) ---------- */
 window.proto = {
   SCENES: SCENES, CTX: CTX, TIMING: TIMING, PROTOS: PROTOS, EXPLAIN: EXPLAIN,
-  buildModel: buildModel, tooltipHTML: tooltipHTML, hexHTML: hexHTML,
+  buildModel: buildModel, tooltipHTML: tooltipHTML, hexHTML: hexHTML, ensLabelHTML: ensLabelHTML,
   p1: INSTANCES[0], p2: INSTANCES[1], instances: INSTANCES,
   ownerOf: ownerOf, instanceOf: instanceOf,
   // 按全局 SCENES 下标分发到所属实例（返回该实例）
