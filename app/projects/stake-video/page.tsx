@@ -77,7 +77,7 @@ export default function StakeVideo() {
         {/* ───────── Story ───────── */}
         <section id="story" className="wrap block tight" aria-labelledby="story-title">
           <div className="block-head">
-            <p className="eyebrow">STORY · 53 秒</p>
+            <p className="eyebrow">STORY · 59 秒</p>
             <h2 id="story-title">故事：从沉睡到醒来</h2>
             <p className="sub">六幕，每一幕下面是对应的中文旁白。</p>
           </div>
