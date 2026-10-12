@@ -3,8 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Prototype — 转账地址解析 Tooltip v2.7 · imToken UXD</title>
+<title>Prototype — 转账地址解析 Tooltip v2.8 · imToken UXD</title>
 <style>
+/* v2.8 变更（设计评审反馈 2026-10-12）：C01「我的钱包」条目 label 改为「This device」（旧 label 已改），内容不变 =「{wallet} · {account}」
+   （示例「DeFi Exploration · Account 01」）。CTX.C01.label / S2 Identity 行来源小字（取自 CTX label）/ Part 2 infographic ② / EXPLAIN 4 同步。
+   中文对应「当前设备」（10-12）；作为 label 引用一律写「This device」。 */
 /* v2.6 变更（设计评审会决定 2026-10-12）：Tooltip 统一 8 秒自动收起，Info / Warning / High risk 不再区分规则。
    已作废的旧规则：Info 4s 自动收起；Warning / High risk 不自动消失（已作废，由 v2.6 取代）。
    实现：TIMING.autoHide = 8000（取代 TIMING.infoAuto），三档走同一计时，删除「风险态不自动收起」分支；计时从 Tooltip 出现开始；
@@ -31,7 +34,7 @@
    不再等宽、不再 12px、不再首 4 / 末 4 加重、不再中段变淡；允许自然换行（word-break:break-all），不再 nowrap / overflow hidden。
    hexHTML 直接输出纯文本（escapeHTML），.hx0 / .hx / .hxm 规则与 D17 分段全部删除。Part 2 文案 / 解剖图 A·B·C / EXPLAIN / hint 同步。 */
 /* v2.1 变更（Wilson 定稿 2026-10-09）：区域二 label 文案定稿——C09「Saved in address book」（昵称示例改为更普遍的地址本名「Binance Deposit」，
-   场景 12 的「Airdrop claim」保留）；C01 label「My wallet」+ 正文一行「{wallet} · {account}」（示例「DeFi Exploration · Account 01」）；
+   场景 12 的「Airdrop claim」保留）；C01 label「My wallet」（v2.8 已改为「This device」）+ 正文一行「{wallet} · {account}」（示例「DeFi Exploration · Account 01」）；
    C10/C13/C14/C15 四个正向解析服务统一一个固定 label（不再带 ENS/DAS/UNS/ZNS 前缀；v2.5 起改为输入的域名）；C11 定为固定 label（v2.5 起「ENS name」）。
    S2 皮肤 Identity 行与 S1 同一套 label / body：title = body、来源小字 = label，头像首字母随之（B / D）。Part 2 解剖图与解释文字同步。 */
 /* v2.0 变更（Wilson 决定）：Part 1 拆成两个 Prototype 区，各自一台手机 + 一个场景面板，上下排列。
@@ -501,7 +504,7 @@ html,body{background:var(--hub-ground)}
 </style>
 </head>
 <body class="skin-s1">
-<div class="ver" id="ver">v2.7</div>
+<div class="ver" id="ver">v2.8</div>
 <!-- ===================== INTRO · 解析对象与信息架构（2026-10-08 团队讨论口径） ===================== -->
 
 <div class="ambient" aria-hidden="true"><i class="b1"></i><i class="b2"></i><i class="b3"></i></div>
@@ -668,7 +671,7 @@ html,body{background:var(--hub-ground)}
       <div class="ig-zone z2" style="margin-top:8px">
         <div class="ig-zt">区域二 · 事实 — 帮助用户理解解析结果</div>
         <div class="ig-row"><span class="n">1</span><div class="t"><span class="lab">Osmosis / Tron / TON bounceable address</span>专项信息识别<small>只会出现一条</small></div></div>
-        <div class="ig-row"><span class="n">2</span><div class="t"><span class="lab">Saved in address book · My wallet</span>地址标记<small>同时命中时都显示，地址本在前</small></div></div>
+        <div class="ig-row"><span class="n">2</span><div class="t"><span class="lab">Saved in address book · This device</span>地址标记<small>同时命中时都显示，地址本在前</small></div></div>
         <div class="ig-row"><span class="n">3</span><div class="t"><span class="lab">{输入的 ENS name} · ENS name</span>ENS 解析<small>永远在最后 · 正向 label = 输入的域名，反向 label = ENS name</small></div></div>
       </div>
     </div>
@@ -706,7 +709,7 @@ html,body{background:var(--hub-ground)}
       <p>针对用户输入的地址 / 域名解析出来的事实，三类信息按下面的优先级在列表中排序：</p>
       <ol class="cls">
         <li><span class="prio">优先级最高</span><b>专项信息识别 · 特定网络的地址解析</b><span>label 标识这是哪个网络的地址：Osmosis address（IBC 跨链转账）/ Tron address（尚未激活，额外消耗 TRX 激活）/ TON bounceable address（转账失败自动退回）…；正文写该网络的具体说明。同一个地址不可能来自不同网络，所以这类条目只会出现一条，并排在 Address info 最前</span></li>
-        <li><b>地址标记</b><span>是否是地址本存储的地址；是否是用户当前某个钱包中的账户地址。两者同时命中时同时显示（不二选一），「已存于地址本」排在「我的钱包」之前；多数情况下不会既是又是</span></li>
+        <li><b>地址标记</b><span>是否是地址本存储的地址；是否是用户当前某个钱包中的账户地址。两者同时命中时同时显示（不二选一），「已存于地址本」排在「当前设备」之前；多数情况下不会既是又是</span></li>
         <li><b>ENS 正向 / 反向解析结果</b><span>正向：域名 → 解析出的地址全文，label 直接用用户输入的域名（如 alice.eth；DAS / UNS / ZNS 同理），地址与其他内容同字体字号，可换行；域名含零宽字符时，在其位置插入橙色三角感叹号（如 b⚠inance.eth）。反向：地址 → 关联的域名，label「ENS name」</span></li>
       </ol>
     </div>
@@ -748,7 +751,7 @@ html,body{background:var(--hub-ground)}
           <div class="ana-side">
             <div class="ann r1" data-for="r1"><span class="bar"></span><div class="txt"><b><span class="k">区域一</span>判断辅助信息</b>Tag = Info 且检测到无交易记录时展示交易历史：纯正文，不带标题也不带色条——Tag 已说明等级；无法检测、或已有交易记录时此区域不出现。</div></div>
             <div class="ann sep" data-for="sep"><span class="bar"></span><div class="txt"><b><span class="k">分割线</span></b>区域一与区域二之间一条分割线；区域二为空时没有。</div></div>
-            <div class="ann r2" data-for="r2"><span class="bar"></span><div class="txt"><b><span class="k">区域二</span>Address info 列表</b>顺序：① 专项信息识别 → ② 地址标记（地址本 &gt; 我的钱包）→ ③ ENS 解析结果。本例未命中专项信息，所以从地址本开始；若命中（IBC、未激活），它会排在地址本之前。条目之间只有正常间距；ENS 正向解析条目的 label 直接用用户输入的域名（alice.eth），内容是解析出的地址全文，与其他内容同字体字号，可换行。</div></div>
+            <div class="ann r2" data-for="r2"><span class="bar"></span><div class="txt"><b><span class="k">区域二</span>Address info 列表</b>顺序：① 专项信息识别 → ② 地址标记（地址本 &gt; 当前设备）→ ③ ENS 解析结果。本例未命中专项信息，所以从地址本开始；若命中（IBC、未激活），它会排在地址本之前。条目之间只有正常间距；ENS 正向解析条目的 label 直接用用户输入的域名（alice.eth），内容是解析出的地址全文，与其他内容同字体字号，可换行。</div></div>
           </div>
         </div>
       </div>
@@ -850,12 +853,12 @@ var CTX = {
   C02:{ rank:2, sub:0, kind:'labeled', label:'{chain} address',       body:'Funds will be sent via IBC cross-chain transfer.' },
   C03:{ rank:2, sub:1, kind:'labeled', label:'Tron address',          body:'Not activated yet. An extra {amount} will be spent to activate it.' },
   C04:{ rank:2, sub:2, kind:'labeled', label:'TON bounceable address', body:'Transfers work as usual. If the transfer fails, funds are returned to you automatically.' },
-  // v2.1 Wilson（2026-10-09）定稿 label：地址本 =「Saved in address book」；我的钱包 = label「My wallet」+ body 一行「{wallet} · {account}」；
+  // v2.1 Wilson（2026-10-09）定稿 label：地址本 =「Saved in address book」；我的钱包 = label「My wallet」（v2.8 已改为「This device」）+ body 一行「{wallet} · {account}」；
   //      四个正向解析服务统一一个固定 label（不再带 ENS/DAS/UNS/ZNS 前缀）；反向解析一个固定 label
   // v2.5 Wilson（2026-10-09）：正向解析 C10 / C13–C15 的 label = 用户输入 / 粘贴的域名（{input}，ensLabel:true → ensLabelHTML 渲染，
   //      零宽字符位置插入橙色三角感叹号）；反向解析 C11 label =「ENS name」，内容 = 解析出的 ENS name
   C09:{ rank:3, kind:'labeled', label:'Saved in address book', body:'{nickname}' },
-  C01:{ rank:4, kind:'labeled', label:'My wallet', body:'{wallet} · {account}' },   // v1.7 → v2.1：label 固定「My wallet」，body 一行 = Wallet Name · Account Name（Account 01/02/03，用户可改）；Text style 与地址本条目一致（label 12·60% / body 14）
+  C01:{ rank:4, kind:'labeled', label:'This device', body:'{wallet} · {account}' },   // v1.7 → v2.1 → v2.8：label 固定「This device」（v2.1 的「My wallet」已改），body 一行 = Wallet Name · Account Name（Account 01/02/03，用户可改）；Text style 与地址本条目一致（label 12·60% / body 14）
   C10:{ rank:5, sub:0, kind:'labeled', label:'{input}', ensLabel:true, hex:true },
   C13:{ rank:5, sub:0, kind:'labeled', label:'{input}', ensLabel:true, hex:true },
   C14:{ rank:5, sub:0, kind:'labeled', label:'{input}', ensLabel:true, hex:true },
@@ -896,7 +899,7 @@ var SCENES = [
   { n:1,  title:'hex · 陌生地址（无 context）',          meta:'S2 · 无 Tag 无 tooltip', chain:'eth', input:HEX.s1, ctx:[] },
   { n:2,  title:'hex · 无交易记录',                      meta:'C08',                    chain:'eth', input:HEX.s2, ctx:[{id:'C08'}] },
   { n:3,  title:'hex · 无交易记录 + 地址本「Binance Deposit」', meta:'C08 + C09 · US2',    chain:'eth', input:HEX.s3, ctx:[{id:'C09', nickname:'Binance Deposit'},{id:'C08'}] },
-  { n:4,  title:'hex · 我的钱包「DeFi Exploration」',     meta:'C01 · Account 01',       chain:'eth', input:HEX.s4, ctx:[{id:'C01', wallet:'DeFi Exploration', account:'Account 01'}] },
+  { n:4,  title:'hex · 当前设备「DeFi Exploration」',     meta:'C01 · Account 01',       chain:'eth', input:HEX.s4, ctx:[{id:'C01', wallet:'DeFi Exploration', account:'Account 01'}] },
   { n:5,  title:'ENS 正向解析 alice.eth',                meta:'C10 · 地址全文可换行',   chain:'eth', input:'alice.eth', ctx:[{id:'C10', hex:HEX_ALICE}] },
   { n:6,  title:'hex · 反向解析域名',                    meta:'C11',                    chain:'eth', input:HEX_ALICE, ctx:[{id:'C11', name:'alice.eth'}] },
   { n:7,  title:'Cosmos → Osmosis IBC',                 meta:'C02',                    chain:'cosmos', input:OSMO, ctx:[{id:'C02', chain:'Osmosis'}] },   // v2.3: chain = 收款地址自身的格式（Osmosis），不是用户所在链
@@ -906,8 +909,8 @@ var SCENES = [
   { n:11, title:'Warning · ENS 零宽字符',                meta:'C07 + C10 · C08 被剔除',  chain:'eth', input:'b\u200Binance.eth', ctx:[{id:'C10', hex:HEX.s11},{id:'C08'},{id:'C07'}] },   // v1.9: 风控同时返回了 C08，但 Warning 时由模型剔除（不进折叠区、不计入 N）
   { n:12, title:'High risk',                             meta:'C05 + C09 + C10 · 折叠', chain:'eth', input:'free-airdrop.eth', ctx:[{id:'C09', nickname:'Airdrop claim'},{id:'C05'},{id:'C10', hex:HEX.s12}] },
   { n:13, title:'解析中 → 无法解析',                     meta:'S3 · 现有 Alert，无 tooltip', chain:'eth', input:'figma.eth', unresolved:true, ctx:[] },
-  // v1.10 Wilson：地址本与我的钱包同时命中——两条都显示，地址本在前（多数情况下不会既是又是）
-  { n:14, title:'hex · 地址本「Binance Deposit」+ 我的钱包「DeFi Exploration」', meta:'C09 + C01 · 同时显示', chain:'eth', input:HEX.s14, ctx:[{id:'C01', wallet:'DeFi Exploration', account:'Account 01'},{id:'C09', nickname:'Binance Deposit'}] },
+  // v1.10 Wilson：地址本与当前设备同时命中——两条都显示，地址本在前（多数情况下不会既是又是）
+  { n:14, title:'hex · 地址本「Binance Deposit」+ 当前设备「DeFi Exploration」', meta:'C09 + C01 · 同时显示', chain:'eth', input:HEX.s14, ctx:[{id:'C01', wallet:'DeFi Exploration', account:'Account 01'},{id:'C09', nickname:'Binance Deposit'}] },
   // v1.10 Wilson：专项信息识别会与地址标记、ENS 解析同时出现，次序固定 专项 → 地址标记 → ENS（ctx 故意乱序，由模型排序）
   { n:15, title:'Tron · alice.eth → 未激活 + 地址本', meta:'C03 + C09 + C10 · 三者同现', chain:'tron', input:'alice.eth', ctx:[{id:'C10', hex:TRON},{id:'C09', nickname:'Binance Deposit'},{id:'C03', amount:'0.1 TRX'}] },
   // v1.12 Wilson：多条 Warning 上下排列，色条引导阅读（标题 + 副标题方式在多条 warning 时难处理）
@@ -1048,7 +1051,7 @@ function entryHTML_S2(e){
     return open + '<div class="s2-row">' + glyph + '<div class="s2-text"><div class="s2-title">' + escapeHTML(fillText(e, e.label)) + '</div><div class="s2-desc">' + escapeHTML(fillText(e, e.body)) + '</div></div></div></div>';
   }
   if (type === 'identity'){
-    // avatar = 昵称/钱包名首字母；来源小字 = CTX label（Saved in address book / My wallet）
+    // avatar = 昵称/钱包名首字母；来源小字 = CTX label（Saved in address book / This device）
     // v2.1: 与 S1 同一套 label / body：title = body（昵称 / 「Wallet Name · Account Name」），来源小字 = label
     var src   = fillText(e, e.label);
     var title = fillText(e, e.body);
@@ -1160,9 +1163,9 @@ var EXPLAIN = {
         rule:'Tag = Info；不折叠；区域一「Transaction Record」→ 分割线 → 区域二「Saved in address book / Binance Deposit」；自动唤起，8 秒后自动收起；不显示「Add to address book」。',
         why:'先给判断输入（没转过），再给解析事实（这是地址本里的 Binance Deposit）；两部分性质不同，中间用一条分割线隔开，与风险态「风险条目｜折叠入口」之间的分割线同款。' },
   4:  { dim:'区域二 ②（区域一无内容）。',
-        type:'C01 我的钱包：地址是用户当前某个钱包里的账户。label「My wallet」+ 正文一行「DeFi Exploration · Account 01」（Wallet Name · Account Name，账户名自动命名，可改）。',
-        rule:'Tag = Info（由区域二有内容触发，作为 Tooltip 入口）；label「My wallet」+ 正文一行「Wallet Name · Account Name」，Text style 与地址本条目一致（12·60% / 14）；不折叠；若同时命中地址本，地址本排在前；8 秒后自动收起；不显示「Add to address book」。',
-        why:'标记只回答「这是谁」——给自己的哪个钱包、哪个账户转账，所以 label 固定「My wallet」，正文用「钱包名 · 账户名」一行表达，不做风险判断。' },
+        type:'C01 当前设备：地址是用户当前某个钱包里的账户。label「This device」+ 正文一行「DeFi Exploration · Account 01」（Wallet Name · Account Name，账户名自动命名，可改）。',
+        rule:'Tag = Info（由区域二有内容触发，作为 Tooltip 入口）；label「This device」+ 正文一行「Wallet Name · Account Name」，Text style 与地址本条目一致（12·60% / 14）；不折叠；若同时命中地址本，地址本排在前；8 秒后自动收起；不显示「Add to address book」。',
+        why:'标记只回答「这是谁」——给自己的哪个钱包、哪个账户转账，所以 label 固定「This device」，正文用「钱包名 · 账户名」一行表达，不做风险判断。' },
   5:  { dim:'区域二 ③（区域一无内容）。',
         type:'C10 ENS 正向解析：alice.eth → 解析出的地址全文。',
         rule:'Tag = Info；label 直接用用户输入的域名「alice.eth」（ENS / DAS / UNS / ZNS 四个服务同理）+ 地址全文，与其他解析内容同字体字号颜色（SF Pro 14 / 400，不加粗），可换行；不折叠；永远排列表最后；8 秒后自动收起。',
@@ -1200,8 +1203,8 @@ var EXPLAIN = {
         rule:'解析中：Tag 位置只显示 spinner，无 Tooltip；解析失败：走现有 S3 Alert「Unable to resolve this name on Ethereum」，无 Tag、无 Tooltip；Next 不可用。',
         why:'无法解析意味着没有可发送的目标，这不是地址信息，所以用阻断式 Alert 而不是 Tooltip 提示。' },
   14: { dim:'区域二 ②（区域一无内容）。',
-        type:'C09 地址本命中（Binance Deposit）· C01 我的钱包（DeFi Exploration · Account 01）同时命中。',
-        rule:'Tag = Info；两条都显示、不二选一，地址本排在我的钱包之前；不折叠；8 秒后自动收起；不显示「Add to address book」。',
+        type:'C09 地址本命中（Binance Deposit）· C01 当前设备（DeFi Exploration · Account 01）同时命中。',
+        rule:'Tag = Info；两条都显示、不二选一，地址本排在当前设备之前；不折叠；8 秒后自动收起；不显示「Add to address book」。',
         why:'两个标记回答的是同一个问题「这是谁」，但来源不同，所以都保留；地址本是用户主动存的，优先级更高。多数情况下不会既是又是。' },
   15: { dim:'区域二 ① + ② + ③（区域一无内容）。',
         type:'C03 专项信息 · Tron 收款账户未激活（Not activated yet. An extra 0.1 TRX will be spent to activate it.）· C09 地址本命中（Binance Deposit）· C10 ENS 正向解析（alice.eth → Tron 地址，label = alice.eth）。',
