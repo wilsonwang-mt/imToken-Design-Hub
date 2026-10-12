@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Prototype — 转账地址解析 Tooltip v2.6 · imToken UXD</title>
+<title>Prototype — 转账地址解析 Tooltip v2.7 · imToken UXD</title>
 <style>
 /* v2.6 变更（设计评审会决定 2026-10-12）：Tooltip 统一 8 秒自动收起，Info / Warning / High risk 不再区分规则。
    已作废的旧规则：Info 4s 自动收起；Warning / High risk 不自动消失（已作废，由 v2.6 取代）。
    实现：TIMING.autoHide = 8000（取代 TIMING.infoAuto），三档走同一计时，删除「风险态不自动收起」分支；计时从 Tooltip 出现开始；
-   点「More address info」展开时重新计 8 秒（⏳ 展开后重新计时 —— 待确认）；点 Tag 再次唤起同样重新计 8 秒；点空白 / 与其他控件交互 / Esc 立即收起；
+   点「More address info」展开时重新计 8 秒（10-12 评审确认）；点 Tag 再次唤起同样重新计 8 秒；点空白 / 与其他控件交互 / Esc 立即收起；
    hash 直达 step=shown|expanded 仍为冻结态（不自动收起，便于截图）；皮肤重绘不重启计时。
    顺带修复：收起后 120ms 淡出期内再次点 Tag 唤起，旧的淡出回调不再把新唤起的 Tooltip 隐藏。
    Part 2 infographic「唤起 / 收起」/ .rules 折叠与唤起卡 / 解剖图 B·C 注释 / EXPLAIN 全部条目 / hint 同步。 */
@@ -501,7 +501,7 @@ html,body{background:var(--hub-ground)}
 </style>
 </head>
 <body class="skin-s1">
-<div class="ver" id="ver">v2.6</div>
+<div class="ver" id="ver">v2.7</div>
 <!-- ===================== INTRO · 解析对象与信息架构（2026-10-08 团队讨论口径） ===================== -->
 
 <div class="ambient" aria-hidden="true"><i class="b1"></i><i class="b2"></i><i class="b3"></i></div>
@@ -622,7 +622,7 @@ html,body{background:var(--hub-ground)}
       <!-- v2.0: 两个 Prototype 区由 PROTOS 渲染（各自一台手机 + 一个场景面板） -->
       <div class="protos" id="protos"></div>
 
-      <p class="hint">直达：<code>#scene=10&amp;step=expanded</code>（scene = 1…16 · step = typed / resolving / shown / expanded / dismissed · 场景属于哪个 Prototype 就在哪台手机上播放并选中对应 Tab / 卡片）· 点手机空白处只关闭该台的 tooltip · 点 Tag 再次唤起（回到默认收起态） · Esc 关闭 · Tooltip 出现后 8 秒自动收起（Info / Warning / High risk 一致；点 Tag 再次唤起重新计 8 秒；展开时重新计 8 秒，⏳ 展开后重新计时 —— 待确认；step 直达为冻结态，不自动收起） · 折叠入口点击展开、展开后不可收起 · C08「Transaction Record」只在 Tag = Info 时出现在区域一（分割线以上，纯正文，不带标题、不带色条——色条只用于 Warning / High risk）；Warning / High risk 时不显示、不进折叠区 · ENS 正向解析条目的 label = 用户输入的域名（含零宽字符时在其位置插入橙色三角感叹号，输入框里不加），地址全文与其他内容同字体字号，可换行 · 反向解析 label「ENS name」</p>
+      <p class="hint">直达：<code>#scene=10&amp;step=expanded</code>（scene = 1…16 · step = typed / resolving / shown / expanded / dismissed · 场景属于哪个 Prototype 就在哪台手机上播放并选中对应 Tab / 卡片）· 点手机空白处只关闭该台的 tooltip · 点 Tag 再次唤起（回到默认收起态） · Esc 关闭 · Tooltip 出现后 8 秒自动收起（Info / Warning / High risk 一致；点 Tag 再次唤起重新计 8 秒；展开时重新计 8 秒（10-12 评审确认）；step 直达为冻结态，不自动收起） · 折叠入口点击展开、展开后不可收起 · C08「Transaction Record」只在 Tag = Info 时出现在区域一（分割线以上，纯正文，不带标题、不带色条——色条只用于 Warning / High risk）；Warning / High risk 时不显示、不进折叠区 · ENS 正向解析条目的 label = 用户输入的域名（含零宽字符时在其位置插入橙色三角感叹号，输入框里不加），地址全文与其他内容同字体字号，可换行 · 反向解析 label「ENS name」</p>
 
       <!-- ===================== COMPARE (S1 | S2, static · 隐藏，跟随最近操作的那台手机) ===================== -->
       <section class="compare" id="compare" aria-label="S1 / S2 对比">
@@ -683,7 +683,7 @@ html,body{background:var(--hub-ground)}
         </div></div></div>
       <div class="ig-rule r2"><span class="k">折叠</span><div><b>Warning / High risk 时区域二默认折叠</b><p>点「More address info (N)」展开；展开后入口行消失，不提供手动收起。Info 时不折叠，两区并列、中间一条分割线。</p></div></div>
       <div class="ig-rule r2"><span class="k">排序</span><div><b>区域二固定顺序 ① → ② → ③</b><p>专项信息识别只出现一条且在最前；地址标记两种可同现、地址本优先；ENS 解析永远在最后。</p></div></div>
-      <div class="ig-rule rx"><span class="k">唤起 / 收起</span><div><b>统一 8 秒自动收起</b><p>解析完成自动唤起一次；8 秒后自动收起（Info / Warning / High risk 一致），点空白或与其他控件交互立即收起。点 Tag 可再次唤起。</p><p>点「More address info」展开时重新计 8 秒，给展开后的阅读留出时间（⏳ 展开后重新计时 —— 待确认）。</p></div></div>
+      <div class="ig-rule rx"><span class="k">唤起 / 收起</span><div><b>统一 8 秒自动收起</b><p>解析完成自动唤起一次；8 秒后自动收起（Info / Warning / High risk 一致），点空白或与其他控件交互立即收起。点 Tag 可再次唤起。</p><p>点「More address info」展开时重新计 8 秒，给展开后的阅读留出时间（10-12 评审确认）。</p></div></div>
       <div class="ig-rule rx"><span class="k">颜色</span><div><b>颜色只用于 Tag 和 Warning / High risk 的色条</b><p>Tooltip 内文字一律不用彩色；地址全文与其他内容同字体字号，可换行。唯一例外：零宽字符位置用系统现有的橙色三角感叹号标记，是 Tooltip 内唯一的彩色字形（例：b<span class="ig-zw" role="img" aria-label="hidden character"><svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true" focusable="false"><path d="M5.13 1.5a1 1 0 0 1 1.74 0l4.5 7.8a1 1 0 0 1-.87 1.5h-9a1 1 0 0 1-.87-1.5z" fill="#FC8C4D"/><path d="M6 4.3v2.9" stroke="#fff" stroke-width="1.2" stroke-linecap="round"/><circle cx="6" cy="8.85" r=".7" fill="#fff"/></svg></span>inance.eth）。</p></div></div>
     </div>
   </div>
@@ -717,7 +717,7 @@ html,body{background:var(--hub-ground)}
       <p>风险类信息与地址解析信息同时存在时的展示规则。</p>
       <ul class="rules">
         <li><b>Tag = Warning / High risk → 区域二默认折叠</b><span>Tooltip 只常显风险条目，地址解析信息收进「More address info (N)」：点击展开，展开后不可收起；看完点空白处关闭；交易历史不显示。</span></li>
-        <li><b>Info / Warning / High risk → 统一 8 秒后自动收起</b><span>Tooltip 出现后计时 8 秒自动收起，三档一致；点「More address info」展开时重新计 8 秒（⏳ 展开后重新计时 —— 待确认）；点空白区域、与其他控件交互或按 Esc 立即收起；点 Tag 可再次唤起（重新计 8 秒）。</span></li>
+        <li><b>Info / Warning / High risk → 统一 8 秒后自动收起</b><span>Tooltip 出现后计时 8 秒自动收起，三档一致；点「More address info」展开时重新计 8 秒（10-12 评审确认）；点空白区域、与其他控件交互或按 Esc 立即收起；点 Tag 可再次唤起（重新计 8 秒）。</span></li>
         <li><b>Tag = Info → 不折叠</b><span>区域一（若有 Transaction Record）与区域二并列，中间一条分割线；区域二为空或区域一为空时没有分割线；自动唤起，8 秒后自动收起（与 Warning / High risk 一致）。</span></li>
       </ul>
     </div>
@@ -771,7 +771,7 @@ html,body{background:var(--hub-ground)}
           </div>
           <div class="ana-side">
             <div class="ann r1" data-for="r1"><span class="bar"></span><div class="txt"><b><span class="k">区域一</span>风险条目常显</b>Warning / High risk 不带标题（Tag 已说明等级），左侧 3px 色条用对应的橙 / 红，正文无彩色；此时不显示交易历史。与 Info 一致，自动唤起后 8 秒自动收起；点空白或与其他控件交互立即收起。</div></div>
-            <div class="ann sep" data-for="fold"><span class="bar"></span><div class="txt"><b><span class="k">折叠入口</span></b>Warning / High risk 时区域二默认折叠为「More address info (N)」，N = 折叠条数；点击展开地址解析信息；不提供手动收起——看完点空白处关闭 tooltip。展开时重新计 8 秒（⏳ 展开后重新计时 —— 待确认）。</div></div>
+            <div class="ann sep" data-for="fold"><span class="bar"></span><div class="txt"><b><span class="k">折叠入口</span></b>Warning / High risk 时区域二默认折叠为「More address info (N)」，N = 折叠条数；点击展开地址解析信息；不提供手动收起——看完点空白处关闭 tooltip。展开时重新计 8 秒（10-12 评审确认）。</div></div>
             <div class="ann r2 is-hidden" data-for="r2"><span class="bar"></span><div class="txt"><b><span class="k">区域二</span>展开后同一套排序</b>入口行已消失、不可收起；本例命中专项信息（Osmosis address · IBC 跨链转账），排在 ① 位，地址本 ② 紧随其后。</div></div>
           </div>
         </div>
@@ -798,7 +798,7 @@ html,body{background:var(--hub-ground)}
           <div class="ana-side">
             <div class="ann r1" data-for="r1"><span class="bar"></span><div class="txt"><b><span class="k">区域一</span>帮助用户识别风险</b>判断类信息：Transaction Record / Warning / High risk。色条只用于 Warning / High risk；多条 warning 同时命中时直接上下排列，每条一根色条引导逐条阅读——用「标题 + 副标题」则两条都叫 Warning，标题重复、层级会乱。</div></div>
             <div class="ann sep" data-for="sep"><span class="bar"></span><div class="txt"><b><span class="k">分割线</span></b>两个信息维度的边界：上面是判断，下面是事实。</div></div>
-            <div class="ann r2" data-for="r2"><span class="bar"></span><div class="txt"><b><span class="k">区域二</span>帮助用户理解解析出来的 facts</b>事实类信息，按 ① 专项信息识别 → ② 地址标记 → ③ ENS 解析 排序；Warning / High risk 时默认折叠，展开后入口行消失、不可收起。ENS 解析条目的 label 是用户粘贴的域名，零宽字符所在位置插入橙色三角感叹号（b⚠inance.eth）——与第二条 warning「域名含隐藏字符」对应，用户能看到隐藏字符藏在哪里。展开后 Tooltip 重新计 8 秒再自动收起（⏳ 展开后重新计时 —— 待确认）。</div></div>
+            <div class="ann r2" data-for="r2"><span class="bar"></span><div class="txt"><b><span class="k">区域二</span>帮助用户理解解析出来的 facts</b>事实类信息，按 ① 专项信息识别 → ② 地址标记 → ③ ENS 解析 排序；Warning / High risk 时默认折叠，展开后入口行消失、不可收起。ENS 解析条目的 label 是用户粘贴的域名，零宽字符所在位置插入橙色三角感叹号（b⚠inance.eth）——与第二条 warning「域名含隐藏字符」对应，用户能看到隐藏字符藏在哪里。展开后 Tooltip 重新计 8 秒再自动收起（10-12 评审确认）。</div></div>
           </div>
         </div>
       </div>
@@ -1185,7 +1185,7 @@ var EXPLAIN = {
         why:'与未激活同属地址状态识别，提前告诉用户转账失败时资金的去向。' },
   10: { dim:'区域一 Warning + 区域二 ③。',
         type:'C06 Warning 地址（近期活动异常）· C10 ENS 正向解析（bob.eth → 地址）。',
-        rule:'Tag = Warning；风险条目（橙色色条 + 正文，无标题）常显；区域二折叠为「More address info (1)」，点击展开、入口行消失、展开后不可收起；展开后 C10 的 label 是输入的域名 bob.eth；8 秒后自动收起（展开时重新计 8 秒，⏳ 展开后重新计时 —— 待确认），点空白 / Esc 立即关闭。',
+        rule:'Tag = Warning；风险条目（橙色色条 + 正文，无标题）常显；区域二折叠为「More address info (1)」，点击展开、入口行消失、展开后不可收起；展开后 C10 的 label 是输入的域名 bob.eth；8 秒后自动收起（展开时重新计 8 秒（10-12 评审确认）），点空白 / Esc 立即关闭。',
         why:'Warning / High risk 时先只给风险判断，解析出的地址收进折叠区，用户需要时再展开核对全文；展开/收起是页面内次级信息的模式，tooltip 不做复杂交互，看完直接点空白处关闭。' },
   11: { dim:'区域一 Warning + 区域二 ③（C08 被剔除）。',
         type:'C07 域名含隐藏字符（用户粘贴的 b⚠inance.eth 在 b 与 inance 之间藏了一个零宽字符，可能仿冒 binance.eth）· C10 ENS 正向解析；风控同时返回了无交易记录（C08），但 Warning 时不显示。',
@@ -1396,7 +1396,7 @@ function createProto(container, cfg){
       else T.set(function(){ if (state.expanded && moreEl() === more) more.hidden = true; }, TIMING.fold);
     }
     if (!silent) log('expanded (More address info → entry row removed, no collapse)');
-    // v2.6 ⏳ 展开后重新计时 —— 待确认：a user expand restarts the 8s clock (reading time for the expanded info).
+    // v2.6 展开后重新计时（10-12 设计评审确认：用户展开后会期待读完内容）：a user expand restarts the 8s clock (reading time for the expanded info).
     //   silent = skin re-render (keeps the running clock); frozen deep-link never arms; hidden tooltip (compare row) has nothing to time.
     if (!silent && armAutoHide()) log('auto-hide restarted (' + (TIMING.autoHide / 1000) + 's from expand)');
     updateCompare(inst);
