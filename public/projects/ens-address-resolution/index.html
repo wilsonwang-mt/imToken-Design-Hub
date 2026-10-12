@@ -692,7 +692,7 @@ html,body{background:var(--hub-ground)}
     <div class="dim">
       <span class="no">分割线以上</span>
       <h2><span class="pill r1">区域一</span>判断辅助信息</h2>
-      <p>帮助用户评判这个地址有没有风险的输入，与区域二的解析事实分开承载。等级由风控系统返回，体验层只区分 Info / Warning / High risk；Warning / High risk 时不显示交易历史。区域一条目不带标题（Tag 已说明等级）；Warning / High risk 条目左侧有 3px 色条（橙 / 红）；Transaction Record 无色条、无标题，纯正文（色条 ⏳ 探索中，是「popover 内无彩色」原则的例外）。色条的另一个好处：多条 Warning 同时命中时上下排列即可，色条引导逐条阅读；「标题 + 副标题」方式在多条 warning 时标题会重复，难以处理。</p>
+      <p>帮助用户评判这个地址有没有风险的输入，与区域二的解析事实分开承载。等级由风控系统返回，体验层只区分 Info / Warning / High risk；Warning / High risk 时不显示交易历史。区域一条目不带标题（Tag 已说明等级）；Warning / High risk 条目左侧有 3px 色条（橙 / 红）；Transaction Record 无色条、无标题，纯正文（色条方案已在 10-12 设计评审会确认，是「popover 内无彩色」原则的例外）。色条的另一个好处：多条 Warning 同时命中时上下排列即可，色条引导逐条阅读；「标题 + 副标题」方式在多条 warning 时标题会重复，难以处理。</p>
       <ul class="lv">
         <li><span><b>Transaction Record</b>（交易历史）<small>Tag = Info 时展示：纯正文「You haven't transacted with this address before.」，无标题、无色条。无法检测是否有交易记录 → 不显示；检测到有交易记录 → 目前拿不到具体记录，也不显示（未来支持后同样在此区块显示）。</small></span><span class="tagx">Info</span></li>
         <li><span><b>Warning</b><small>可能存在风险，但未确认；橙色色条 + 正文常显，区域二折叠。</small></span><span class="tagx w">Warning</span></li>
