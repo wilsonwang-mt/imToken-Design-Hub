@@ -3,8 +3,17 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Prototype — 转账地址解析 Tooltip v2.8 · imToken UXD</title>
+<title>Prototype — 转账地址解析 Tooltip v2.9 · imToken UXD</title>
 <style>
+/* v2.9 变更（Wilson 2026-10-12）：Prototype 2 新增两个异常场景，排在场景 13 之后（PROTOS p2 = [7, 8, 9, 15, 13, 17, 18]）：
+   场景 17「解析未完成 → 顶部 Toast」：alice.eth（Ethereum）打字 → 1s 停顿 → spinner → 约 2.5s（TIMING.interrupt）后解析中断：
+   spinner 消失、无 Tag、无 Tooltip，屏幕顶部（状态栏下方、盖在导航栏区域上，水平居中）滑入 App 现有样式 Toast（白底胶囊 + 阴影 + 16px 信息图标 60%），
+   文案「Couldn't finish checking this address. Please try again.」，停留 3s（TIMING.toast）后淡出；Next 禁用；点输入框（= 重新编辑）重新触发解析。
+   场景 18「无效地址 → 输入框下方报错」：41 字符 hex（少一位）打字 → 1s 停顿 → 立即判定无效（不进入解析、不出 spinner）：无 Tag、无 Tooltip；
+   输入框下方 8px 一行 12px #F3636F 报错「Not a valid {chain} address or ENS name.」+ 12px 同色感叹号，输入框 1px #F3636F 描边；
+   Add to address book 隐藏，Amount 区随报错行下移 24px；Next 禁用。
+   场景卡 pill 新增两种：Toast（深色描边空心）/ Error（红底 20% 红字）；hash step=resolving（17 spinner）/ shown（17 冻结 Toast、18 报错）；
+   EXPLAIN 17·18 / Part 2 infographic「不出 Tooltip」补充 / hint（scene = 1…18）同步。 */
 /* v2.8 变更（设计评审反馈 2026-10-12）：C01「我的钱包」条目 label 改为「This device」（旧 label 已改），内容不变 =「{wallet} · {account}」
    （示例「DeFi Exploration · Account 01」）。CTX.C01.label / S2 Identity 行来源小字（取自 CTX label）/ Part 2 infographic ② / EXPLAIN 4 同步。
    中文对应「当前设备」（10-12）；作为 label 引用一律写「This device」。 */
@@ -171,6 +180,22 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
 .alert p{margin-top:10px;font-size:14px;line-height:18px;color:#475569}
 .alert .ok{margin-top:18px;width:100%;height:50px;border-radius:25px;background:var(--blue);color:#fff;font-size:16px;font-weight:500}
 
+/* v2.9 toast (S4 · 场景 17)：沿用 App 现有 Toast（Figma「Address saved」）——白底胶囊 + 阴影，12px #111D4A，16px 单色信息图标 60%；
+   位置 = 状态栏下方、盖在导航栏区域上，水平居中；单行不折行（max-width 359 = 屏宽 − 2×8）；滑入 200ms，停留 3s 后淡出 200ms */
+.toast{position:absolute;left:50%;top:56px;z-index:15;display:flex;align-items:center;gap:5px;width:max-content;max-width:359px;padding:8px 12px 8px 10px;border-radius:20px;white-space:nowrap;background:#fff;box-shadow:0 4px 16px rgba(17,29,74,.12),0 1px 3px rgba(17,29,74,.08);font-size:12px;font-weight:400;letter-spacing:-.1px;line-height:16px;color:var(--deep);opacity:0;transform:translate(-50%,-8px);transition:opacity 200ms var(--ease),transform 200ms var(--ease);pointer-events:none}
+.toast[hidden]{display:none}
+.toast.in{opacity:1;transform:translate(-50%,0)}
+.toast.out{opacity:0;transform:translate(-50%,0)}
+.toast .ic{flex:0 0 16px;width:16px;height:16px;display:block}
+/* v2.9 field error (S5 · 场景 18)：输入框下方 8px 一行 12px #F3636F + 12px 同色感叹号；输入框 1px #F3636F 描边；下方区域随报错行下移 24px */
+.addr.invalid{box-shadow:inset 0 0 0 1px var(--risk)}
+.field-err{position:absolute;left:32px;top:205px;width:311px;display:flex;align-items:center;gap:4px;font-size:12px;line-height:16px;color:var(--risk)}
+.field-err[hidden]{display:none}
+.addr.tall ~ .field-err{top:226px}
+.field-err .ic{flex:0 0 12px;width:12px;height:12px;display:block}
+.addr.invalid ~ .below{top:234px}
+.addr.tall.invalid ~ .below{top:255px}
+
 /* ============================================================
    2. Tooltip — wrapper geometry (shared)
    ============================================================ */
@@ -323,6 +348,8 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
 .scene-card .lv-pill.lv-high{background:var(--risk20);color:var(--risk)}
 .scene-card .lv-pill.lv-none{background:transparent;border:1px dashed var(--deep20);color:var(--deep40)}
 .scene-card .lv-pill.lv-error{background:var(--deep);color:#fff}
+.scene-card .lv-pill.lv-toast{background:transparent;border:1px solid var(--deep);color:var(--deep)}   /* v2.9: 场景 17 顶部 Toast */
+.scene-card .lv-pill.lv-invalid{background:var(--risk20);color:var(--risk)}                         /* v2.9: 场景 18 输入框下方报错（Error） */
 .scene-card .scene-text{flex:1 1 auto;min-width:0}
 .scene-card .name{display:block;font-size:14px;font-weight:500;line-height:20px;color:var(--deep)}
 .scene-card .meta{display:block;margin-top:2px;font-size:12px;line-height:16px;color:var(--deep60)}
@@ -504,7 +531,7 @@ html,body{background:var(--hub-ground)}
 </style>
 </head>
 <body class="skin-s1">
-<div class="ver" id="ver">v2.8</div>
+<div class="ver" id="ver">v2.9</div>
 <!-- ===================== INTRO · 解析对象与信息架构（2026-10-08 团队讨论口径） ===================== -->
 
 <div class="ambient" aria-hidden="true"><i class="b1"></i><i class="b2"></i><i class="b3"></i></div>
@@ -521,7 +548,7 @@ html,body{background:var(--hub-ground)}
       <div class="part-head">
         <p class="eyebrow">Part 1 · Prototype</p>
         <h2 id="part1-title">Prototype 与场景切换</h2>
-        <p class="sub">两组可操作的 imToken 转账页原型：输入地址 → 解析 → Tag 出现 → Tooltip 自动唤起。每组一台手机 + 一个场景面板，点卡片即可切换场景。Prototype 1 收录最常见的地址解析，按「粘贴哈希地址 / 输入 ENS 域名」分两组；Prototype 2 收录特定网络的专项信息、多信息同现与无法解析。</p>
+        <p class="sub">两组可操作的 imToken 转账页原型：输入地址 → 解析 → Tag 出现 → Tooltip 自动唤起。每组一台手机 + 一个场景面板，点卡片即可切换场景。Prototype 1 收录最常见的地址解析，按「粘贴哈希地址 / 输入 ENS 域名」分两组；Prototype 2 收录特定网络的专项信息、多信息同现，以及无法解析、解析中断、无效地址三种异常。</p>
       </div>
 
       <!-- v2.0: 手机 DOM 模板——由 createProto() 克隆两份；脚本用 data-ref 取引用，id 由实例前缀（p1- / p2-）生成，避免重复 id -->
@@ -554,6 +581,12 @@ html,body{background:var(--hub-ground)}
           <button class="tag" data-ref="tag" hidden aria-expanded="false" type="button"></button>
         </div>
         <svg class="addrbook" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="9.25" stroke="#111D4A" stroke-width="1.5"/><circle cx="10" cy="8" r="3" stroke="#111D4A" stroke-width="1.5"/><path d="M4.2 16.2c1.2-2.4 3.3-3.7 5.8-3.7s4.6 1.3 5.8 3.7" stroke="#111D4A" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+
+      <!-- v2.9 S5 · 无效地址：输入框下方 8px 报错行（12px #F3636F + 12px 同色感叹号） -->
+      <div class="field-err" data-ref="fieldErr" role="alert" hidden>
+        <svg class="ic" viewBox="0 0 12 12" fill="none" aria-hidden="true"><circle cx="6" cy="6" r="5.4" stroke="#F3636F" stroke-width="1.2"/><path d="M6 3.4v3.2" stroke="#F3636F" stroke-width="1.2" stroke-linecap="round"/><circle cx="6" cy="8.5" r=".7" fill="#F3636F"/></svg>
+        <span data-ref="fieldErrText"></span>
       </div>
 
       <!-- tooltip (popover) -->
@@ -599,6 +632,12 @@ html,body{background:var(--hub-ground)}
         <div class="home-ind"></div>
       </div>
 
+      <!-- v2.9 S4 · 解析中断：顶部 Toast（App 现有样式；状态栏下方、盖在导航栏区域上，水平居中；停留 3s 后淡出） -->
+      <div class="toast" data-ref="toast" role="status" aria-live="polite" hidden>
+        <svg class="ic" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="6.25" stroke="#111D4A" stroke-opacity=".6" stroke-width="1.5"/><path d="M8 7.25v4" stroke="#111D4A" stroke-opacity=".6" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="4.9" r=".9" fill="#111D4A" fill-opacity=".6"/></svg>
+        <span data-ref="toastText"></span>
+      </div>
+
       <!-- S3 Alert -->
       <div class="alert-overlay" data-ref="alert" hidden>
         <div class="alert" role="alertdialog" data-ref="alertBox">
@@ -625,7 +664,7 @@ html,body{background:var(--hub-ground)}
       <!-- v2.0: 两个 Prototype 区由 PROTOS 渲染（各自一台手机 + 一个场景面板） -->
       <div class="protos" id="protos"></div>
 
-      <p class="hint">直达：<code>#scene=10&amp;step=expanded</code>（scene = 1…16 · step = typed / resolving / shown / expanded / dismissed · 场景属于哪个 Prototype 就在哪台手机上播放并选中对应 Tab / 卡片）· 点手机空白处只关闭该台的 tooltip · 点 Tag 再次唤起（回到默认收起态） · Esc 关闭 · Tooltip 出现后 8 秒自动收起（Info / Warning / High risk 一致；点 Tag 再次唤起重新计 8 秒；展开时重新计 8 秒（10-12 评审确认）；step 直达为冻结态，不自动收起） · 折叠入口点击展开、展开后不可收起 · C08「Transaction Record」只在 Tag = Info 时出现在区域一（分割线以上，纯正文，不带标题、不带色条——色条只用于 Warning / High risk）；Warning / High risk 时不显示、不进折叠区 · ENS 正向解析条目的 label = 用户输入的域名（含零宽字符时在其位置插入橙色三角感叹号，输入框里不加），地址全文与其他内容同字体字号，可换行 · 反向解析 label「ENS name」</p>
+      <p class="hint">直达：<code>#scene=10&amp;step=expanded</code>（scene = 1…18 · step = typed / resolving / shown / expanded / dismissed · 场景属于哪个 Prototype 就在哪台手机上播放并选中对应 Tab / 卡片；场景 17 step=resolving 看 spinner、step=shown 冻结顶部 Toast；场景 18 step=shown 看输入框下方报错）· 点手机空白处只关闭该台的 tooltip · 点 Tag 再次唤起（回到默认收起态） · Esc 关闭 · Tooltip 出现后 8 秒自动收起（Info / Warning / High risk 一致；点 Tag 再次唤起重新计 8 秒；展开时重新计 8 秒（10-12 评审确认）；step 直达为冻结态，不自动收起） · 折叠入口点击展开、展开后不可收起 · C08「Transaction Record」只在 Tag = Info 时出现在区域一（分割线以上，纯正文，不带标题、不带色条——色条只用于 Warning / High risk）；Warning / High risk 时不显示、不进折叠区 · ENS 正向解析条目的 label = 用户输入的域名（含零宽字符时在其位置插入橙色三角感叹号，输入框里不加），地址全文与其他内容同字体字号，可换行 · 反向解析 label「ENS name」 · 场景 17 解析中断：spinner 约 2.5 秒后顶部 Toast，停留 3 秒淡出，点输入框（重新编辑）重新触发解析 · 场景 18 无效地址：不解析、不出 spinner，输入框下方报错 + 红描边</p>
 
       <!-- ===================== COMPARE (S1 | S2, static · 隐藏，跟随最近操作的那台手机) ===================== -->
       <section class="compare" id="compare" aria-label="S1 / S2 对比">
@@ -683,7 +722,7 @@ html,body{background:var(--hub-ground)}
           <span class="ig-chip"><span class="tg">Info</span>Transaction Record（若检测到无交易记录）</span>
           <span class="ig-chip"><span class="tg w">Warning</span>Warning 条目，不显示交易历史</span>
           <span class="ig-chip"><span class="tg h">High risk</span>High risk 条目，不显示交易历史</span>
-        </div></div></div>
+        </div><p style="margin-top:6px">其他不出 Tooltip 的情况：无法解析 → Alert；解析中断 → 顶部 Toast；无效地址 → 输入框下方报错。</p></div></div>
       <div class="ig-rule r2"><span class="k">折叠</span><div><b>Warning / High risk 时区域二默认折叠</b><p>点「More address info (N)」展开；展开后入口行消失，不提供手动收起。Info 时不折叠，两区并列、中间一条分割线。</p></div></div>
       <div class="ig-rule r2"><span class="k">排序</span><div><b>区域二固定顺序 ① → ② → ③</b><p>专项信息识别只出现一条且在最前；地址标记两种可同现、地址本优先；ENS 解析永远在最后。</p></div></div>
       <div class="ig-rule rx"><span class="k">唤起 / 收起</span><div><b>统一 8 秒自动收起</b><p>解析完成自动唤起一次；8 秒后自动收起（Info / Warning / High risk 一致），点空白或与其他控件交互立即收起。点 Tag 可再次唤起。</p><p>点「More address info」展开时重新计 8 秒，给展开后的阅读留出时间（10-12 评审确认）。</p></div></div>
@@ -836,6 +875,8 @@ var TIMING = {
   char: 30, charFast: 12, pause: 1000, resolve: 750,
   tagToTip: 160, tipIn: 160, tipOut: REDUCED ? 0 : 120,
   autoHide: 8000,           // v2.6（设计评审 2026-10-12）：Info / Warning / High risk 统一 8 秒自动收起（取代已作废的 Info-only infoAuto）
+  interrupt: 2500,          // v2.9 场景 17：spinner 转约 2.5 秒后解析中断
+  toast: 3000, toastOut: REDUCED ? 0 : 200,   // v2.9 场景 17：顶部 Toast 停留 3 秒后淡出（淡出 200ms 后 display:none）
   fold: REDUCED ? 0 : 160    // v1.12: 入口行 32→0 / 折叠区 0fr→1fr 的过渡时长（= --d-fold），过渡结束后入口行 display:none
   // v2.0: autoplay / autoExpand 已删除（「自动播放全部」开关移除）
 };
@@ -915,8 +956,14 @@ var SCENES = [
   { n:15, title:'Tron · alice.eth → 未激活 + 地址本', meta:'C03 + C09 + C10 · 三者同现', chain:'tron', input:'alice.eth', ctx:[{id:'C10', hex:TRON},{id:'C09', nickname:'Binance Deposit'},{id:'C03', amount:'0.1 TRX'}] },
   // v1.12 Wilson：多条 Warning 上下排列，色条引导阅读（标题 + 副标题方式在多条 warning 时难处理）
   // v2.5：场景 16 输入 = bin + U+200B（零宽空格）+ ance.eth（原 alíce.eth 是同形字、不是零宽字符，与 C07 不符）；与场景 11 的 b + U+200B + inance.eth 同属仿冒 binance.eth，解析到同一地址 HEX.s11
-  { n:16, title:'Warning × 2 · warning 地址 + ENS 零宽字符', meta:'C06 + C07 + C10 · 两条 warning 叠放', chain:'eth', input:'bin\u200Bance.eth', ctx:[{id:'C10', hex:HEX.s11},{id:'C06'},{id:'C07'}] }
+  { n:16, title:'Warning × 2 · warning 地址 + ENS 零宽字符', meta:'C06 + C07 + C10 · 两条 warning 叠放', chain:'eth', input:'bin\u200Bance.eth', ctx:[{id:'C10', hex:HEX.s11},{id:'C06'},{id:'C07'}] },
+  // v2.9 Wilson（2026-10-12）：两个异常场景，都不出 Tooltip。17 = 解析中断 → 顶部 Toast（输入与场景 5 相同，故意复用：同一个域名，这次解析没跑完）；
+  //      18 = 无效地址（HEX_ALICE 少最后一位，41 字符）→ 不进入解析，输入框下方报错
+  { n:17, title:'解析未完成 → 顶部 Toast',     meta:'S4 · 顶部 Toast，无 Tooltip',     chain:'eth', input:'alice.eth', interrupted:true, ctx:[] },
+  { n:18, title:'无效地址 → 输入框下方报错',   meta:'S5 · 输入框下方报错，无 Tooltip', chain:'eth', input:HEX_ALICE.slice(0, -1), invalid:true, ctx:[] }
 ];
+var TOAST_TEXT = "Couldn't finish checking this address. Please try again.";   // v2.9 S4 · 场景 17（地址识别未完成，请重试）
+function invalidText(chainKey){ return 'Not a valid ' + CHAINS[chainKey].sub + ' address or ENS name.'; }   // v2.9 S5 · 场景 18（{chain} = 当前链名）
 
 /* ---------- DOM (page-level) ---------- */
 function $(id){ return document.getElementById(id); }
@@ -1144,8 +1191,8 @@ var PROTOS = [
       { key:'hash', label:'粘贴哈希地址', scenes:[1, 2, 3, 4, 14, 6, 12] },
       { key:'ens',  label:'输入 ENS 域名', scenes:[5, 10, 11, 16] }
     ] },
-  { key:'p2', eyebrow:'Prototype 2 · 专项信息、边界与异常', title:'专项信息识别 · 边界 · 异常', sub:'特定网络的地址解析、多信息同现、无法解析',
-    scenes:[7, 8, 9, 15, 13] }
+  { key:'p2', eyebrow:'Prototype 2 · 专项信息、边界与异常', title:'专项信息识别 · 边界 · 异常', sub:'特定网络的地址解析、多信息同现、无法解析、解析中断、无效地址',
+    scenes:[7, 8, 9, 15, 13, 17, 18] }   // v2.9: 17 / 18 排在场景 13 之后
 ];
 
 /* 每个场景的解释卡（口径来自 01 section + 场景数据）：dim 解析维度 / type 解析类型 / rule 展示规则 / why 为什么左侧这样显示 */
@@ -1213,15 +1260,24 @@ var EXPLAIN = {
   16: { dim:'区域一 Warning × 2 + 区域二 ③。',
         type:'C06 Warning 地址（近期活动异常）· C07 域名含隐藏字符（bin⚠ance.eth，bin 与 ance 之间藏了一个零宽字符，可能仿冒 binance.eth）· C10 ENS 正向解析。',
         rule:'Tag = Warning；两条 warning 上下排列，各自一根橙色色条，不带标题；区域二折叠为「More address info (1)」，展开后不可收起；C10 label = 粘贴的域名，零宽字符位置插入橙色三角感叹号（bin⚠ance.eth）；8 秒后自动收起。',
-        why:'多条 warning 时色条天然把每一条分开并引导阅读；如果用「标题 + 副标题」，两条都叫 Warning，标题会重复、层级会乱——这是采用色条的一个直接好处。' }
+        why:'多条 warning 时色条天然把每一条分开并引导阅读；如果用「标题 + 副标题」，两条都叫 Warning，标题会重复、层级会乱——这是采用色条的一个直接好处。' },
+  // v2.9 Wilson（2026-10-12）：两个异常场景（不出 Tooltip）
+  17: { dim:'Unhappy Path · 不进 Tooltip（解析没有完成，两个区域都不产生内容）。',
+        type:'alice.eth 在 Ethereum 上的解析中途中断（超时 / 网络异常），没有拿到结果。',
+        rule:'解析中 Tag 位置只显示 spinner，约 2.5 秒后中断：spinner 消失、无 Tag、无 Tooltip，屏幕顶部滑入 Toast「Couldn\'t finish checking this address. Please try again.」（地址识别未完成，请重试），停留 3 秒后淡出；Next 不可用，重新编辑输入框会重新触发解析。',
+        why:'解析中断是暂时性的、重试即可，既不是地址事实也不需要阻断，所以用会自动消失的顶部 Toast 轻提示，而不是 Alert 或 Tooltip。' },
+  18: { dim:'Unhappy Path · 不进 Tooltip（输入本身无效，不进入解析）。',
+        type:'0x9b57…71f7 少了一位（41 字符），既不是有效的 Ethereum 地址，也不是 ENS 域名。',
+        rule:'停顿 1 秒后立即判定无效（不出 spinner）：无 Tag、无 Tooltip，输入框加 1px 红色描边，下方 8px 一行红色报错「Not a valid Ethereum address or ENS name.」（无法识别：不是有效的 Ethereum 地址或 ENS 域名）；隐藏「Add to address book」，Amount 区随报错行下移，Next 不可用。',
+        why:'格式错误是用户当场就能改的输入问题，报错贴在输入框下方就近提示；没有解析结果，也就没有 Tooltip 可显示。' }
 };
 var EX_KEYS = [['dim','解析维度'], ['type','解析类型'], ['rule','展示规则'], ['why','为什么左侧这样显示']];
 
-function levelOf(scene){ return scene.unresolved ? 'error' : buildModel(scene).level; }
+function levelOf(scene){ return scene.unresolved ? 'error' : scene.interrupted ? 'toast' : scene.invalid ? 'invalid' : buildModel(scene).level; }   // v2.9: toast / invalid
 function protoScenes(cfg){ return cfg.tabs ? cfg.tabs.reduce(function(a, t){ return a.concat(t.scenes); }, []) : cfg.scenes.slice(); }
-var PILL_TEXT = { info:'Info', warning:'Warning', high:'High risk', none:'无 Tag', error:'Alert' };
+var PILL_TEXT = { info:'Info', warning:'Warning', high:'High risk', none:'无 Tag', error:'Alert', toast:'Toast', invalid:'Error' };
 var CARD_CHEV = '<svg class="chev" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="m6 3.5 4.5 4.5L6 12.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-// v2.0 场景卡片：左 Tag 风格 pill（Info 灰 / Warning 橙 / High risk 红 / 无 Tag 虚线 / Alert 黑）+ 标题 14 Medium + 12 meta + 右 chevron
+// v2.0 场景卡片：左 Tag 风格 pill（Info 灰 / Warning 橙 / High risk 红 / 无 Tag 虚线 / Alert 黑 / v2.9 Toast 深色描边空心 / Error 红底 20% 红字）+ 标题 14 Medium + 12 meta + 右 chevron
 function sceneCardHTML(n, tabKey){
   var i = SCENES.findIndex(function(s){ return s.n === n; }); if (i < 0) return '';
   var s = SCENES[i], lv = levelOf(s);
@@ -1246,6 +1302,7 @@ function createProto(container, cfg){
   var state = {
     key:key, sceneIndex:-1, scene:null, phase:'idle', level:'none',
     tooltipVisible:false, expanded:false, frozen:false, sceneStart:0, log:[], model:null,
+    toastVisible:false, fieldError:false,   // v2.9: 场景 17 顶部 Toast / 场景 18 输入框下方报错
     tab: cfg.tabs ? cfg.tabs[0].key : null, started:false
   };
   var inst = { key:key, config:cfg, state:state, el:el, scenes:protoScenes(cfg) };
@@ -1346,6 +1403,39 @@ function createProto(container, cfg){
   }
   function setNext(on){ el.nextBtn.classList.toggle('on', !!on); }
 
+  /* ---- v2.9 S4 · 顶部 Toast（场景 17 解析中断）：滑入 → 停留 TIMING.toast（3s）→ 淡出 TIMING.toastOut 后 display:none；冻结态（hash 直达）保持显示 ---- */
+  function showToast(){
+    el.toastText.textContent = TOAST_TEXT;
+    el.toast.classList.remove('out');
+    el.toast.hidden = false;
+    void el.toast.offsetWidth;   // reflow so the slide-in runs
+    el.toast.classList.add('in');
+    state.toastVisible = true;
+    log('toast shown (top)');
+    if (!state.frozen) T.set(function(){ hideToast((TIMING.toast / 1000) + 's'); }, TIMING.toast);
+  }
+  function hideToast(reason){
+    if (!state.toastVisible) return;
+    state.toastVisible = false;
+    el.toast.classList.remove('in');
+    el.toast.classList.add('out');
+    log('toast hidden' + (reason ? ' (' + reason + ')' : ''));
+    T.set(function(){ if (state.toastVisible) return; el.toast.hidden = true; el.toast.classList.remove('out'); }, TIMING.toastOut);
+  }
+  /* ---- v2.9 S5 · 输入框下方报错（场景 18 无效地址）：报错行 + 输入框红描边；Add to address book 隐藏，下方区域下移 24px（CSS .addr.invalid ~ .below） ---- */
+  function showFieldError(scene){
+    el.fieldErrText.textContent = invalidText(scene.chain);
+    el.fieldErr.hidden = false;
+    el.addr.classList.add('invalid');
+    setAddbar(false);
+    state.fieldError = true;
+  }
+  function clearFieldError(){
+    el.fieldErr.hidden = true; el.fieldErrText.textContent = '';
+    el.addr.classList.remove('invalid');
+    state.fieldError = false;
+  }
+
   /* ---- tooltip visibility ---- */
   function showTooltip(reason){
     if (state.level === 'none' || state.tooltipVisible) return;
@@ -1426,6 +1516,8 @@ function createProto(container, cfg){
     el.ttContent.innerHTML = '';
     el.spinner.hidden = true; setTag('none'); el.caret.hidden = true;
     el.alert.hidden = true;
+    state.toastVisible = false; el.toast.hidden = true; el.toast.classList.remove('in', 'out');   // v2.9
+    clearFieldError();                                                                           // v2.9
     setInput(''); setNext(false);
   }
   function prepare(index, instant){
@@ -1436,7 +1528,8 @@ function createProto(container, cfg){
     state.sceneIndex = index; state.scene = scene; state.sceneStart = now();
     state.model = buildModel(scene);
     applyChain(scene.chain);
-    setAddbar(!scene.ctx.some(function(c){ return c.id === 'C09' || c.id === 'C01'; }));
+    // v2.9: 无效地址（场景 18）不提供「Add to address book」——整场隐藏，报错出现时 Amount 区只随报错行下移
+    setAddbar(!scene.invalid && !scene.ctx.some(function(c){ return c.id === 'C09' || c.id === 'C01'; }));
     setActiveScene(index);
     if (writeHash && window.history && typeof history.replaceState === 'function'){
       try { history.replaceState(null, '', '#scene=' + scene.n); } catch (e) {}
@@ -1450,6 +1543,14 @@ function createProto(container, cfg){
     el.caret.hidden = true;
     if (scene.unresolved){
       state.phase = 'error'; log('unresolved → S3 Alert'); el.alert.hidden = false; return;
+    }
+    // v2.9: 解析中断（场景 17）→ 无 Tag、无 Tooltip、Next 禁用；Toast 由调用方（play / jumpTo / 重新编辑）唤起
+    if (scene.interrupted){
+      state.phase = 'interrupted'; setNext(false); log('interrupted → no tag, no tooltip (S4 top toast)'); return;
+    }
+    // v2.9: 无效地址（场景 18）→ 不进入解析：无 Tag、无 Tooltip、Next 禁用，输入框下方报错 + 红描边
+    if (scene.invalid){
+      state.phase = 'invalid'; setNext(false); showFieldError(scene); log('invalid → inline error under the input (S5, no resolve)'); return;
     }
     var m = state.model; state.level = m.level; setNext(true);
     if (m.level === 'none'){ state.phase = 'resolved'; log('resolved(none) → S2 no tag'); return; }
@@ -1466,19 +1567,32 @@ function createProto(container, cfg){
     function step(){
       i++; setInput(chars.slice(0, i).join(''));
       if (i < chars.length) T.set(step, per);
-      else { state.phase = 'paused'; log('pause ' + TIMING.pause + 'ms'); T.set(resolving, TIMING.pause); }
-    }
-    function resolving(){
-      state.phase = 'resolving'; log('resolving (spinner ' + TIMING.resolve + 'ms)');
-      el.spinner.hidden = false;
-      T.set(function(){
-        resolveNow(scene);
-        if (state.phase === 'resolved' && state.level !== 'none'){
-          T.set(function(){ showTooltip('auto'); }, TIMING.tagToTip);
-        }
-      }, TIMING.resolve);
+      else { state.phase = 'paused'; log('pause ' + TIMING.pause + 'ms'); T.set(function(){ afterPause(scene); }, TIMING.pause); }
     }
     T.set(step, per);
+  }
+  // 停顿结束：无效地址（场景 18）立即判定、不进入解析；其余进入解析（spinner），场景 17 转 TIMING.interrupt 后中断 → 顶部 Toast
+  function afterPause(scene){
+    if (scene.invalid){ log('validate → invalid (no resolving, no spinner)'); resolveNow(scene); return; }
+    var dur = scene.interrupted ? TIMING.interrupt : TIMING.resolve;
+    state.phase = 'resolving'; log('resolving (spinner ' + dur + 'ms)');
+    el.spinner.hidden = false;
+    T.set(function(){
+      resolveNow(scene);
+      if (state.phase === 'interrupted'){ showToast(); return; }
+      if (state.phase === 'resolved' && state.level !== 'none'){
+        T.set(function(){ showTooltip('auto'); }, TIMING.tagToTip);
+      }
+    }, dur);
+  }
+  // v2.9 场景 17：解析中断后点输入框 = 重新编辑 → 收起 Toast，停顿 1s 后重新触发解析（同一数据，仍会中断，演示「可重试」）
+  function reEdit(){
+    var scene = state.scene;
+    if (!scene || !scene.interrupted || state.phase !== 'interrupted') return;
+    hideToast('input edited');
+    state.phase = 'paused'; el.caret.hidden = false;
+    log('input edited → re-resolve after ' + TIMING.pause + 'ms');
+    T.set(function(){ afterPause(scene); }, TIMING.pause);
   }
   function jumpTo(index, step){
     var scene = prepare(index, true);
@@ -1486,8 +1600,12 @@ function createProto(container, cfg){
     var order = ['idle','typed','resolving','dismissed','shown','expanded'];
     var k = order.indexOf(step); if (k < 0) k = order.indexOf('shown');
     if (k >= 1){ setInput(scene.input); state.phase = 'typed'; log('typing (instant)'); el.caret.hidden = false; }
-    if (k === 2){ el.spinner.hidden = false; state.phase = 'resolving'; log('resolving'); return; }
+    if (k === 2){
+      if (scene.invalid){ log('(invalid input never enters resolving — no spinner)'); return; }   // v2.9 场景 18
+      el.spinner.hidden = false; state.phase = 'resolving'; log('resolving'); return;
+    }
     if (k >= 3){ resolveNow(scene); }
+    if (k >= 4 && state.phase === 'interrupted'){ showToast(); }   // v2.9 场景 17：冻结的顶部 Toast（保持显示）
     if (k >= 4 && state.level !== 'none'){ showTooltip('instant'); }
     if (k >= 5) expand(true);   // v1.12: instant — entry row removed without the 160ms transition
     if (k === 3 && state.level !== 'none') log('(tooltip not shown — jump to dismissed)');
@@ -1539,6 +1657,7 @@ function createProto(container, cfg){
   });
   el.tooltip.addEventListener('click', function(ev){ ev.stopPropagation(); });
   el.alertOk.addEventListener('click', function(ev){ ev.stopPropagation(); el.alert.hidden = true; log('alert dismissed (Understand)'); });
+  el.addr.addEventListener('click', function(){ reEdit(); });   // v2.9: 场景 17 解析中断后点输入框 = 重新编辑 → 重新触发解析
 
   if (cfg.tabs) setTab(state.tab, true);
 
@@ -1546,7 +1665,8 @@ function createProto(container, cfg){
   inst.setTab = setTab; inst.rerender = rerender; inst.has = has; inst.firstIndex = firstIndex;
   inst.getState = function(){
     return { key:key, phase:state.phase, level:state.level, tooltipVisible:state.tooltipVisible, expanded:state.expanded, sceneIndex:state.sceneIndex,
-             log:state.log.slice(), skin:SKIN, compare:COMPARE, tab:state.tab, started:state.started };
+             log:state.log.slice(), skin:SKIN, compare:COMPARE, tab:state.tab, started:state.started,
+             toastVisible:state.toastVisible, fieldError:state.fieldError };
   };
   return inst;
 }
