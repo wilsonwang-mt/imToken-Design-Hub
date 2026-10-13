@@ -3,8 +3,17 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Prototype — 转账地址解析 Tooltip v2.9 · imToken UXD</title>
+<title>Prototype — 转账地址解析 Tooltip v3.0 · imToken UXD</title>
 <style>
+/* v3.0 变更（Wilson 2026-10-13）：手机原型新增两组页面级切换，放在 Part 1 标题下方：
+   ① 语言 EN / 简中；② 文案 设计 / 线上。文案全部集中到脚本里的 STR 字典，每条都标明来源：
+   - 转账页框架（导航标题、To、placeholder、Amount、Memo、Miner Fee、Standard、Refresh、Advanced、Next、Add to address book）
+     一律取自 consenlabs/token-v2 master 的 en-US / zh-CN 原文（key 见 STR），两种模式相同；
+   - 设计模式：设计新写的 Tooltip / Tag / 异常文案用设计稿英文；中文优先用上下文文档文案表的简中，表里没有的为待定草稿
+     （简中模式下以橙色虚线下划线标出）；无法解析 Alert 的正文与按钮取自 #6330 分支（未合并）的 key；
+   - 线上模式：只替换文字，排版仍是设计稿；每条换成 master 上的对应文案；线上没有对应文案的位置仍显示设计文案，并以灰色虚线下划线标出。
+   Part 1 底部新增「文案来源对照」表（由 STR 生成）；hash 支持 lang=zh / copy=online；window.proto 新增 setLang / setCopy / STR。
+   默认（EN + 设计）与 v2.9 显示一致，仅 placeholder 改为仓库原文「Ethereum Address」、「Refresh in 2s」改为仓库原文「Refresh in 2」。 */
 /* v2.9 变更（Wilson 2026-10-12）：Prototype 2 新增两个异常场景，排在场景 13 之后（PROTOS p2 = [7, 8, 9, 15, 13, 17, 18]）：
    场景 17「解析未完成 → 顶部 Toast」：alice.eth（Ethereum）打字 → 1s 停顿 → spinner → 约 2.5s（TIMING.interrupt）后解析中断：
    spinner 消失、无 Tag、无 Tooltip，屏幕顶部（状态栏下方、盖在导航栏区域上，水平居中）滑入 App 现有样式 Toast（白底胶囊 + 阴影 + 16px 信息图标 60%），
@@ -313,6 +322,31 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
 .seg{display:inline-flex;background:var(--deep08);border-radius:10px;padding:3px;gap:2px}
 .seg button{padding:6px 12px;border-radius:8px;font-size:13px;color:var(--deep60)}
 .seg button.is-on{background:#fff;color:var(--deep);font-weight:500;box-shadow:0 1px 3px rgba(17,29,74,.12)}
+/* v3.0: 语言 / 文案切换 + 文案标记 + 文案来源对照表 */
+.copy-row{margin-top:20px;margin-bottom:28px;gap:10px 16px}
+.copy-row .grp{display:inline-flex;align-items:center;gap:8px}
+.copy-row .lbl{width:auto}
+.copy-note{flex:1 1 280px;font-size:12px;line-height:17px;color:var(--deep60)}
+.copy-note b{color:var(--deep);font-weight:500}
+.mk-online{text-decoration:underline dotted rgba(17,29,74,.55);text-decoration-thickness:1.5px;text-underline-offset:3px}
+.mk-draft{text-decoration:underline dotted #FC8C4D;text-decoration-thickness:1.5px;text-underline-offset:3px}
+.copy-src{margin-top:28px;border-top:1px solid var(--deep08);padding-top:20px}
+.copy-src summary{cursor:pointer;font-size:15px;font-weight:600;color:var(--deep);list-style-position:outside}
+.copy-src summary .cnt{font-weight:400;font-size:12px;color:var(--deep60);margin-left:8px}
+.copy-src .cs-desc{font-size:12px;line-height:18px;color:var(--deep60);margin:10px 0 12px;max-width:880px}
+.copy-src .cs-wrap{overflow-x:auto;border:1px solid var(--deep08);border-radius:12px;background:#fff}
+.copy-src table{width:100%;min-width:1100px;border-collapse:collapse;font-size:12px;line-height:17px;color:var(--deep)}
+.copy-src th{text-align:left;font-weight:500;color:var(--deep60);background:rgba(17,29,74,.03);padding:8px 10px;border-bottom:1px solid var(--deep08);white-space:nowrap}
+.copy-src td{padding:8px 10px;border-bottom:1px solid var(--deep08);vertical-align:top}
+.copy-src tr:last-child td{border-bottom:0}
+.copy-src td.grp{font-family:var(--mono);font-size:11px;color:var(--deep60);white-space:nowrap}
+.copy-src td.nm{font-weight:500;white-space:nowrap}
+.copy-src td.na{color:var(--deep60)}
+.copy-src code{font-family:var(--mono);font-size:11px;background:var(--deep08);padding:0 4px;border-radius:4px;word-break:break-all}
+.copy-src .src{display:block;margin-top:3px;font-size:11px;color:var(--deep60)}
+.copy-src .src.draft{color:#C9601F}
+.copy-src .note{display:block;margin-top:3px;font-size:11px;color:var(--deep60)}
+.copy-src th.cur,.copy-src td.cur{background:rgba(0,127,255,.06)}
 .skin-note{margin-top:8px;font-size:12px;color:var(--warn);background:var(--warn20);padding:6px 10px;border-radius:8px}
 .skin-note[hidden]{display:none}
 .btn{padding:8px 14px;border-radius:10px;background:var(--blue);color:#fff;font-size:13px;font-weight:500}
@@ -531,7 +565,7 @@ html,body{background:var(--hub-ground)}
 </style>
 </head>
 <body class="skin-s1">
-<div class="ver" id="ver">v2.9</div>
+<div class="ver" id="ver">v3.0</div>
 <!-- ===================== INTRO · 解析对象与信息架构（2026-10-08 团队讨论口径） ===================== -->
 
 <div class="ambient" aria-hidden="true"><i class="b1"></i><i class="b2"></i><i class="b3"></i></div>
@@ -549,6 +583,23 @@ html,body{background:var(--hub-ground)}
         <p class="eyebrow">Part 1 · Prototype</p>
         <h2 id="part1-title">Prototype 与场景切换</h2>
         <p class="sub">两组可操作的 imToken 转账页原型：输入地址 → 解析 → Tag 出现 → Tooltip 自动唤起。每组一台手机 + 一个场景面板，点卡片即可切换场景。Prototype 1 收录最常见的地址解析，按「粘贴哈希地址 / 输入 ENS 域名」分两组；Prototype 2 收录特定网络的专项信息、多信息同现，以及无法解析、解析中断、无效地址三种异常。</p>
+      </div>
+
+      <!-- v3.0: 语言 / 文案切换（页面级，对两台手机都生效） -->
+      <div class="row copy-row" id="copyRow">
+        <div class="grp"><span class="lbl">语言</span>
+          <div class="seg" role="radiogroup" aria-label="手机原型语言">
+            <button type="button" class="is-on" data-lang="en" role="radio" aria-checked="true">EN</button>
+            <button type="button" data-lang="zh" role="radio" aria-checked="false">简中</button>
+          </div>
+        </div>
+        <div class="grp"><span class="lbl">文案</span>
+          <div class="seg" role="radiogroup" aria-label="文案来源">
+            <button type="button" class="is-on" data-copy="design" role="radio" aria-checked="true">设计</button>
+            <button type="button" data-copy="online" role="radio" aria-checked="false">线上</button>
+          </div>
+        </div>
+        <p class="copy-note" id="copyNote"></p>
       </div>
 
       <!-- v2.0: 手机 DOM 模板——由 createProto() 克隆两份；脚本用 data-ref 取引用，id 由实例前缀（p1- / p2-）生成，避免重复 id -->
@@ -571,11 +622,11 @@ html,body{background:var(--hub-ground)}
         <svg class="scan" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M2.5 7V4.5a2 2 0 0 1 2-2H7M13 2.5h2.5a2 2 0 0 1 2 2V7M17.5 13v2.5a2 2 0 0 1-2 2H13M7 17.5H4.5a2 2 0 0 1-2-2V13M2.5 10h15" stroke="#111D4A" stroke-width="1.5" stroke-linecap="round"/></svg>
       </div>
 
-      <div class="to-label">To</div>
+      <div class="to-label" data-i18n="to">To</div>
 
       <!-- address input -->
       <div class="addr" data-ref="addr">
-        <div class="addr-text" data-ref="addrText"><span class="ph" data-ref="addrPh">Ethereum address</span><span data-ref="addrVal"></span><span class="caret" data-ref="caret" hidden></span></div>
+        <div class="addr-text" data-ref="addrText"><span class="ph" data-ref="addrPh">Ethereum Address</span><span data-ref="addrVal"></span><span class="caret" data-ref="caret" hidden></span></div>
         <div class="tagslot" data-ref="tagSlot">
           <span class="spinner" data-ref="spinner" hidden aria-label="Resolving"></span>
           <button class="tag" data-ref="tag" hidden aria-expanded="false" type="button"></button>
@@ -601,34 +652,34 @@ html,body{background:var(--hub-ground)}
       <div class="below" data-ref="below">
         <div class="addbar" data-ref="addbar">
           <svg class="ic" viewBox="0 0 18 18" fill="none" aria-hidden="true"><circle cx="7" cy="5.5" r="3" stroke="#007FFF" stroke-width="1.5"/><path d="M1.5 15.5c.6-3 2.9-4.7 5.5-4.7 1 0 1.9.2 2.7.6M13.5 9.5v6M10.5 12.5h6" stroke="#007FFF" stroke-width="1.5" stroke-linecap="round"/></svg>
-          <span class="txt">Add to address book</span>
+          <span class="txt" data-i18n="addbar">Add to address book</span>
           <svg class="chev" viewBox="0 0 17 18" fill="none" aria-hidden="true"><path d="m6.5 4.5 4.5 4.5-4.5 4.5" stroke="#007FFF" stroke-width="1.125" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </div>
 
         <div class="amount-group" data-ref="amountGroup">
-          <div class="amount-title">Amount</div>
+          <div class="amount-title" data-i18n="amount">Amount</div>
           <div class="balance" data-ref="balance">0.2005 ETH</div>
           <div class="amount-card">
             <div class="amt filled" data-ref="amount">0.01</div>
             <div class="divider"></div>
-            <div class="memo">Memo</div>
+            <div class="memo" data-i18n="memo">Memo</div>
           </div>
-          <div class="fee-title">Miner Fee</div>
+          <div class="fee-title" data-i18n="fee">Miner Fee</div>
           <div class="fee-card">
             <div class="usd" data-ref="feeUsd">$0.01</div>
             <div class="range" data-ref="feeRange">0.000001523 ETH- 0.000002356 ETH</div>
-            <div class="std">Standard <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="m6 3.5 4.5 4.5L6 12.5" stroke="#111D4A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+            <div class="std"><span data-i18n="std">Standard</span> <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="m6 3.5 4.5 4.5L6 12.5" stroke="#111D4A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
           </div>
           <div class="est">
-            <span>Estimated fee</span>
-            <span class="refresh"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M13.5 8a5.5 5.5 0 1 1-1.6-3.9" stroke="#007FFF" stroke-width="1.5" stroke-linecap="round"/></svg>Refresh&nbsp; in 2s</span>
-            <span class="adv">Advanced <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="2" stroke="#111D4A" stroke-opacity=".6" stroke-width="1.4"/><path d="M8 1.8v1.6M8 12.6v1.6M1.8 8h1.6m9.2 0h1.6M3.6 3.6l1.1 1.1m6.6 6.6 1.1 1.1M3.6 12.4l1.1-1.1m6.6-6.6 1.1-1.1" stroke="#111D4A" stroke-opacity=".6" stroke-width="1.4" stroke-linecap="round"/></svg></span>
+            <span data-i18n="est">Estimated fee</span>
+            <span class="refresh"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M13.5 8a5.5 5.5 0 1 1-1.6-3.9" stroke="#007FFF" stroke-width="1.5" stroke-linecap="round"/></svg><span data-i18n="refresh">Refresh in 2</span></span>
+            <span class="adv"><span data-i18n="adv">Advanced</span> <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="2" stroke="#111D4A" stroke-opacity=".6" stroke-width="1.4"/><path d="M8 1.8v1.6M8 12.6v1.6M1.8 8h1.6m9.2 0h1.6M3.6 3.6l1.1 1.1m6.6 6.6 1.1 1.1M3.6 12.4l1.1-1.1m6.6-6.6 1.1-1.1" stroke="#111D4A" stroke-opacity=".6" stroke-width="1.4" stroke-linecap="round"/></svg></span>
           </div>
         </div>
       </div>
 
       <div class="bottom">
-        <button class="next" data-ref="nextBtn" type="button">Next</button>
+        <button class="next" data-ref="nextBtn" type="button" data-i18n="next">Next</button>
         <div class="home-ind"></div>
       </div>
 
@@ -641,9 +692,9 @@ html,body{background:var(--hub-ground)}
       <!-- S3 Alert -->
       <div class="alert-overlay" data-ref="alert" hidden>
         <div class="alert" role="alertdialog" data-ref="alertBox">
-          <h2 data-ref="alertTitle">Unable to resolve this name on Ethereum</h2>
-          <p>Please switch to the correct network or change the domain.</p>
-          <button class="ok" data-ref="alertOk" type="button">Understand</button>
+          <h2 data-ref="alertTitle" data-i18n="alert.title">Unable to resolve this name on Ethereum</h2>
+          <p data-i18n="alert.body">Please switch to the correct network or change the domain.</p>
+          <button class="ok" data-ref="alertOk" type="button" data-i18n="alert.ok">Understand</button>
         </div>
       </div>
     </div>
@@ -665,6 +716,16 @@ html,body{background:var(--hub-ground)}
       <div class="protos" id="protos"></div>
 
       <p class="hint">直达：<code>#scene=10&amp;step=expanded</code>（scene = 1…18 · step = typed / resolving / shown / expanded / dismissed · 场景属于哪个 Prototype 就在哪台手机上播放并选中对应 Tab / 卡片；场景 17 step=resolving 看 spinner、step=shown 冻结顶部 Toast；场景 18 step=shown 看输入框下方报错）· 点手机空白处只关闭该台的 tooltip · 点 Tag 再次唤起（回到默认收起态） · Esc 关闭 · Tooltip 出现后 8 秒自动收起（Info / Warning / High risk 一致；点 Tag 再次唤起重新计 8 秒；展开时重新计 8 秒（10-12 评审确认）；step 直达为冻结态，不自动收起） · 折叠入口点击展开、展开后不可收起 · C08「Transaction Record」只在 Tag = Info 时出现在区域一（分割线以上，纯正文，不带标题、不带色条——色条只用于 Warning / High risk）；Warning / High risk 时不显示、不进折叠区 · ENS 正向解析条目的 label = 用户输入的域名（含零宽字符时在其位置插入橙色三角感叹号，输入框里不加），地址全文与其他内容同字体字号，可换行 · 反向解析 label「ENS name」 · 场景 17 解析中断：spinner 约 2.5 秒后顶部 Toast，停留 3 秒淡出，点输入框（重新编辑）重新触发解析 · 场景 18 无效地址：不解析、不出 spinner，输入框下方报错 + 红描边</p>
+
+      <!-- v3.0: 文案来源对照（由脚本 STR 生成） -->
+      <details class="copy-src" id="copySrc">
+        <summary>文案来源对照<span class="cnt" id="copySrcCnt"></span></summary>
+        <p class="cs-desc">手机原型上的每一条文字都来自下表。<b>Repo</b> = consenlabs/token-v2 的 i18n 原文（未注明分支的都取自 master）；<b>设计稿</b> = 设计新写的英文；<b>上下文文档</b> = 《Claude Code 上下文》文案表里的简中；<b>待定草稿</b> = 文案表里没有、先起草的中文，需要 PM 确认。线上模式只替换文字，排版仍是设计稿；线上没有对应文案的位置会继续显示设计文案，并在手机上用灰色虚线下划线标出。当前模式对应的列以浅蓝底标出。</p>
+        <div class="cs-wrap"><table>
+          <thead><tr><th>区域</th><th>条目</th><th data-col="design-en">设计 · EN</th><th data-col="design-zh">设计 · 简中</th><th data-col="online-en">线上 · EN</th><th data-col="online-zh">线上 · 简中</th><th>说明</th></tr></thead>
+          <tbody id="copySrcBody"></tbody>
+        </table></div>
+      </details>
 
       <!-- ===================== COMPARE (S1 | S2, static · 隐藏，跟随最近操作的那台手机) ===================== -->
       <section class="compare" id="compare" aria-label="S1 / S2 对比">
@@ -907,16 +968,110 @@ var CTX = {
   C11:{ rank:5, sub:1, kind:'labeled', label:'ENS name', body:'{name}' }
   // v1.2: 反向解析多域名条目已删除（目前只支持反向解析域名 C11，展示一个关联的域名）
 };
-var TAG_TEXT = { info:'Info', warning:'Warning', high:'High risk' };
+var TAG_TEXT = { info:'Info', warning:'Warning', high:'High risk' };   // 日志用（固定英文）；显示走 STR['tag.*']
+/* ---------- v3.0 copy (STR) · 语言 EN / 简中 × 文案 设计 / 线上 ----------
+   每条：grp 区域 · name 条目 · design { en, zh, enSrc, zhSrc } · online（R(...) = master 上的对应文案；null = 线上没有对应文案；'same' = 与设计相同）
+   enSrc / zhSrc：'design' 设计稿 · 'doc' 上下文文档文案表 · 'draft' 待定草稿 · 'repo:<key>' / 'repo#6330:<key>' 仓库原文
+   占位符：{{x}} 与 {x} 都可用（fmt 统一替换） */
+function R(key, en, zh, branch){ return { key:key, en:en, zh:zh, branch:branch || 'master' }; }
+function REPO(key, en, zh, branch){ return { en:en, zh:zh, enSrc:'repo' + (branch ? '#' + branch : '') + ':' + key, zhSrc:'repo' + (branch ? '#' + branch : '') + ':' + key }; }
+var STR = {
+  // ---- 转账页框架：两种模式都取自 master ----
+  'nav.title': { grp:'框架', name:'导航标题', design:REPO('transfer_$symbol', '{{symbol}} Transfer', '{{symbol}} 转账'), online:'same' },
+  'to':        { grp:'框架', name:'收款地址标题', design:REPO('payee_address', 'To', '收款地址'), online:'same' },
+  'ph':        { grp:'框架', name:'输入框 placeholder', design:REPO('$chain_address', '{{chain}} Address', '{{chain}} 地址'), online:'same' },
+  'addbar':    { grp:'框架', name:'快捷添加地址本', design:REPO('add_to_address_book', 'Add to address book', '添加到地址本'), online:'same' },
+  'amount':    { grp:'框架', name:'数量标题', design:REPO('amount', 'Amount', '数量'), online:'same' },
+  'memo':      { grp:'框架', name:'备注', design:REPO('memo', 'Memo', '备注'), online:'same' },
+  'fee':       { grp:'框架', name:'矿工费标题', design:REPO('miner_fee', 'Miner Fee', '矿工费'), online:'same' },
+  'std':       { grp:'框架', name:'矿工费档位', design:REPO('average', 'Standard', '标准'), online:'same' },
+  'est':       { grp:'框架', name:'预估费用', design:{ en:'Estimated fee', zh:'预估矿工费', enSrc:'design', zhSrc:'draft' }, online:'same', note:'仓库里没有找到完全对应的 key，保留原型原文' },
+  'refresh':   { grp:'框架', name:'刷新倒计时', design:REPO('update_after_$seconds', 'Refresh in {{seconds}} ', '{{seconds}} 秒后更新'), online:'same', note:'仓库英文没有时间单位，App 实际显示「Refresh in 2」' },
+  'adv':       { grp:'框架', name:'高级设置', design:REPO('advanced_mode', 'Advanced', '高级模式'), online:'same' },
+  'next':      { grp:'框架', name:'下一步按钮', design:REPO('next', 'Next', '下一步'), online:'same' },
+  // ---- Tag ----
+  'tag.info':    { grp:'Tag', name:'Info', design:{ en:'Info', zh:'提示', enSrc:'design', zhSrc:'draft' }, online:R('address_tip_info', 'info', 'info'), note:'线上中文未翻译' },
+  'tag.warning': { grp:'Tag', name:'Warning', design:{ en:'Warning', zh:'警告', enSrc:'design', zhSrc:'draft' }, online:R('address_tip_warning', 'warning', 'warning'), note:'线上中文未翻译' },
+  'tag.high':    { grp:'Tag', name:'High risk', design:{ en:'High risk', zh:'高风险', enSrc:'design', zhSrc:'draft' }, online:R('address_tip_block', 'block', 'block'), note:'线上中文未翻译' },
+  // ---- Tooltip 区域一 ----
+  'C08.body': { grp:'Tooltip', name:'无交易记录', design:{ en:"You haven't transacted with this address before.", zh:'过往没有与该地址的交易记录', enSrc:'design', zhSrc:'doc' },
+                online:R('risk_info_recipient_address_first_time', 'This is the first transfer to this address, please make sure the address is accurate', '首次向此地址转账，请确保地址准确'), note:'线上由风控下发；同类 key 还有 risk_info_interacting_address_first_time、risk_address_with_first_interaction' },
+  'C06.body': { grp:'Tooltip', name:'Warning 正文', design:{ en:'Recent activity on this address appears unusual. Double-check before sending.', zh:'该地址近期活动异常，请核对后再转账。', enSrc:'design', zhSrc:'draft' }, online:null, note:'线上正文由风控下发，仓库里没有固定文案' },
+  'C05.body': { grp:'Tooltip', name:'High risk 正文', design:{ en:'This address is flagged as high risk. Sending may result in loss of funds.', zh:'该地址已被标记为高风险，转账可能导致资产损失。', enSrc:'design', zhSrc:'draft' }, online:null, note:'线上正文由风控下发，仓库里没有固定文案' },
+  'C07.body': { grp:'Tooltip', name:'零宽字符', design:{ en:'This domain contains hidden characters and may be impersonating another name.', zh:'该域名包含隐藏字符，可能在仿冒其他域名。', enSrc:'design', zhSrc:'draft' },
+                online:R('zwsp_text', 'The ENS address has detected mixed characters. Please check whether the wallet address is correct.', 'ENS 地址已检测到混淆字符，请检查钱包地址是否正确。'), note:'线上只在多条信息同时出现时显示这句；单独命中时只有 ⚠ 图标' },
+  // ---- Tooltip 区域二 · 专项信息 ----
+  'C02.label': { grp:'Tooltip', name:'IBC · label', design:{ en:'{{chain}} address', zh:'{{chain}} 地址', enSrc:'design', zhSrc:'repo:$chain_address' }, online:R('transfer_ibc_tag', 'IBC', '跨链转账'), note:'线上这里是 Tag 文字' },
+  'C02.body':  { grp:'Tooltip', name:'IBC · 正文', design:{ en:'Funds will be sent via IBC cross-chain transfer.', zh:'将以 IBC 跨链方式转账', enSrc:'design', zhSrc:'doc' },
+                 online:R('transfer_ibc_to_$chainName', 'The receive address is in {{chainName}} address format, and the transfer will be executed as an IBC cross-chain transfer', '收款地址采用 {{chainName}} 地址格式，转账将以 IBC 跨链执行') },
+  'C03.label': { grp:'Tooltip', name:'Tron 未激活 · label', design:{ en:'Tron address', zh:'Tron 地址', enSrc:'design', zhSrc:'repo:$chain_address' }, online:R('receiver_inactivated', 'inactive', '未激活'), note:'线上这里是 Tag 文字' },
+  'C03.body':  { grp:'Tooltip', name:'Tron 未激活 · 正文', design:{ en:'Not activated yet. An extra {{num}} TRX will be spent to activate it.', zh:'尚未激活，本次转账将额外消耗 {{num}} TRX 用于激活', enSrc:'design', zhSrc:'doc' },
+                 online:R('inactive_tron_address_need_$num_trx_to_activate', 'This address is not activated. It will cost {{num}} TRX to activate the address', '该地址未激活，将会消耗 {{num}} TRX 激活该地址'), note:'线上这句话还会在输入框下方再显示一次' },
+  'C04.label': { grp:'Tooltip', name:'TON · label', design:{ en:'TON bounceable address', zh:'TON 反弹地址', enSrc:'design', zhSrc:'draft' }, online:R('ton_transfer_bounceable_tag', 'Bounceable address', '反弹地址'), note:'线上这里是 Tag 文字（英文会被截断成 8 个字符）' },
+  'C04.body':  { grp:'Tooltip', name:'TON · 正文', design:{ en:'Transfers work as usual. If the transfer fails, funds are returned to you automatically.', zh:'可正常转账；若转账失败，资金会自动退回', enSrc:'design', zhSrc:'doc' },
+                 online:R('ton_transfer_bounceable_msg', 'This is a bounceable address and supports normal transfers. If an error occurs, the funds will be automatically returned to you', '这是反弹地址，可正常转账。若转账发生错误，资金将自动退回给你') },
+  // ---- Tooltip 区域二 · 地址标记 ----
+  'C09.label': { grp:'Tooltip', name:'地址本 · label', design:{ en:'Saved in address book', zh:'已存入地址本', enSrc:'design', zhSrc:'doc' }, online:R('', '', ''), note:'线上用地址本图标，没有文字 label' },
+  'C09.body':  { grp:'Tooltip', name:'地址本 · 正文', design:{ en:'{{nickname}}', zh:'{{nickname}}', enSrc:'design', zhSrc:'design' },
+                 online:R('address_exists_in_address_book', 'This address exists in your address book', '地址本中的地址'), note:'线上不显示备注名' },
+  'C01.label': { grp:'Tooltip', name:'当前设备 · label', design:{ en:'This device', zh:'当前设备', enSrc:'design', zhSrc:'doc' }, online:R('', '', ''), note:'线上用认证图标，没有文字 label' },
+  'C01.body':  { grp:'Tooltip', name:'当前设备 · 正文', design:{ en:'{{wallet}} · {{account}}', zh:'{{wallet}} · {{account}}', enSrc:'design', zhSrc:'design' },
+                 online:R('address_exists_in_imported', 'This address is your wallet address in imToken', 'imToken 钱包中的地址'), note:'线上不显示钱包名和账户名' },
+  // ---- Tooltip 区域二 · ENS ----
+  'C11.label': { grp:'Tooltip', name:'ENS 反向解析 · label', design:{ en:'ENS name', zh:'ENS 名称', enSrc:'design', zhSrc:'doc' }, online:R('', '', ''), note:'线上没有 label' },
+  'C11.body':  { grp:'Tooltip', name:'ENS 反向解析 · 正文', design:{ en:'{{name}}', zh:'{{name}}', enSrc:'design', zhSrc:'design' },
+                 online:R('transfer_tips_detected_$domain', 'Detected ENS domain is ‘{{domain}}’.', '检测到ENS 域名为 “{{domain}}”。') },
+  'more':  { grp:'Tooltip', name:'折叠入口', design:{ en:'More address info ({{n}})', zh:'更多地址信息 ({{n}})', enSrc:'design', zhSrc:'doc' }, online:null, note:'线上没有折叠' },
+  'trunc': { grp:'Tooltip', name:'超出 4 条', design:{ en:'+{{n}} more details', zh:'另有 {{n}} 条信息', enSrc:'design', zhSrc:'draft' }, online:null, note:'线上没有条数上限' },
+  // ---- 异常 ----
+  'alert.title': { grp:'异常', name:'无法解析 Alert · 标题', design:{ en:'Unable to resolve this name on {{network}}', zh:'无法在 {{network}} 上解析该域名', enSrc:'design', zhSrc:'draft' },
+                   online:R('cant_resolve_address', 'The wallet address for the domain could not be found', '找不到该域名的钱包地址'), note:'线上（master）是 Toast，不是 Alert；#6330 分支的标题 key domain_has_no_address_on_$network =「This domain has no address specified on {{network}}」，与设计不同' },
+  'alert.body':  { grp:'异常', name:'无法解析 Alert · 正文', design:REPO('please_switch_network_or_change_domain', 'Please switch to the correct network or change the domain.', '请切换至正确网络或者更换域名', '6330'), online:null, note:'#6330 分支（未合并）新增的 key' },
+  'alert.ok':    { grp:'异常', name:'无法解析 Alert · 按钮', design:REPO('domain_no_address_confirm', 'Understand', '好的', '6330'), online:null, note:'#6330 分支（未合并）新增的 key' },
+  'toast':   { grp:'异常', name:'解析中断 Toast', design:{ en:"Couldn't finish checking this address. Please try again.", zh:'地址识别未完成，请重试', enSrc:'design', zhSrc:'doc' },
+               online:R('cant_resolve_address', 'The wallet address for the domain could not be found', '找不到该域名的钱包地址'), note:'master 把网络中断也报成「找不到」；ensv2 分支改为 Alert · network_error「Network error, please try again later」' },
+  'invalid': { grp:'异常', name:'无效地址报错', design:{ en:'Not a valid {{chainName}} address or ENS name.', zh:'无法识别：不是有效的 {{chainName}} 地址或 ENS 域名', enSrc:'design', zhSrc:'doc' },
+               online:R('invalid_address', 'Incorrect Wallet Address', '不正确的钱包地址'), note:'线上用 Toast 显示' }
+};
+var LANG = 'en', COPY = 'design';   // 页面级（两台手机都生效）
+function fmt(tpl, params){
+  params = params || {};
+  return String(tpl).replace(/\{\{(\w+)\}\}|\{(\w+)\}/g, function(m, a, b){ var k = a || b; return params[k] != null ? String(params[k]) : ''; });
+}
+// pick(id) → { t: 模板, mark: '' | 'online'（线上无对应，显示设计文案）| 'draft'（简中待定草稿） }
+function pick(id){
+  var s = STR[id]; if (!s) return { t:'', mark:'' };
+  var d = s.design, src = LANG === 'zh' ? d.zhSrc : d.enSrc;
+  var designPick = { t: d[LANG], mark: src === 'draft' ? 'draft' : '' };
+  if (COPY !== 'online' || s.online === 'same') return designPick;
+  if (s.online === null) return { t: designPick.t, mark: 'online' };
+  return { t: s.online[LANG], mark: '' };
+}
+var MARK_TITLE = { online:'线上没有对应文案，这里显示的是设计文案', draft:'中文为待定草稿，需要 PM 确认' };
+function wrapMark(h, mark){ return mark ? '<span class="mk-' + mark + '" title="' + MARK_TITLE[mark] + '">' + h + '</span>' : h; }
+function txt(id, params){ return fmt(pick(id).t, params); }
+function copyHTML(id, params){ var p = pick(id); return wrapMark(escapeHTML(fmt(p.t, params)), p.mark); }
+// 把一个 CTX 条目换成当前语言 / 文案下的 label / body（仍保留占位符，由 fillText 填）；标记写进 _lm / _bm
+function localizeEntry(e){
+  var o = {}; for (var k in e) o[k] = e[k];
+  ['label', 'body'].forEach(function(f){
+    var id = e.id + '.' + f;
+    if (!STR[id]) return;
+    var p = pick(id);
+    o[f] = p.t; o[f === 'label' ? '_lm' : '_bm'] = p.mark;
+  });
+  return o;
+}
+
 var TAG_W    = { info:38, warning:63, high:72 };   // fallback widths when layout is unavailable (jsdom)
 var MAX_ENTRIES = 4;                                // D7
 
 /* ---------- chains ---------- */
 var CHAINS = {
-  eth:    { title:'ETH Transfer',  sub:'Ethereum', ph:'Ethereum address', balance:'0.2005 ETH', amount:'0.01', feeUsd:'$0.01', feeRange:'0.000001523 ETH- 0.000002356 ETH' },
-  cosmos: { title:'ATOM Transfer', sub:'Cosmos',   ph:'Cosmos address',   balance:'12.5 ATOM',  amount:'1',    feeUsd:'$0.003', feeRange:'0.0025 ATOM' },
-  tron:   { title:'TRX Transfer',  sub:'Tron',     ph:'Tron address',     balance:'1,250 TRX',  amount:'100',  feeUsd:'$0.27', feeRange:'1.1 TRX · Bandwidth' },
-  ton:    { title:'TON Transfer',  sub:'TON',      ph:'TON address',      balance:'32.8 TON',   amount:'1',    feeUsd:'$0.02', feeRange:'0.0055 TON' }
+  eth:    { symbol:'ETH',  title:'ETH Transfer',  sub:'Ethereum', ph:'Ethereum address', balance:'0.2005 ETH', amount:'0.01', feeUsd:'$0.01', feeRange:'0.000001523 ETH- 0.000002356 ETH' },
+  cosmos: { symbol:'ATOM', title:'ATOM Transfer', sub:'Cosmos',   ph:'Cosmos address',   balance:'12.5 ATOM',  amount:'1',    feeUsd:'$0.003', feeRange:'0.0025 ATOM' },
+  tron:   { symbol:'TRX',  title:'TRX Transfer',  sub:'Tron',     ph:'Tron address',     balance:'1,250 TRX',  amount:'100',  feeUsd:'$0.27', feeRange:'1.1 TRX · Bandwidth' },
+  ton:    { symbol:'TON',  title:'TON Transfer',  sub:'TON',      ph:'TON address',      balance:'32.8 TON',   amount:'1',    feeUsd:'$0.02', feeRange:'0.0055 TON' }
 };
 
 /* ---------- addresses ---------- */
@@ -962,8 +1117,8 @@ var SCENES = [
   { n:17, title:'解析未完成 → 顶部 Toast',     meta:'S4 · 顶部 Toast，无 Tooltip',     chain:'eth', input:'alice.eth', interrupted:true, ctx:[] },
   { n:18, title:'无效地址 → 输入框下方报错',   meta:'S5 · 输入框下方报错，无 Tooltip', chain:'eth', input:HEX_ALICE.slice(0, -1), invalid:true, ctx:[] }
 ];
-var TOAST_TEXT = "Couldn't finish checking this address. Please try again.";   // v2.9 S4 · 场景 17（地址识别未完成，请重试）
-function invalidText(chainKey){ return 'Not a valid ' + CHAINS[chainKey].sub + ' address or ENS name.'; }   // v2.9 S5 · 场景 18（{chain} = 当前链名）
+var TOAST_TEXT = "Couldn't finish checking this address. Please try again.";   // v3.0: 显示走 STR.toast（默认 EN + 设计 = 本句）   // v2.9 S4 · 场景 17（地址识别未完成，请重试）
+function invalidText(chainKey){ return txt('invalid', { chainName: CHAINS[chainKey].sub }); }   // v3.0: STR.invalid   // v2.9 S5 · 场景 18（{chain} = 当前链名）
 
 /* ---------- DOM (page-level) ---------- */
 function $(id){ return document.getElementById(id); }
@@ -1031,15 +1186,9 @@ function hexHTML(h){
 function barHTML(tone){
   return (tone === 'warning' || tone === 'high') ? '<span class="tt-bar" aria-hidden="true"></span>' : '';
 }
-function fillText(e, tpl){
-  return tpl
-    .replace('{chain}', e.chain || '')
-    .replace('{nickname}', e.nickname || '')
-    .replace('{wallet}', e.wallet || '')
-    .replace('{account}', e.account || '')
-    .replace('{amount}', e.amount || '')
-    .replace('{name}', e.name || '')
-    .replace('{input}', e.input || '');
+function fillText(e, tpl){   // v3.0: {x} 与 {{x}} 都替换；chainName = chain，domain = name（仓库原文的占位符名）
+  return fmt(tpl, { chain:e.chain || '', chainName:e.chain || '', nickname:e.nickname || '', wallet:e.wallet || '', account:e.account || '',
+                    amount:e.amount || '', num:e.num || String(e.amount || '').split(' ')[0], name:e.name || '', domain:e.name || '', input:e.input || '' });
 }
 // v2.5 Wilson：正向解析 label = 用户输入的域名；零宽字符（U+200B / 200C / 200D / FEFF / 2060）所在位置插入系统现有的橙色三角感叹号图标，
 //   其余字符照常转义输出。返回 HTML（label 用 innerHTML 渲染）——只用于 ensLabel 条目，其余 label 仍走 escapeHTML
@@ -1066,7 +1215,7 @@ function entryHTML_S1(e){
   // v2.2: 色条只用于 Warning / High risk；record 不输出 .tt-bar（纯正文，无标题、无色条）
   if (e.kind === 'risk' || e.kind === 'record'){
     var tone = e.kind === 'record' ? 'record' : (e.level || 'warning');
-    return '<div class="tt-entry tt-risk" data-ctx="' + e.id + '" data-type="' + e.kind + '" data-tone="' + tone + '">' + barHTML(tone) + '<div class="tt-risk-title">' + escapeHTML(e.title) + '</div><div class="tt-risk-body">' + escapeHTML(e.body) + '</div></div>';
+    return '<div class="tt-entry tt-risk" data-ctx="' + e.id + '" data-type="' + e.kind + '" data-tone="' + tone + '">' + barHTML(tone) + '<div class="tt-risk-title">' + escapeHTML(e.title) + '</div><div class="tt-risk-body">' + wrapMark(escapeHTML(fillText(e, e.body)), e._bm) + '</div></div>';
   }
   if (e.kind === 'sentence'){
     return '<div class="tt-entry tt-sentence" data-ctx="' + e.id + '" data-type="sentence">' + escapeHTML(e.body) + '</div>';
@@ -1074,10 +1223,10 @@ function entryHTML_S1(e){
   var label = fillText(e, e.label);
   var body, cls = 'tt-body';
   if (e.hex && typeof e.hex === 'string'){ body = hexHTML(e.hex); cls += ' tt-hex'; }
-  else { body = escapeHTML(fillText(e, e.body)); }
+  else { body = wrapMark(escapeHTML(fillText(e, e.body)), e._bm); }
   // v1.7: C01 两行结构 title = Wallet Name 14 / subtitle = Account Name 12·60%（label 为空时不输出 label 行）
   var sub = (e.subtitle && fillText(e, e.subtitle)) ? '<div class="tt-sub">' + escapeHTML(fillText(e, e.subtitle)) + '</div>' : '';
-  var lab = label ? '<div class="tt-label">' + labelHTML(e, label) + '</div>' : '';   // v2.5: 正向解析 label = 输入的域名（ensLabelHTML）
+  var lab = label ? '<div class="tt-label">' + wrapMark(labelHTML(e, label), e._lm) + '</div>' : '';   // v2.5: 正向解析 label = 输入的域名（ensLabelHTML）
   return '<div class="tt-entry tt-labeled" data-ctx="' + e.id + '" data-type="labeled">' + lab + '<div class="' + cls + '">' + body + '</div>' + sub + '</div>';
 }
 
@@ -1087,7 +1236,7 @@ function entryHTML_S2(e){
   var open = '<div class="tt-entry s2-' + type + '" data-ctx="' + e.id + '" data-type="' + type + '">';
   if (type === 'risk' || type === 'record'){   // v1.9: Transaction Record 与 risk 同结构；v1.11: 色条 + 正文，无标题；v2.2: record 无色条
     var tone = type === 'record' ? 'record' : (e.level || 'warning');
-    return '<div class="tt-entry s2-' + type + ' tt-risk" data-ctx="' + e.id + '" data-type="' + type + '" data-tone="' + tone + '">' + barHTML(tone) + '<div class="tt-risk-title">' + escapeHTML(e.title) + '</div><div class="tt-risk-body">' + escapeHTML(e.body) + '</div></div>';
+    return '<div class="tt-entry s2-' + type + ' tt-risk" data-ctx="' + e.id + '" data-type="' + type + '" data-tone="' + tone + '">' + barHTML(tone) + '<div class="tt-risk-title">' + escapeHTML(e.title) + '</div><div class="tt-risk-body">' + wrapMark(escapeHTML(fillText(e, e.body)), e._bm) + '</div></div>';
   }
   if (type === 'condition'){
     var g = S2_GLYPH[e.id] || 'info';
@@ -1120,18 +1269,18 @@ var CHEV = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hid
 //   divided（Info，区域一与区域二都有内容）：区域一 ｜ .tt-divider[data-reg="sep"] ｜ 区域二
 //   其它（只有区域一 / 只有区域二）：单个 .tt-main，无分割线
 function entriesHTML(list, E){
-  return list.map(function(e){ return E(e); }).join('');
+  return list.map(function(e){ return E(localizeEntry(e)); }).join('');   // v3.0: 先换成当前语言 / 文案
 }
 // Shared structure (IA §3 order + fold rule) — identical for both skins; only entries differ.
 function tooltipHTML(m, skin, ids){
   var E = entryRenderer(skin);
   ids = ids || { more:'ttMore', fold:'ttFold' };
   var html = '';
-  var trunc = m.truncated ? '<div class="tt-truncate">+' + m.truncated + ' more details</div>' : '';
+  var trunc = m.truncated ? '<div class="tt-truncate">' + copyHTML('trunc', { n:m.truncated }) + '</div>' : '';
   if (m.folded){
     html += '<div class="tt-main" data-reg="r1">' + entriesHTML(m.region1, E) + '</div>';
     html += '<div class="tt-divider"></div>';
-    html += '<button type="button" class="tt-more" id="' + ids.more + '" aria-expanded="false" aria-controls="' + ids.fold + '"><span>More address info (' + (m.rest.length + m.truncated) + ')</span>' + CHEV + '</button>';
+    html += '<button type="button" class="tt-more" id="' + ids.more + '" aria-expanded="false" aria-controls="' + ids.fold + '"><span>' + copyHTML('more', { n:m.rest.length + m.truncated }) + '</span>' + CHEV + '</button>';
     html += '<div class="tt-fold" id="' + ids.fold + '" aria-hidden="true"><div><div class="tt-fold-inner" data-reg="r2">' + entriesHTML(m.rest, E) + trunc + '</div></div></div>';
   } else if (m.divided){
     html += '<div class="tt-main" data-reg="r1">' + entriesHTML(m.region1, E) + '</div>';
@@ -1365,19 +1514,32 @@ function createProto(container, cfg){
     if (more) more.addEventListener('click', function(ev){ ev.stopPropagation(); expand(); });   // v1.12: 单向展开
     updateCompare(inst);
   }
-  function rerender(){   // 皮肤切换：保持场景 + 展开态，只重绘 tooltip
+  function rerender(reason){   // 皮肤 / 语言 / 文案切换：保持场景 + 展开态，只重绘 tooltip
     if (!(state.model && state.level !== 'none' && el.ttContent.innerHTML)) return;
     var wasExpanded = state.expanded;
     renderTooltip(state.model);
     if (wasExpanded) expand(true, true);   // v1.12: re-render keeps the expanded (entry-row-removed) state, instantly + silently
-    if (state.sceneStart) log('skin → ' + SKIN.toUpperCase() + ' (re-rendered' + (wasExpanded ? ', expanded kept' : '') + ')');
+    if (state.sceneStart) log((reason || ('skin → ' + SKIN.toUpperCase())) + ' (re-rendered' + (wasExpanded ? ', expanded kept' : '') + ')');
   }
 
   /* ---- view helpers ---- */
   function applyChain(k){
     var c = CHAINS[k];
-    el.navTitle.textContent = c.title; el.navSub.textContent = c.sub; el.addrPh.textContent = c.ph;
+    el.navSub.textContent = c.sub;
     el.balance.textContent = c.balance; el.amount.textContent = c.amount; el.feeUsd.textContent = c.feeUsd; el.feeRange.textContent = c.feeRange;
+    applyCopy();
+  }
+  // v3.0: 手机上所有固定文字按当前语言 / 文案重写（框架 + Alert + 正在显示的 Tag / Toast / 报错行）
+  function applyCopy(){
+    var c = CHAINS[state.scene ? state.scene.chain : 'eth'];
+    var params = { symbol:c.symbol, chain:c.sub, network:c.sub, seconds:2 };
+    el.navTitle.textContent = txt('nav.title', params);
+    el.addrPh.textContent = txt('ph', params);
+    Array.prototype.forEach.call(el.screen.querySelectorAll('[data-i18n]'), function(node){ node.innerHTML = copyHTML(node.getAttribute('data-i18n'), params); });
+    el.screen.setAttribute('lang', LANG === 'zh' ? 'zh-CN' : 'en');
+    if (!el.tag.hidden && state.level !== 'none') el.tag.innerHTML = copyHTML('tag.' + state.level);
+    if (state.toastVisible) el.toastText.innerHTML = copyHTML('toast');
+    if (state.fieldError && state.scene) el.fieldErrText.innerHTML = copyHTML('invalid', { chainName: c.sub });
   }
   function setInput(text){
     el.addrVal.textContent = text;
@@ -1391,7 +1553,7 @@ function createProto(container, cfg){
   function setTag(level){
     if (level === 'none'){ el.tag.hidden = true; el.tag.textContent = ''; el.tag.className = 'tag'; return; }
     el.tag.hidden = false;
-    el.tag.textContent = TAG_TEXT[level];
+    el.tag.innerHTML = copyHTML('tag.' + level);   // v3.0: STR['tag.*']（简中待定草稿带标记）
     el.tag.className = 'tag lv-' + level;
     el.tag.setAttribute('aria-expanded', 'false');
   }
@@ -1405,7 +1567,7 @@ function createProto(container, cfg){
 
   /* ---- v2.9 S4 · 顶部 Toast（场景 17 解析中断）：滑入 → 停留 TIMING.toast（3s）→ 淡出 TIMING.toastOut 后 display:none；冻结态（hash 直达）保持显示 ---- */
   function showToast(){
-    el.toastText.textContent = TOAST_TEXT;
+    el.toastText.innerHTML = copyHTML('toast');   // v3.0: STR.toast
     el.toast.classList.remove('out');
     el.toast.hidden = false;
     void el.toast.offsetWidth;   // reflow so the slide-in runs
@@ -1424,7 +1586,7 @@ function createProto(container, cfg){
   }
   /* ---- v2.9 S5 · 输入框下方报错（场景 18 无效地址）：报错行 + 输入框红描边；Add to address book 隐藏，下方区域下移 24px（CSS .addr.invalid ~ .below） ---- */
   function showFieldError(scene){
-    el.fieldErrText.textContent = invalidText(scene.chain);
+    el.fieldErrText.innerHTML = copyHTML('invalid', { chainName: CHAINS[scene.chain].sub });   // v3.0: STR.invalid
     el.fieldErr.hidden = false;
     el.addr.classList.add('invalid');
     setAddbar(false);
@@ -1532,7 +1694,7 @@ function createProto(container, cfg){
     setAddbar(!scene.invalid && !scene.ctx.some(function(c){ return c.id === 'C09' || c.id === 'C01'; }));
     setActiveScene(index);
     if (writeHash && window.history && typeof history.replaceState === 'function'){
-      try { history.replaceState(null, '', '#scene=' + scene.n); } catch (e) {}
+      try { history.replaceState(null, '', '#scene=' + scene.n + copyHashSuffix()); } catch (e) {}
     }
     updateCompare(inst);
     log('idle');
@@ -1660,13 +1822,14 @@ function createProto(container, cfg){
   el.addr.addEventListener('click', function(){ reEdit(); });   // v2.9: 场景 17 解析中断后点输入框 = 重新编辑 → 重新触发解析
 
   if (cfg.tabs) setTab(state.tab, true);
+  applyCopy();
 
   inst.play = play; inst.jumpTo = jumpTo; inst.expand = expand; inst.showTooltip = showTooltip; inst.hideTooltip = hideTooltip;
-  inst.setTab = setTab; inst.rerender = rerender; inst.has = has; inst.firstIndex = firstIndex;
+  inst.setTab = setTab; inst.rerender = rerender; inst.has = has; inst.firstIndex = firstIndex; inst.applyCopy = applyCopy;
   inst.getState = function(){
     return { key:key, phase:state.phase, level:state.level, tooltipVisible:state.tooltipVisible, expanded:state.expanded, sceneIndex:state.sceneIndex,
              log:state.log.slice(), skin:SKIN, compare:COMPARE, tab:state.tab, started:state.started,
-             toastVisible:state.toastVisible, fieldError:state.fieldError };
+             toastVisible:state.toastVisible, fieldError:state.fieldError, lang:LANG, copy:COPY };
   };
   return inst;
 }
@@ -1692,6 +1855,69 @@ function setSkin(skin){
   if (changed) INSTANCES.forEach(function(i){ i.rerender(); });   // keep each phone's scene + expanded state, re-render in the new skin
 }
 G.compareBtn.addEventListener('click', function(){ setCompare(!COMPARE); });
+
+/* ---------- v3.0 语言 / 文案（页面级；两台手机 + 对比视图 + 文案来源对照一起刷新） ---------- */
+function copyHashSuffix(){ return (LANG !== 'en' ? '&lang=' + LANG : '') + (COPY !== 'design' ? '&copy=' + COPY : ''); }
+var COPY_NOTE = {
+  design: '<b>设计文案</b>：转账页框架用 token-v2 仓库原文；Tooltip / Tag / 异常提示用设计稿英文与上下文文档简中。简中模式下橙色虚线 = 待定草稿。',
+  online: '<b>线上文案</b>：每条文字换成 token-v2 master 上的对应文案，排版仍是设计稿。灰色虚线 = 线上没有对应文案，显示的是设计文案。'
+};
+function syncSeg(attr, value){
+  Array.prototype.forEach.call(document.querySelectorAll('.seg [data-' + attr + ']'), function(b){
+    var on = b.getAttribute('data-' + attr) === value; b.classList.toggle('is-on', on); b.setAttribute('aria-checked', on ? 'true' : 'false');
+  });
+}
+function refreshCopy(reason, fromBoot){   // fromBoot：boot 时只刷新文字，不改写 hash（hash 由 boot 本身决定）
+  syncSeg('lang', LANG); syncSeg('copy', COPY);
+  var note = $('copyNote'); if (note) note.innerHTML = COPY_NOTE[COPY];
+  renderCopySrc();
+  INSTANCES.forEach(function(i){ i.applyCopy(); i.rerender(reason); });
+  updateCompare();
+  var a = activeInst;
+  if (!fromBoot && a && a.state.started && a.state.scene && window.history && typeof history.replaceState === 'function' && /scene=/.test(location.hash)){
+    try { history.replaceState(null, '', '#scene=' + a.state.scene.n + copyHashSuffix()); } catch (e) {}
+  }
+}
+function setLang(l){ l = l === 'zh' ? 'zh' : 'en'; var changed = LANG !== l; LANG = l; if (changed || !INIT_DONE) refreshCopy('lang → ' + l); }
+function setCopy(c){ c = c === 'online' ? 'online' : 'design'; var changed = COPY !== c; COPY = c; if (changed || !INIT_DONE) refreshCopy('copy → ' + c); }
+var INIT_DONE = false;
+Array.prototype.forEach.call(document.querySelectorAll('.seg [data-lang]'), function(b){ b.addEventListener('click', function(){ setLang(b.getAttribute('data-lang')); }); });
+Array.prototype.forEach.call(document.querySelectorAll('.seg [data-copy]'), function(b){ b.addEventListener('click', function(){ setCopy(b.getAttribute('data-copy')); }); });
+
+// 文案来源对照表（由 STR 生成；当前模式对应的两列 / 当前语言列以浅蓝底标出）
+function srcLabel(src){
+  if (!src) return '';
+  if (src === 'design') return '<span class="src">设计稿</span>';
+  if (src === 'doc') return '<span class="src">上下文文档</span>';
+  if (src === 'draft') return '<span class="src draft">待定草稿</span>';
+  var m = /^repo(?:#(\w+))?:(.+)$/.exec(src);
+  if (m) return '<span class="src">Repo' + (m[1] ? ' · #' + m[1] + ' 分支（未合并）' : '') + ' · <code>' + escapeHTML(m[2]) + '</code></span>';
+  return '';
+}
+function renderCopySrc(){
+  var body = $('copySrcBody'); if (!body) return;
+  var ids = Object.keys(STR);
+  var cur = { 'design-en': COPY === 'design' && LANG === 'en', 'design-zh': COPY === 'design' && LANG === 'zh', 'online-en': COPY === 'online' && LANG === 'en', 'online-zh': COPY === 'online' && LANG === 'zh' };
+  Array.prototype.forEach.call(document.querySelectorAll('#copySrc th[data-col]'), function(th){ th.classList.toggle('cur', !!cur[th.getAttribute('data-col')]); });
+  body.innerHTML = ids.map(function(id){
+    var s = STR[id], d = s.design, o = s.online;
+    function cell(col, inner){ return '<td' + (cur[col] ? ' class="cur"' : '') + '>' + inner + '</td>'; }
+    var onEn, onZh;
+    if (o === 'same'){ onEn = onZh = '<span class="na">同设计（仓库原文）</span>'; }
+    else if (o === null){ onEn = onZh = '<span class="na">线上没有对应文案</span>'; }
+    else if (!o.key){ onEn = onZh = '<span class="na">（无文字）</span>'; }
+    else {
+      var k = '<span class="src">Repo · <code>' + escapeHTML(o.key) + '</code></span>';
+      onEn = escapeHTML(o.en) + k; onZh = escapeHTML(o.zh) + k;
+    }
+    return '<tr data-id="' + escapeHTML(id) + '"><td class="grp">' + escapeHTML(s.grp) + '</td><td class="nm">' + escapeHTML(s.name) + '</td>' +
+      cell('design-en', escapeHTML(d.en) + srcLabel(d.enSrc)) + cell('design-zh', escapeHTML(d.zh) + srcLabel(d.zhSrc)) +
+      cell('online-en', onEn) + cell('online-zh', onZh) +
+      '<td>' + (s.note ? '<span class="note">' + escapeHTML(s.note) + '</span>' : '') + '</td></tr>';
+  }).join('');
+  var drafts = ids.filter(function(id){ return STR[id].design.zhSrc === 'draft'; }).length;
+  var cnt = $('copySrcCnt'); if (cnt) cnt.textContent = ids.length + ' 条 · ' + drafts + ' 条简中待定';
+}
 document.addEventListener('keydown', function(ev){
   if (ev.key !== 'Escape') return;
   INSTANCES.forEach(function(i){ if (i.state.tooltipVisible) i.hideTooltip('Esc'); });
@@ -1709,6 +1935,9 @@ function parseInit(){
 function boot(){
   var q = parseInit();
   if (q.skin) setSkin(q.skin);
+  // v3.0: #...&lang=zh&copy=online（不带参数 = EN + 设计）
+  LANG = q.lang === 'zh' ? 'zh' : 'en'; COPY = q.copy === 'online' ? 'online' : 'design';
+  refreshCopy(null, true); INIT_DONE = true;
   if (q.compare === '1') setCompare(true);
   var idx = q.scene ? SCENES.findIndex(function(s){ return String(s.n) === String(q.scene); }) : -1;
   if (idx < 0) idx = 0;
@@ -1735,6 +1964,7 @@ window.proto = {
   expand: function(){ if (activeInst) activeInst.expand(); },   /* v1.12: collapse / toggleFold removed — fold is one-way */
   showTooltip: function(r){ if (activeInst) activeInst.showTooltip(r); }, hideTooltip: function(r){ if (activeInst) activeInst.hideTooltip(r); },
   setSkin: setSkin, setCompare: setCompare,
+  STR: STR, setLang: setLang, setCopy: setCopy, lang: function(){ return LANG; }, copy: function(){ return COPY; }, pick: pick,
   active: function(){ return activeInst; },
   getState: function(){ return activeInst ? activeInst.getState() : null; }
 };
