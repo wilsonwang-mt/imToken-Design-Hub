@@ -1,0 +1,33 @@
+# 每个 PR 和 main 的推送都跑一遍：自动审核（规则见 CONTRIBUTING.md）+ 生产构建。
+# 在 main 的分支保护里把「check」设为必需检查，不通过就不能合并。
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      NEXT_TELEMETRY_DISABLED: 1
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Audit
+        run: npm run audit
+      - name: Build
+        run: npm run build

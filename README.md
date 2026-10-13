@@ -4,15 +4,19 @@ imToken 设计团队的主页：团队、设计系统、素材库、项目追踪
 
 目前开放的是 **设计师工具箱**（Confu 分享 EP01、EP02，以及文案管理工作流）和 **项目追踪**（Agentic Wallet、Stake 视频制作），其余板块会陆续上线。
 
+## 参与贡献
+
+多位设计师共用这个仓库。新建或更新项目之前，先读 [CONTRIBUTING.md](CONTRIBUTING.md)（流程和自动审核规则）、[docs/project-template.md](docs/project-template.md)（每个项目至少包含什么）和 [docs/style-guide.md](docs/style-guide.md)（视觉与写作规范）。用 Claude Code 的同事，[CLAUDE.md](CLAUDE.md) 会被自动读取。
+
 ## 本地运行
 
 ```bash
 npm install
 npm run dev        # http://localhost:3000
-npm run build      # 生产构建（Vercel 同样执行这一步）
+npm run check      # 自动审核 + 生产构建，提 PR 前必须通过（CI 跑的是同一套）
 ```
 
-需要 Node 20 以上。
+需要 Node 20.9 以上。
 
 ## 目录
 
@@ -26,10 +30,13 @@ app/                  页面（Next.js App Router）
   projects/stake-video/taglines/page.tsx  宣传语提案：一张卡一个提案，按类别分组
   globals.css         视觉体系（沿用「我是主理人」DESIGN.md 的浅色玻璃风格，做了简化）
 components/           导航、页脚、图标
+  project/            项目模板：ProjectOverview（概览页）、ProjectDoc（材料页）、DocSwitcher、SmartLink
 content/              所有文字内容，改内容只改这里
   site.ts             网站信息与五个板块
   toolbox.ts          Confu 各期与工作流
-  projects.ts         项目追踪列表
+  projects.ts         项目注册表（新项目由 npm run new:project 自动登记）
+  projects/_schema.ts 项目数据规范：卡片、概览页、材料的字段
+  projects/<slug>/    新项目的数据（project.ts）
   agentic-wallet.ts   Agentic Wallet 页面的全部卡片内容
   stake-video.ts      Stake 视频制作项目页的内容
   stake-taglines.ts   宣传语提案的分类与卡片（中英双语）
@@ -39,6 +46,10 @@ public/
   toolbox/atlas/      设计工具图鉴（由 sources/tool-atlas/build.py 生成，不要手改）
   toolbox/copy-workflow/  文案管理工作流（原仓库内容，已迁移到这里）
   projects/stake-video/pr/  Stake 视频制作 · 媒体 PR 稿方案（托管的静态页）
+scripts/
+  audit.mjs           自动审核（npm run audit），规则见 CONTRIBUTING.md
+  scaffold.mjs        新建项目 / 材料（npm run new:project、new:doc），模板在 templates/
+docs/                 项目模板、视觉与写作规范
 sources/
   tool-atlas/         设计工具图鉴的源数据：data-*.json、atlas.css / atlas.js、logos/
   brand/              imToken logo
@@ -74,7 +85,13 @@ python3 sources/tool-atlas/build.py
 
 **在项目追踪里加一个项目**
 
-在 `content/projects.ts` 里追加一项；如果它有自己的页面，在 `app/projects/<slug>/page.tsx` 新建。Agentic Wallet 的卡片文字全部在 `content/agentic-wallet.ts`。Stake 视频制作的文字在 `content/stake-video.ts`，宣传语卡片在 `content/stake-taglines.ts`；媒体 PR 稿方案是托管的静态页 `public/projects/stake-video/pr/index.html`（地址 `/projects/stake-video/pr/`，在 `next.config.mjs` 里有对应的 rewrite），由视频项目的生成脚本产出，改内容时整页替换。
+```bash
+npm run new:project -- <slug> --title "中文名"
+```
+
+它会生成 `content/projects/<slug>/project.ts`（卡片和概览页的数据）、概览页、样式文件，并在 `content/projects.ts` 登记。把所有【待填写】换成真实内容，`npm run check` 通过后提 PR。新增材料用 `npm run new:doc`。完整流程见 [CONTRIBUTING.md](CONTRIBUTING.md)。
+
+规范建立前的三个旧项目：Agentic Wallet 的卡片文字在 `content/agentic-wallet.ts`；Stake 视频制作的文字在 `content/stake-video.ts`，宣传语卡片在 `content/stake-taglines.ts`，媒体 PR 稿方案是托管的静态页 `public/projects/stake-video/pr/index.html`（由视频项目的生成脚本产出，改内容时整页替换）；ENS 地址解析是托管原型 `public/projects/ens-address-resolution/index.html`。
 
 **开放一个新板块**
 
@@ -82,7 +99,7 @@ python3 sources/tool-atlas/build.py
 
 ## 部署
 
-GitHub 推送到 `main` 后由 Vercel 自动构建部署，每个 PR 会生成预览地址。
+GitHub 推送到 `main` 后由 Vercel 自动构建部署，每个 PR 会生成预览地址。GitHub Actions 对每个 PR 跑自动审核和构建（`.github/workflows/ci.yml`）。
 
 ## 规划
 

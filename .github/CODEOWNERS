@@ -1,0 +1,31 @@
+# 共享部分由 Wilson 审批（在 main 的分支保护里开启 Require review from Code Owners 后生效）。
+# 作者不能批准自己的 PR：Wilson 自己改共享文件时用管理员权限合并，所以分支保护里不要勾选 Do not allow bypassing the above settings。
+# 项目目录（content/projects/<slug>/、app/projects/<slug>/、public/projects/<slug>/）故意不设 code owner：
+# 只写负责人一个人，会让负责人自己的 PR 永远等不到 code owner 批准。项目审稿人由作者在 PR 的 Reviewers 里手动请求。
+
+/app/globals.css                @wilsonwang-mt
+/app/layout.tsx                 @wilsonwang-mt
+/app/page.tsx                   @wilsonwang-mt
+/app/projects/page.tsx          @wilsonwang-mt
+/app/toolbox/                   @wilsonwang-mt
+/components/                    @wilsonwang-mt
+/content/site.ts                @wilsonwang-mt
+/content/toolbox.ts             @wilsonwang-mt
+/content/projects.ts            @wilsonwang-mt
+/content/projects/_schema.ts    @wilsonwang-mt
+/next.config.mjs                @wilsonwang-mt
+/package.json                   @wilsonwang-mt
+/package-lock.json              @wilsonwang-mt
+/tsconfig.json                  @wilsonwang-mt
+/.gitignore                     @wilsonwang-mt
+/public/projects/site-nav.js    @wilsonwang-mt
+/public/brand/                  @wilsonwang-mt
+/public/confu/                  @wilsonwang-mt
+/public/toolbox/                @wilsonwang-mt
+/sources/                       @wilsonwang-mt
+/scripts/                       @wilsonwang-mt
+/docs/                          @wilsonwang-mt
+/.github/                       @wilsonwang-mt
+/CLAUDE.md                      @wilsonwang-mt
+/CONTRIBUTING.md                @wilsonwang-mt
+/README.md                      @wilsonwang-mt
