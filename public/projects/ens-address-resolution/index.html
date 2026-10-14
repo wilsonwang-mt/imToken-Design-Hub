@@ -3,8 +3,20 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Prototype — 转账地址解析 Tooltip v3.2 · imToken UXD</title>
+<title>Prototype — 转账地址解析 Tooltip v3.3 · imToken UXD</title>
 <style>
+/* v3.3 变更（2026-10-14）：「Add to address book」快捷添加栏的显示时机与条件改为按 token-v2 master 代码还原（Tooltip 以外的控件以仓库代码为准；样式不在本次范围）：
+   ① 时机：NewFormReceiver/index.tsx:44-47 对输入做 500ms 防抖，quickAddBehaviorPlugin.tsx:103-107 防抖值为空时不渲染 → 打字过程中不出现；
+   非域名（hex / Tron / TON）停止输入 500ms 后出现（TIMING.addbarDebounce，早于 Tag / Tooltip 的 800ms 防抖与 spinner）；
+   域名的有效性判断本身要解析域名（NewAddressInput/utils.ts:58-108 verifyAddress / isValidAddress），所以在解析成功时与 Tag 同时出现。
+   ② 条件：quickAddBehaviorPlugin.tsx:109-132 = isValidAddress && !isInvalidContactChain（Contact/utils/validate.ts:33-43）&& !isContactExistsByAddress
+   （Contact/SearchContacts/helpers.ts:8-14，按输入文字比对地址本）。结果：场景 4（当前设备）由隐藏改为显示——仓库不判断当前设备；
+   场景 7（Cosmos 链上的 Osmosis 地址）改为隐藏——非 Cosmos Hub 地址不可存入地址本；场景 13（无法解析）/ 17（解析中断）改为全程不出现；
+   3 / 12 / 14 / 15（地址本命中）/ 18（无效地址）仍不出现；其余场景出现，只是时机改为上述规则。规则只写在 addbarRule(scene) 一处。
+   ③ 交互：点它时 Tooltip 开着则立即收起（Tooltip 规则 3.3「点其他控件立即收起」，reason = addbar tap），并记日志；App 里会先 Keyboard.dismiss() 再打开 ContactNew 底部弹窗
+   （quickAddBehaviorPlugin.tsx:74-77），原型不开弹窗。层级：Tooltip（.tooltip-wrap z-index 5）浮在输入框下方内容之上，盖住快捷添加栏；快捷添加栏在 .below 里、无 z-index。
+   ④ hash 直达：step=typed 不显示（500ms 防抖未到）；step=resolving 非域名已显示、域名未显示；step=dismissed / shown / expanded 按规则显示。
+   EXPLAIN 1–19 / hint 同步；window.proto 新增 addbarRule / isDomainInput，getState() 新增 addbar。 */
 /* v3.2 变更（Wilson 2026-10-14）：① 新增场景 19「风控查询失败 → 顶部 Toast」：hex 地址解析正常、风控接口失败（线上会完全静默），
    用 Toast.warning 提醒「无法完成安全风险评估」（英文为待定草稿）；无 Tag、无 Tooltip，Next 可用；排在 Prototype 2 场景 17 之后。
    ② 顶部 Toast 按 token-v2 的 ui/Toast 前端代码 1:1 还原，不再是自绘控件：白底（neutralBg）胶囊（圆角 300）、padding 12 / 16、gap 8、
@@ -582,7 +594,7 @@ html,body{background:var(--hub-ground)}
 </style>
 </head>
 <body class="skin-s1">
-<div class="ver" id="ver">v3.2</div>
+<div class="ver" id="ver">v3.3</div>
 <!-- ===================== INTRO · 解析对象与信息架构（2026-10-08 团队讨论口径） ===================== -->
 
 <div class="ambient" aria-hidden="true"><i class="b1"></i><i class="b2"></i><i class="b3"></i></div>
@@ -732,7 +744,7 @@ html,body{background:var(--hub-ground)}
       <!-- v2.0: 两个 Prototype 区由 PROTOS 渲染（各自一台手机 + 一个场景面板） -->
       <div class="protos" id="protos"></div>
 
-      <p class="hint">直达：<code>#scene=10&amp;step=expanded</code>（scene = 1…19 · step = typed / resolving / shown / expanded / dismissed · 场景属于哪个 Prototype 就在哪台手机上播放并选中对应 Tab / 卡片；场景 17 step=resolving 看 spinner、step=shown 冻结顶部 Toast；场景 18 step=shown 看输入框下方报错；场景 19 step=shown 冻结风控查询失败的 Toast）· 点手机空白处只关闭该台的 tooltip · 点 Tag 再次唤起（回到默认收起态） · Esc 关闭 · Tooltip 出现后 8 秒自动收起（Info / Warning / High risk 一致；点 Tag 再次唤起重新计 8 秒；展开时重新计 8 秒（10-12 评审确认）；step 直达为冻结态，不自动收起） · 折叠入口点击展开、展开后不可收起 · C08「Transaction Record」只在 Tag = Info 时出现在区域一（分割线以上，纯正文，不带标题、不带色条——色条只用于 Warning / High risk）；Warning / High risk 时不显示、不进折叠区 · ENS 正向解析条目的 label = 用户输入的域名（含零宽字符时在其位置插入橙色三角感叹号，输入框里不加），地址全文与其他内容同字体字号，可换行 · 反向解析 label「ENS name」 · 场景 17 解析中断：spinner 约 2.5 秒后顶部 Toast，停留 3 秒淡出，点输入框（重新编辑）重新触发解析 · 场景 18 无效地址：不解析、不出 spinner，输入框下方报错 + 红描边</p>
+      <p class="hint">直达：<code>#scene=10&amp;step=expanded</code>（scene = 1…19 · step = typed / resolving / shown / expanded / dismissed · 场景属于哪个 Prototype 就在哪台手机上播放并选中对应 Tab / 卡片；场景 17 step=resolving 看 spinner、step=shown 冻结顶部 Toast；场景 18 step=shown 看输入框下方报错；场景 19 step=shown 冻结风控查询失败的 Toast）· 点手机空白处只关闭该台的 tooltip · 点 Tag 再次唤起（回到默认收起态） · Esc 关闭 · Tooltip 出现后 8 秒自动收起（Info / Warning / High risk 一致；点 Tag 再次唤起重新计 8 秒；展开时重新计 8 秒（10-12 评审确认）；step 直达为冻结态，不自动收起） · 折叠入口点击展开、展开后不可收起 · C08「Transaction Record」只在 Tag = Info 时出现在区域一（分割线以上，纯正文，不带标题、不带色条——色条只用于 Warning / High risk）；Warning / High risk 时不显示、不进折叠区 · ENS 正向解析条目的 label = 用户输入的域名（含零宽字符时在其位置插入橙色三角感叹号，输入框里不加），地址全文与其他内容同字体字号，可换行 · 反向解析 label「ENS name」 · 场景 17 解析中断：spinner 约 2.5 秒后顶部 Toast，停留 3 秒淡出，点输入框（重新编辑）重新触发解析 · 场景 18 无效地址：不解析、不出 spinner，输入框下方报错 + 红描边 · Add to address book 按 App 代码：打字过程中不出现；hex / Tron / TON 地址停止输入 500ms 后出现（早于 spinner），域名在解析成功后与 Tag 同时出现；已在地址本、Cosmos 链上的非 Cosmos Hub 地址、无效 / 无法解析 / 解析中断时不出现，当前设备的账户照常出现；Tooltip 浮在它上面，点它会先收起 Tooltip</p>
 
       <!-- v3.0: 文案来源对照（由脚本 STR 生成） -->
       <details class="copy-src" id="copySrc">
@@ -955,9 +967,33 @@ var TIMING = {
   autoHide: 8000,           // v2.6（设计评审 2026-10-12）：Info / Warning / High risk 统一 8 秒自动收起（取代已作废的 Info-only infoAuto）
   interrupt: 2500,          // v2.9 场景 17：spinner 转约 2.5 秒后解析中断
   toast: 3000, toastOut: REDUCED ? 0 : 200,   // v2.9 场景 17：顶部 Toast 停留 3 秒后淡出（淡出 200ms 后 display:none）
-  fold: REDUCED ? 0 : 160    // v1.12: 入口行 32→0 / 折叠区 0fr→1fr 的过渡时长（= --d-fold），过渡结束后入口行 display:none
+  fold: REDUCED ? 0 : 160,   // v1.12: 入口行 32→0 / 折叠区 0fr→1fr 的过渡时长（= --d-fold），过渡结束后入口行 display:none
+  addbarDebounce: 500        // v3.3：Add to address book 的判断用的是输入框 500ms 防抖后的值（token-v2 NewFormReceiver/index.tsx:44-47 useDebounce(address, 500)），
+                             //       比 Tag / Tooltip 的 800ms 防抖（AddressTip/useTips.tsx:537-568，原型用 pause 表示）早；非域名输入停止输入 500ms 后出现
   // v2.0: autoplay / autoExpand 已删除（「自动播放全部」开关移除）
 };
+
+/* ---------- v3.3 Add to address book（快捷添加地址本）显示规则 · 唯一出处 ----------
+   按 token-v2 master 代码还原（不是设计稿规则）：
+   - 时机：NewFormReceiver/index.tsx:44-47 对输入做 500ms 防抖（trailing）；:79-88 防抖值变化时写 reactiveValue { address, isAddressChanged }；
+     plugins/quickAddBehaviorPlugin.tsx:103-107 防抖值为空 / 未变化时不渲染 → 从空输入框开始打字，打字过程中不会出现。
+   - 条件：quickAddBehaviorPlugin.tsx:109-132 setIsView( isValidAddress && !isInvalidContactChain && !isContactExistsByAddress )，异步判断完成后才显示：
+     · NewAddressInput/utils.ts:58-108 isValidAddress / verifyAddress：域名（utils.ts:55-56 isValidDomain = COIN_TYPES[chainType] && /\S\.\S/）必须解析成功才算有效，
+       所以域名要等解析完成才出现；解析失败 / 中断 → 不出现；非域名必须是当前链的有效地址；Cosmos 还要求地址能匹配到网络；
+     · Contact/SearchContacts/helpers.ts:8-14 isContactExistsByAddress：用「输入框文字」与地址本条目的 address 比较（不区分大小写）——
+       与 Tooltip 的地址本命中（useTips.tsx:143-154 isMatchedContact，同样比较输入文字）同一依据，所以命中 C09 的场景一律不显示；
+     · Contact/utils/validate.ts:33-43 isInvalidContactChain：BTC 测试网地址、Cosmos 链上非 Cosmos Hub（cosmos1…）地址不可存入地址本 → 不显示。
+   - 不参与判断：当前设备（自己钱包里的账户，C01）、风险等级、风控接口是否成功。
+   - 点击：quickAddBehaviorPlugin.tsx:74-77 先 Keyboard.dismiss() 收起键盘，再打开 ContactNew 底部弹窗（:43-68；地址 = 输入文字，
+     输入是 hex 时用反向解析出的域名预填名称）。原型只记日志、不开弹窗；Tooltip 开着时按 Tooltip 规则 3.3「点其他控件立即收起」先收起 Tooltip。 */
+function isDomainInput(input){ return /\S\.\S/.test(input); }   // = token-v2 ens.tsx:22-24 isValidNSDomain（四条链都在 COIN_TYPES 里）
+// 返回 'never'（整场不出现）/ 'debounce'（停止输入 500ms 后出现）/ 'resolved'（域名：解析成功的那一刻出现）
+function addbarRule(scene){
+  if (scene.invalid || scene.unresolved || scene.interrupted) return 'never';            // isValidAddress = false（无效地址 / 域名解析失败 / 解析中断）
+  if (scene.ctx.some(function(c){ return c.id === 'C09'; })) return 'never';             // isContactExistsByAddress（已在地址本）
+  if (scene.chain === 'cosmos' && !/^cosmos1/.test(scene.input)) return 'never';         // isInvalidContactChain（Cosmos 链上的非 Cosmos Hub 地址）
+  return isDomainInput(scene.input) ? 'resolved' : 'debounce';
+}
 
 /* ---------- context registry (IA §3, verbatim copy) ---------- */
 var CTX = {
@@ -1385,81 +1421,81 @@ var PROTOS = [
 var EXPLAIN = {
   1:  { dim:'区域一无内容（无风险条目、未检测到无交易记录）· 区域二无命中。',
         type:'无 context：风控未返回风险信息，也没有「无交易记录」的检测结果；地址未命中专项信息、地址标记或 ENS 解析。',
-        rule:'Tag = 无；无 Tooltip，Tag 位置为空；Next 可用；保留「Add to address book」入口。',
+        rule:'Tag = 无；无 Tooltip，Tag 位置为空；Next 可用；停止输入 500ms 后出现「Add to address book」（早于 spinner），位于输入框下方。',
         why:'两个区域都没有内容时不显示 Tag，所以输入框右侧为空，也没有可唤起的 Tooltip。' },
   2:  { dim:'区域一：Transaction Record · 区域二为空。',
         type:'C08 无交易记录：帮助用户评判风险的输入，Tag = Info 时放在区域一（分割线以上），与 Warning / High risk 同一信息层级；纯正文，无标题、无色条（色条只用于 Warning / High risk）。',
-        rule:'Tag = Info；纯正文「You haven\'t transacted with this address before.」，无标题、无色条，与其他正文左对齐；不折叠；区域二为空，所以没有分割线；自动唤起，8 秒后自动收起；点 Tag 可再次唤起。',
+        rule:'Tag = Info；纯正文「You haven\'t transacted with this address before.」，无标题、无色条，与其他正文左对齐；不折叠；区域二为空，所以没有分割线；自动唤起，8 秒后自动收起；点 Tag 可再次唤起；停止输入 500ms 后出现「Add to address book」（早于 spinner 与 Tag），位于输入框下方；Tooltip 浮在它上面（z-index 5），Tooltip 开着时点它会先收起 Tooltip。',
         why:'无交易记录不是解析出来的事实，而是判断输入，所以放在分割线以上；本例没有任何地址信息，Tooltip 只有区域一这一个区块。' },
   3:  { dim:'区域一：Transaction Record · 区域二 ②。',
         type:'C08 无交易记录 · C09 地址本命中（Binance Deposit）。',
-        rule:'Tag = Info；不折叠；区域一「Transaction Record」→ 分割线 → 区域二「Saved in address book / Binance Deposit」；自动唤起，8 秒后自动收起；不显示「Add to address book」。',
+        rule:'Tag = Info；不折叠；区域一「Transaction Record」→ 分割线 → 区域二「Saved in address book / Binance Deposit」；自动唤起，8 秒后自动收起；不显示「Add to address book」（输入的地址已在地址本）。',
         why:'先给判断输入（没转过），再给解析事实（这是地址本里的 Binance Deposit）；两部分性质不同，中间用一条分割线隔开，与风险态「风险条目｜折叠入口」之间的分割线同款。' },
   4:  { dim:'区域二 ②（区域一无内容）。',
         type:'C01 当前设备：地址是用户当前某个钱包里的账户。label「This device」+ 正文一行「DeFi Exploration · Account 01」（Wallet Name · Account Name，账户名自动命名，可改）。',
-        rule:'Tag = Info（由区域二有内容触发，作为 Tooltip 入口）；label「This device」+ 正文一行「Wallet Name · Account Name」，Text style 与地址本条目一致（12·60% / 14）；不折叠；若同时命中地址本，地址本排在前；8 秒后自动收起；不显示「Add to address book」。',
-        why:'标记只回答「这是谁」——给自己的哪个钱包、哪个账户转账，所以 label 固定「This device」，正文用「钱包名 · 账户名」一行表达，不做风险判断。' },
+        rule:'Tag = Info（由区域二有内容触发，作为 Tooltip 入口）；label「This device」+ 正文一行「Wallet Name · Account Name」，Text style 与地址本条目一致（12·60% / 14）；不折叠；若同时命中地址本，地址本排在前；8 秒后自动收起；停止输入 500ms 后照常出现「Add to address book」（早于 spinner），Tooltip 浮在它上面。',
+        why:'标记只回答「这是谁」——给自己的哪个钱包、哪个账户转账，所以 label 固定「This device」，正文用「钱包名 · 账户名」一行表达，不做风险判断。「Add to address book」沿用 App 现有逻辑：只排除已在地址本里的地址，不判断是不是当前设备的账户，所以这里照常出现。' },
   5:  { dim:'区域二 ③（区域一无内容）。',
         type:'C10 ENS 正向解析：alice.eth → 解析出的地址全文。',
-        rule:'Tag = Info；label 直接用用户输入的域名「alice.eth」（ENS / DAS / UNS / ZNS 四个服务同理）+ 地址全文，与其他解析内容同字体字号颜色（SF Pro 14 / 400，不加粗），可换行；不折叠；永远排列表最后；8 秒后自动收起。',
+        rule:'Tag = Info；label 直接用用户输入的域名「alice.eth」（ENS / DAS / UNS / ZNS 四个服务同理）+ 地址全文，与其他解析内容同字体字号颜色（SF Pro 14 / 400，不加粗），可换行；不折叠；永远排列表最后；8 秒后自动收起；「Add to address book」在域名解析成功后与 Tag 同时出现（App 判断地址有效时要先解析域名），位于输入框下方；Tooltip 浮在它上面（z-index 5），Tooltip 开着时点它会先收起 Tooltip。',
         why:'用户输入的是域名，Tooltip 要给出真正要转去的地址全文供核对；label 就是用户刚输入的域名，「哪个域名 → 哪个地址」一眼对上；地址与其他内容同一正文样式、完整换行显示，不做任何加粗或变淡处理。' },
   6:  { dim:'区域二 ③（区域一无内容）。',
         type:'C11 ENS 反向解析：hex 地址 → 关联的域名 alice.eth。',
-        rule:'Tag = Info；label「ENS name」+ 解析出的 ENS name；不折叠；排列表最后；8 秒后自动收起；42 位地址让输入框升到 72 高，Tooltip 随之下移。',
+        rule:'Tag = Info；label「ENS name」+ 解析出的 ENS name；不折叠；排列表最后；8 秒后自动收起；42 位地址让输入框升到 72 高，Tooltip 随之下移；停止输入 500ms 后出现「Add to address book」（早于 spinner 与 Tag），位于输入框下方；Tooltip 浮在它上面（z-index 5），Tooltip 开着时点它会先收起 Tooltip；App 里点它会用反向解析出的 alice.eth 预填名称。',
         why:'用户输入的是地址，反向解析出的域名只是辅助识别，所以只展示关联的域名（当前无多域名解析能力）。' },
   7:  { dim:'区域二 ①（区域一无内容）。',
         type:'C02 专项信息 · 链类型识别：输入的是 Osmosis 格式的地址，将以 IBC 跨链方式转账（Funds will be sent via IBC cross-chain transfer.）。',
-        rule:'Tag = Info；label「Osmosis address」（标识收款地址自身的网络格式，{chainName} = Osmosis）+ 正文「Funds will be sent via IBC cross-chain transfer.」（将以 IBC 跨链方式转账）；不折叠；与其他地址信息同时出现时排列表最前；8 秒后自动收起。',
-        why:'没有风险信息，但「发到哪条链」是发送前必须知道的事实，所以独立成一条并置顶。' },
+        rule:'Tag = Info；label「Osmosis address」（标识收款地址自身的网络格式，{chainName} = Osmosis）+ 正文「Funds will be sent via IBC cross-chain transfer.」（将以 IBC 跨链方式转账）；不折叠；与其他地址信息同时出现时排列表最前；8 秒后自动收起；不显示「Add to address book」。',
+        why:'没有风险信息，但「发到哪条链」是发送前必须知道的事实，所以独立成一条并置顶。「Add to address book」沿用 App 现有逻辑：Cosmos 链上的地址本只收 Cosmos Hub（cosmos1…）地址，Osmosis 地址不能存入，所以不显示。' },
   8:  { dim:'区域二 ①（区域一无内容）。',
         type:'C03 专项信息 · 地址状态：Tron 收款地址尚未激活，本次转账将额外消耗 0.1 TRX 用于激活（Not activated yet. An extra 0.1 TRX will be spent to activate it.）。',
-        rule:'Tag = Info；label「Tron address」（标识网络）+ 正文「Not activated yet. An extra {{num}} TRX will be spent to activate it.」（尚未激活，本次转账将额外消耗 {{num}} TRX 用于激活；原型 num = 0.1）；不折叠；排列表最前；8 秒后自动收起。',
+        rule:'Tag = Info；label「Tron address」（标识网络）+ 正文「Not activated yet. An extra {{num}} TRX will be spent to activate it.」（尚未激活，本次转账将额外消耗 {{num}} TRX 用于激活；原型 num = 0.1）；不折叠；排列表最前；8 秒后自动收起；停止输入 500ms 后出现「Add to address book」（早于 spinner 与 Tag），位于输入框下方；Tooltip 浮在它上面（z-index 5），Tooltip 开着时点它会先收起 Tooltip。',
         why:'未激活会影响这笔转账的实际支出，属于必须先知道的地址状态，所以用独立条目直接说明额外消耗的金额。' },
   9:  { dim:'区域二 ①（区域一无内容）。',
         type:'C04 专项信息 · 地址状态：TON 反弹地址（bounceable），可正常转账；若转账失败，资金会自动退回（Transfers work as usual. If the transfer fails, funds are returned to you automatically.）。',
-        rule:'Tag = Info；label「TON bounceable address」（标识网络与地址类型）+ 正文「Transfers work as usual. If the transfer fails, funds are returned to you automatically.」（可正常转账；若转账失败，资金会自动退回）；不折叠；排列表最前；8 秒后自动收起。',
+        rule:'Tag = Info；label「TON bounceable address」（标识网络与地址类型）+ 正文「Transfers work as usual. If the transfer fails, funds are returned to you automatically.」（可正常转账；若转账失败，资金会自动退回）；不折叠；排列表最前；8 秒后自动收起；停止输入 500ms 后出现「Add to address book」（早于 spinner 与 Tag），位于输入框下方；Tooltip 浮在它上面（z-index 5），Tooltip 开着时点它会先收起 Tooltip。',
         why:'与未激活同属地址状态识别，提前告诉用户转账失败时资金的去向。' },
   10: { dim:'区域一 Warning + 区域二 ③。',
         type:'C06 Warning 地址（近期活动异常）· C10 ENS 正向解析（bob.eth → 地址）。',
-        rule:'Tag = Warning；风险条目（橙色色条 + 正文，无标题）常显；区域二折叠为「More address info (1)」，点击展开、入口行消失、展开后不可收起；展开后 C10 的 label 是输入的域名 bob.eth；8 秒后自动收起（展开时重新计 8 秒（10-12 评审确认）），点空白 / Esc 立即关闭。',
+        rule:'Tag = Warning；风险条目（橙色色条 + 正文，无标题）常显；区域二折叠为「More address info (1)」，点击展开、入口行消失、展开后不可收起；展开后 C10 的 label 是输入的域名 bob.eth；8 秒后自动收起（展开时重新计 8 秒（10-12 评审确认）），点空白 / Esc 立即关闭；「Add to address book」在域名解析成功后与 Tag 同时出现（App 判断地址有效时要先解析域名），位于输入框下方；Tooltip 浮在它上面（z-index 5），Tooltip 开着时点它会先收起 Tooltip；风险等级不影响它是否出现。',
         why:'Warning / High risk 时先只给风险判断，解析出的地址收进折叠区，用户需要时再展开核对全文；展开/收起是页面内次级信息的模式，tooltip 不做复杂交互，看完直接点空白处关闭。' },
   11: { dim:'区域一 Warning + 区域二 ③（C08 被剔除）。',
         type:'C07 域名含隐藏字符（用户粘贴的 b⚠inance.eth 在 b 与 inance 之间藏了一个零宽字符，可能仿冒 binance.eth）· C10 ENS 正向解析；风控同时返回了无交易记录（C08），但 Warning 时不显示。',
-        rule:'Tag = Warning；C07 常显；折叠区「More address info (1)」只有 C10，点击展开后不可收起；C10 label = 粘贴的域名，零宽字符位置插入橙色三角感叹号（b⚠inance.eth），输入框里不加图标；C08 不进区域一、不进折叠区、不计入 N；8 秒后自动收起。',
+        rule:'Tag = Warning；C07 常显；折叠区「More address info (1)」只有 C10，点击展开后不可收起；C10 label = 粘贴的域名，零宽字符位置插入橙色三角感叹号（b⚠inance.eth），输入框里不加图标；C08 不进区域一、不进折叠区、不计入 N；8 秒后自动收起；「Add to address book」在域名解析成功后与 Tag 同时出现（App 判断地址有效时要先解析域名），位于输入框下方；Tooltip 浮在它上面（z-index 5），Tooltip 开着时点它会先收起 Tooltip。',
         why:'交易历史只在 Tag = Info 时作为判断输入展示；已经有 Warning / High risk 时它不再增加信息量，所以整条剔除；唯一的分割线在区域一与折叠入口之间。零宽字符本身看不见，所以在 label 里用系统现有的橙色三角感叹号把它的位置标出来——这是 Tooltip 内唯一的彩色字形。' },
   12: { dim:'区域一 High risk + 区域二 ② ③。',
         type:'C05 High risk 地址 · C09 地址本命中（Airdrop claim）· C10 ENS 正向解析。',
-        rule:'Tag = High risk；风险条目（红色色条 + 正文，无标题）常显，正文无彩色；折叠「More address info (2)」：地址本 ② 排在 ENS ③ 前，点击展开后不可收起；8 秒后自动收起；不显示「Add to address book」。',
+        rule:'Tag = High risk；风险条目（红色色条 + 正文，无标题）常显，正文无彩色；折叠「More address info (2)」：地址本 ② 排在 ENS ③ 前，点击展开后不可收起；8 秒后自动收起；不显示「Add to address book」（输入的域名已在地址本）。',
         why:'High risk 与 Warning 同一结构，只有 Tag 颜色升级；地址本标记只回答「这是谁」，不抵消风险判断，所以仍折叠在风险条目之下。' },
   13: { dim:'Unhappy Path · 不进 Tooltip（两个区域都不产生内容）。',
         type:'figma.eth 在当前链（Ethereum）无法解析 / 无记录。',
-        rule:'解析中：Tag 位置只显示 spinner，无 Tooltip；解析失败：走现有 S3 Alert「Unable to resolve this name on Ethereum」，无 Tag、无 Tooltip；Next 不可用。',
+        rule:'解析中：Tag 位置只显示 spinner，无 Tooltip；解析失败：走现有 S3 Alert「Unable to resolve this name on Ethereum」，无 Tag、无 Tooltip；Next 不可用；全程不出现「Add to address book」（域名解析不出地址 = 地址无效）。',
         why:'无法解析意味着没有可发送的目标，这不是地址信息，所以用阻断式 Alert 而不是 Tooltip 提示。' },
   14: { dim:'区域二 ②（区域一无内容）。',
         type:'C09 地址本命中（Binance Deposit）· C01 当前设备（DeFi Exploration · Account 01）同时命中。',
-        rule:'Tag = Info；两条都显示、不二选一，地址本排在当前设备之前；不折叠；8 秒后自动收起；不显示「Add to address book」。',
+        rule:'Tag = Info；两条都显示、不二选一，地址本排在当前设备之前；不折叠；8 秒后自动收起；不显示「Add to address book」（因为已在地址本；是否为当前设备不影响）。',
         why:'两个标记回答的是同一个问题「这是谁」，但来源不同，所以都保留；地址本是用户主动存的，优先级更高。多数情况下不会既是又是。' },
   15: { dim:'区域二 ① + ② + ③（区域一无内容）。',
         type:'C03 专项信息 · Tron 收款账户未激活（Not activated yet. An extra 0.1 TRX will be spent to activate it.）· C09 地址本命中（Binance Deposit）· C10 ENS 正向解析（alice.eth → Tron 地址，label = alice.eth）。',
-        rule:'Tag = Info；三类同时出现，固定次序 ① 专项信息识别（label「Tron address」+ 尚未激活、额外消耗 0.1 TRX）→ ② 地址标记 → ③ ENS 解析；不折叠；8 秒后自动收起；不显示「Add to address book」。',
+        rule:'Tag = Info；三类同时出现，固定次序 ① 专项信息识别（label「Tron address」+ 尚未激活、额外消耗 0.1 TRX）→ ② 地址标记 → ③ ENS 解析；不折叠；8 秒后自动收起；不显示「Add to address book」（输入的域名已在地址本）。',
         why:'先说这笔转账要多花什么（未激活，额外消耗 0.1 TRX），再说这是谁（Binance Deposit），最后给解析出的地址全文供核对——按用户发送前要回答的问题的先后排。' },
   16: { dim:'区域一 Warning × 2 + 区域二 ③。',
         type:'C06 Warning 地址（近期活动异常）· C07 域名含隐藏字符（bin⚠ance.eth，bin 与 ance 之间藏了一个零宽字符，可能仿冒 binance.eth）· C10 ENS 正向解析。',
-        rule:'Tag = Warning；两条 warning 上下排列，各自一根橙色色条，不带标题；区域二折叠为「More address info (1)」，展开后不可收起；C10 label = 粘贴的域名，零宽字符位置插入橙色三角感叹号（bin⚠ance.eth）；8 秒后自动收起。',
+        rule:'Tag = Warning；两条 warning 上下排列，各自一根橙色色条，不带标题；区域二折叠为「More address info (1)」，展开后不可收起；C10 label = 粘贴的域名，零宽字符位置插入橙色三角感叹号（bin⚠ance.eth）；8 秒后自动收起；「Add to address book」在域名解析成功后与 Tag 同时出现（App 判断地址有效时要先解析域名），位于输入框下方；Tooltip 浮在它上面（z-index 5），Tooltip 开着时点它会先收起 Tooltip。',
         why:'多条 warning 时色条天然把每一条分开并引导阅读；如果用「标题 + 副标题」，两条都叫 Warning，标题会重复、层级会乱——这是采用色条的一个直接好处。' },
   // v2.9 Wilson（2026-10-12）：两个异常场景（不出 Tooltip）
   17: { dim:'Unhappy Path · 不进 Tooltip（解析没有完成，两个区域都不产生内容）。',
         type:'alice.eth 在 Ethereum 上的解析中途中断（超时 / 网络异常），没有拿到结果。',
-        rule:'解析中 Tag 位置只显示 spinner，约 2.5 秒后中断：spinner 消失、无 Tag、无 Tooltip，屏幕顶部滑入 Toast「Couldn\'t finish checking this address. Please try again.」（地址识别未完成，请重试），停留 3 秒后淡出；Next 不可用，重新编辑输入框会重新触发解析。',
+        rule:'解析中 Tag 位置只显示 spinner，约 2.5 秒后中断：spinner 消失、无 Tag、无 Tooltip，屏幕顶部滑入 Toast「Couldn\'t finish checking this address. Please try again.」（地址识别未完成，请重试），停留 3 秒后淡出；Next 不可用，重新编辑输入框会重新触发解析；全程不出现「Add to address book」（解析没有完成，地址未被确认有效）。',
         why:'解析中断是暂时性的、重试即可，既不是地址事实也不需要阻断，所以用会自动消失的顶部 Toast 轻提示，而不是 Alert 或 Tooltip。' },
   18: { dim:'Unhappy Path · 不进 Tooltip（输入本身无效，不进入解析）。',
         type:'0x9b57…71f7 少了一位（41 字符），既不是有效的 Ethereum 地址，也不是 ENS 域名。',
-        rule:'停顿 1 秒后立即判定无效（不出 spinner）：无 Tag、无 Tooltip，输入框加 1px 红色描边，下方 8px 一行红色报错「Not a valid Ethereum address or ENS name.」（无法识别：不是有效的 Ethereum 地址或 ENS 域名）；隐藏「Add to address book」，Amount 区随报错行下移，Next 不可用。',
+        rule:'停顿 1 秒后立即判定无效（不出 spinner）：无 Tag、无 Tooltip，输入框加 1px 红色描边，下方 8px 一行红色报错「Not a valid Ethereum address or ENS name.」（无法识别：不是有效的 Ethereum 地址或 ENS 域名）；隐藏「Add to address book」（打字时就不出现，判定无效后也不出现），Amount 区随报错行下移，Next 不可用。',
         why:'格式错误是用户当场就能改的输入问题，报错贴在输入框下方就近提示；没有解析结果，也就没有 Tooltip 可显示。' },
   // v3.2 Wilson（2026-10-14）
   19: { dim:'Unhappy Path · 区域一无法判断（风控没有返回结果）· 区域二无命中。',
         type:'0x6C2e…5F06 是有效的 Ethereum 地址，解析正常，但风控接口失败或超时，拿不到这个地址的风险等级。线上此时完全静默，用户会误以为「没有风险」。',
-        rule:'解析完成后无 Tag、无 Tooltip；屏幕顶部滑入 App 现有的 Toast.warning（橙色三角图标）「Couldn\'t complete the security risk check.」（无法完成安全风险评估），按组件默认停留 7 秒后淡出；Next 可用；保留「Add to address book」。若同时命中地址本、ENS 等地址信息，Tag 与 Tooltip 照常出现，Toast 同时出现在顶部。',
+        rule:'解析完成后无 Tag、无 Tooltip；屏幕顶部滑入 App 现有的 Toast.warning（橙色三角图标）「Couldn\'t complete the security risk check.」（无法完成安全风险评估），按组件默认停留 7 秒后淡出；Next 可用；停止输入 500ms 后照常出现「Add to address book」（早于 spinner；风控结果不参与判断）。若同时命中地址本、ENS 等地址信息，Tag 与 Tooltip 照常出现，Toast 同时出现在顶部。',
         why:'风险结果缺失不等于没有风险，必须让用户知道这次没有完成安全检查；但它不是地址事实，也不需要阻断转账，所以用 Toast 轻提示，并沿用 App 里网络失败类提示的 warning 样式。' }
 };
 var EX_KEYS = [['dim','解析维度'], ['type','解析类型'], ['rule','展示规则'], ['why','为什么左侧这样显示']];
@@ -1591,6 +1627,13 @@ function createProto(container, cfg){
   function setAddbar(show){
     el.addbar.hidden = !show;
     el.amountGroup.classList.toggle('no-bar', !show);
+  }
+  // v3.3：按 addbarRule(scene) 在对应时机显示「Add to address book」（when = 'debounce' 停止输入 500ms / 'resolved' 域名解析成功）；
+  //       重复调用无副作用（已显示则不再记日志）
+  function revealAddbar(scene, when){
+    if (!scene || addbarRule(scene) !== when || !el.addbar.hidden) return;
+    setAddbar(true);
+    log('add to address book shown (' + (when === 'debounce' ? TIMING.addbarDebounce + 'ms debounce' : 'domain resolved') + ' · isValidAddress ✓ · not in address book · chain ok)');
   }
   function setTag(level){
     if (level === 'none'){ el.tag.hidden = true; el.tag.textContent = ''; el.tag.className = 'tag'; return; }
@@ -1737,8 +1780,8 @@ function createProto(container, cfg){
     state.sceneIndex = index; state.scene = scene; state.sceneStart = now();
     state.model = buildModel(scene);
     applyChain(scene.chain);
-    // v2.9: 无效地址（场景 18）不提供「Add to address book」——整场隐藏，报错出现时 Amount 区只随报错行下移
-    setAddbar(!scene.invalid && !scene.ctx.some(function(c){ return c.id === 'C09' || c.id === 'C01'; }));
+    // v3.3：「Add to address book」场景开始时一律隐藏（打字过程中不出现），之后按 addbarRule(scene) 的时机出现——见 revealAddbar / play / resolveNow / jumpTo
+    setAddbar(false);
     setActiveScene(index);
     if (writeHash && window.history && typeof history.replaceState === 'function'){
       try { history.replaceState(null, '', '#scene=' + scene.n + copyHashSuffix()); } catch (e) {}
@@ -1762,6 +1805,7 @@ function createProto(container, cfg){
       state.phase = 'invalid'; setNext(false); showFieldError(scene); log('invalid → inline error under the input (S5, no resolve)'); return;
     }
     var m = state.model; state.level = m.level; setNext(true);
+    revealAddbar(scene, 'resolved');   // v3.3：域名输入——isValidAddress 本身就要解析域名，解析成功这一刻出现（与 Tag 同时）
     if (scene.riskFailed) log('risk check failed → no risk info (address resolved)');   // v3.2 场景 19
     if (m.level === 'none'){ state.phase = 'resolved'; log('resolved(none) → S2 no tag'); return; }
     setTag(m.level); renderTooltip(m);
@@ -1777,7 +1821,10 @@ function createProto(container, cfg){
     function step(){
       i++; setInput(chars.slice(0, i).join(''));
       if (i < chars.length) T.set(step, per);
-      else { state.phase = 'paused'; log('pause ' + TIMING.pause + 'ms'); T.set(function(){ afterPause(scene); }, TIMING.pause); }
+      else {
+        state.phase = 'paused'; log('pause ' + TIMING.pause + 'ms'); T.set(function(){ afterPause(scene); }, TIMING.pause);
+        T.set(function(){ revealAddbar(scene, 'debounce'); }, TIMING.addbarDebounce);   // v3.3：非域名输入停止输入 500ms 后出现（早于 spinner）
+      }
     }
     T.set(step, per);
   }
@@ -1811,6 +1858,8 @@ function createProto(container, cfg){
     var order = ['idle','typed','resolving','dismissed','shown','expanded'];
     var k = order.indexOf(step); if (k < 0) k = order.indexOf('shown');
     if (k >= 1){ setInput(scene.input); state.phase = 'typed'; log('typing (instant)'); el.caret.hidden = false; }
+    // v3.3：step=typed = 刚停止输入（500ms 防抖未到）→ 不显示「Add to address book」；step=resolving 起非域名输入已显示，域名输入在 resolveNow 解析成功时显示
+    if (k >= 2) revealAddbar(scene, 'debounce');
     if (k === 2){
       if (scene.invalid){ log('(invalid input never enters resolving — no spinner)'); return; }   // v2.9 场景 18
       el.spinner.hidden = false; state.phase = 'resolving'; log('resolving'); return;
@@ -1870,6 +1919,13 @@ function createProto(container, cfg){
   el.tooltip.addEventListener('click', function(ev){ ev.stopPropagation(); });
   el.alertOk.addEventListener('click', function(ev){ ev.stopPropagation(); el.alert.hidden = true; log('alert dismissed (Understand)'); });
   el.addr.addEventListener('click', function(){ reEdit(); });   // v2.9: 场景 17 解析中断后点输入框 = 重新编辑 → 重新触发解析
+  // v3.3：点「Add to address book」——Tooltip 规则 3.3：点其他控件立即收起 Tooltip；App 里随后 Keyboard.dismiss() 并打开 ContactNew 底部弹窗（原型只记日志）
+  el.addbar.addEventListener('click', function(ev){
+    ev.stopPropagation();
+    if (state.tooltipVisible) hideTooltip('addbar tap');
+    el.caret.hidden = true;   // Keyboard.dismiss()：输入框失焦
+    log('add to address book tapped → Keyboard.dismiss() → ContactNew sheet');
+  });
 
   if (cfg.tabs) setTab(state.tab, true);
   applyCopy();
@@ -1879,7 +1935,8 @@ function createProto(container, cfg){
   inst.getState = function(){
     return { key:key, phase:state.phase, level:state.level, tooltipVisible:state.tooltipVisible, expanded:state.expanded, sceneIndex:state.sceneIndex,
              log:state.log.slice(), skin:SKIN, compare:COMPARE, tab:state.tab, started:state.started,
-             toastVisible:state.toastVisible, toastKind:state.toastKind, fieldError:state.fieldError, lang:LANG, copy:COPY };
+             toastVisible:state.toastVisible, toastKind:state.toastKind, fieldError:state.fieldError, lang:LANG, copy:COPY,
+             addbar:!el.addbar.hidden };   // v3.3
   };
   return inst;
 }
@@ -2007,6 +2064,7 @@ window.addEventListener('hashchange', function(){ var q = parseInit(); if (q.sce
 window.proto = {
   SCENES: SCENES, CTX: CTX, TIMING: TIMING, PROTOS: PROTOS, EXPLAIN: EXPLAIN,
   buildModel: buildModel, tooltipHTML: tooltipHTML, hexHTML: hexHTML, ensLabelHTML: ensLabelHTML,
+  addbarRule: addbarRule, isDomainInput: isDomainInput,   // v3.3
   p1: INSTANCES[0], p2: INSTANCES[1], instances: INSTANCES,
   ownerOf: ownerOf, instanceOf: instanceOf,
   // 按全局 SCENES 下标分发到所属实例（返回该实例）
