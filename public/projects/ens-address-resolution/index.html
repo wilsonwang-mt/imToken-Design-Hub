@@ -3,8 +3,18 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Prototype — 转账地址解析 Tooltip v3.3 · imToken UXD</title>
+<title>Prototype — 转账地址解析 Tooltip v3.4 · imToken UXD</title>
 <style>
+/* v3.4 变更（Wilson 2026-10-14）：Tooltip 以外的控件全部按 token-v2 前端代码还原（这次的设计改造只针对地址 Tag + Tooltip，其余控件以仓库为准）：
+   ① 图标改用仓库 IconSVG 原 SVG：nav-back / nav-scan / set-addressbook / nav-useradd / list-arrow / set-setting（20px，设置图标 16px）；
+   ② 解析中加载 = Progress.Loading inline：20px Lottie LoadingCircleBlue（约 291° 开口圆弧、线宽 ≈1.67、#007FFF、无底环、约 1s 一圈 ease-in-out）；
+   ③「Add to address book」快捷条 = quickAddBehaviorPlugin：p 16（高 ≈52）、宽 343、离输入框 12、图标 20 + mr 8、文字 14 常规 #007FFF、list-arrow 20 #007FFF；
+   ④ 数量 = NewFormAmount + NewFormMemo：数字 36 / 500，占位 40%；下方 12px 法币行（mt/mb 4）；数量与备注连成一张卡，极细分割线（缩进 16）；备注占位 40%；余额离右 16；
+   ⑤ 矿工费 = FeePreview + FeeRange：标题离屏幕 32；卡片 p 16；美元行 14 / 500、代币行 12 / 500，行距 4；档位 12 / 500 + list-arrow 16；
+   ⑥ 矿工费下方一行 = EIP1559.tsx：左右各缩进 32、离卡片 12；「Estimated range / 预估范围」12 + mr 4（estimated_range）；12px 进度圆环 + 12px 蓝字「Refresh in 7」（7 秒倒计时）；「Advanced」14 + set-setting 16 灰；
+   ⑦「下一步」= Button md：宽 343、贴底部安全区（底边离屏幕底 34），去掉原型自加的半透明模糊底板；
+   ⑧ 无法解析（场景 13）的 Alert = 系统原生 Alert.alert（RNAlert）：按 iOS 原生样式绘制（宽 270、圆角 14、半透明底、标题 17 粗体 + 正文 13 居中、整行按钮 44 高 + 细线、系统蓝 17）；
+   ⑨ Tag 沿用 Label variant="light"：左右内边距 6、上下 4、圆角 8、12 / 500（高 ≈25）。 */
 /* v3.3 变更（2026-10-14）：「Add to address book」快捷添加栏的显示时机与条件改为按 token-v2 master 代码还原（Tooltip 以外的控件以仓库代码为准；样式不在本次范围）：
    ① 时机：NewFormReceiver/index.tsx:44-47 对输入做 500ms 防抖，quickAddBehaviorPlugin.tsx:103-107 防抖值为空时不渲染 → 打字过程中不出现；
    非域名（hex / Tron / TON）停止输入 500ms 后出现（TIMING.addbarDebounce，早于 Tag / Tooltip 的 800ms 防抖与 spinner）；
@@ -140,8 +150,8 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
 
 /* nav (0,50) 375×44 */
 .nav{position:absolute;left:0;top:50px;width:375px;height:44px}
-.nav .back{position:absolute;left:16px;top:11px;width:20px;height:20px}
-.nav .scan{position:absolute;left:339px;top:13px;width:20px;height:20px}
+.nav .back{position:absolute;left:16px;top:12px;width:20px;height:20px}   /* v3.4 nav-back 20 · mh 16 */
+.nav .scan{position:absolute;left:339px;top:12px;width:20px;height:20px}  /* v3.4 nav-scan 20 · mh 16 */
 .nav .title{position:absolute;left:0;right:0;top:5px;text-align:center;font-size:14px;line-height:140%;color:var(--deep)}
 .nav .subtitle{position:absolute;left:0;right:0;top:26px;text-align:center;font-size:12px;line-height:130%;color:var(--deep60)}
 
@@ -156,16 +166,18 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
 .caret{display:inline-block;width:1px;height:18px;vertical-align:-4px;margin-left:1px;background:var(--blue);animation:blink 1s steps(1) infinite}
 .caret[hidden]{display:none}
 @keyframes blink{50%{opacity:0}}
-.addrbook{position:absolute;left:307px;top:16px;width:20px;height:20px}
-.addr.tall .addrbook{top:22px}
+.addrbook{position:absolute;left:307px;top:15.5px;width:20px;height:20px}   /* v3.4 set-addressbook 20 · 右侧 Row mr 16 */
+.addr.tall .addrbook{top:26px}
 
 /* tag slot: right edge at x=312 → 47px from input right edge */
 .tagslot{position:absolute;right:47px;top:15px;height:24px;display:flex;align-items:center}
 .addr.tall .tagslot{top:21px}
-.spinner{width:16px;height:16px;border-radius:50%;border:2px solid var(--deep08);border-top-color:var(--blue);animation:spin .8s linear infinite}
+.spinner{display:block;width:20px;height:20px}   /* v3.4 Progress.Loading inline = Lottie LoadingCircleBlue 20×20 */
+.spinner svg{display:block;width:20px;height:20px;animation:spinLottie 1033ms cubic-bezier(.42,0,.58,1) infinite}
+@keyframes spinLottie{from{transform:rotate(0deg)}to{transform:rotate(355deg)}}
 .spinner[hidden]{display:none}
 @keyframes spin{to{transform:rotate(360deg)}}
-.tag{position:relative;display:inline-flex;align-items:center;height:24px;padding:4px 8px;border-radius:8px;font-size:12px;font-weight:500;line-height:130%;white-space:nowrap;background:var(--deep08);color:var(--deep60)}
+.tag{position:relative;display:inline-flex;align-items:center;padding:4px 6px;border-radius:8px;font-size:12px;font-weight:500;line-height:16.8px;white-space:nowrap;background:var(--deep08);color:var(--deep60)}   /* v3.4 Label variant="light"：ph 6 · pv 4 · r 8 · 12 / 500 */
 .tag::before{content:"";position:absolute;inset:-4px -3px}     /* D14: 44×32 touch area */
 .tag[hidden]{display:none}
 .tag.lv-warning{background:var(--warn20);color:var(--warn)}
@@ -173,46 +185,54 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
 .tag:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 
 /* below-input region (add bar + amount + fee) — shifts with input height */
-.below{position:absolute;left:16px;top:210px;width:343px;transition:top 120ms var(--ease)}
-.addr.tall ~ .below{top:231px}
-.addbar{position:absolute;left:0;top:0;width:341px;height:44px;border-radius:16px;background:var(--blue20)}
+.below{position:absolute;left:16px;top:209px;width:343px;transition:top 120ms var(--ease)}   /* v3.4 输入框底 197 + 12 */
+.addr.tall ~ .below{top:230px}
+.addbar{position:absolute;left:0;top:0;width:343px;height:52px;display:flex;align-items:center;padding:0 16px;border-radius:16px;background:var(--blue20)}   /* v3.4 quickAddBehaviorPlugin：br 16 · bg blue200 · p 16 */
 .addbar[hidden]{display:none}
-.addbar .ic{position:absolute;left:16px;top:13px;width:18px;height:18px}
-.addbar .txt{position:absolute;left:42px;top:13px;font-size:13px;line-height:17px;color:var(--blue)}
-.addbar .chev{position:absolute;right:12px;top:13px;width:17px;height:18px}
-.amount-group{position:absolute;left:0;top:68px;width:343px;transition:top 120ms var(--ease)}
-.amount-group.no-bar{top:11px}
-.amount-title{position:absolute;left:16px;top:0;font-size:14px;font-weight:500;line-height:140%;color:var(--deep60)}
-.balance{position:absolute;right:13px;top:0;font-size:14px;font-weight:500;line-height:140%;color:var(--deep)}
-.amount-card{position:absolute;left:0;top:28px;width:343px;height:138px;border-radius:16px;background:#fff}
-.amount-card .amt{position:absolute;left:16px;top:24px;font-size:32px;font-weight:700;line-height:38px;color:var(--deep20)}
+.addbar .ic{flex:0 0 20px;width:20px;height:20px;margin-right:8px}
+.addbar .txt{flex:1;font-size:14px;font-weight:400;line-height:19.6px;color:var(--blue)}
+.addbar .chev{flex:0 0 20px;width:20px;height:20px}
+.amount-group{position:absolute;left:0;top:76px;width:343px;display:flex;flex-direction:column;transition:top 120ms var(--ease)}   /* v3.4 快捷条 52 + Section mt 24 */
+.amount-group.no-bar{top:12px}   /* 输入框底 + 24 */
+.amount-head{display:flex;align-items:center;justify-content:space-between;padding:0 16px;font-size:14px;font-weight:500;line-height:19.6px}
+.amount-title{color:var(--deep60)}
+.balance{color:var(--deep)}
+.amount-card{margin-top:8px;border-radius:16px;background:#fff;overflow:hidden}   /* v3.4 NewFormAmount + Divider + NewFormMemo 连成一张卡 */
+.amount-card .amt-box{padding:24px 16px 0}
+.amount-card .amt{font-size:36px;font-weight:500;line-height:43px;color:var(--deep40)}
 .amount-card .amt.filled{color:var(--deep)}
-.amount-card .amt .caret{height:26px;vertical-align:-3px}
-.amount-card .divider{position:absolute;left:16px;top:86px;width:311px;height:1px;background:var(--deep08)}
-.amount-card .memo{position:absolute;left:16px;top:102px;font-size:14px;line-height:140%;color:var(--deep20)}
-.fee-title{position:absolute;left:18px;top:190px;font-size:14px;font-weight:500;line-height:140%;color:var(--deep60)}
-.fee-card{position:absolute;left:0;top:218px;width:343px;height:72px;border-radius:16px;background:#fff}
-.fee-card .usd{position:absolute;left:16px;top:16px;font-size:14px;line-height:140%;color:var(--deep)}
-.fee-card .range{position:absolute;left:16px;top:40px;font-size:12px;line-height:130%;color:var(--deep60)}
-.fee-card .std{position:absolute;right:16px;top:28px;display:flex;align-items:center;gap:4px;font-size:12px;font-weight:500;line-height:130%;color:var(--deep60)}
-.est{position:absolute;left:18px;top:302px;width:325px;height:20px;font-size:14px;line-height:140%;color:var(--deep60);display:flex;align-items:center;gap:8px}
-.est .refresh{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--blue)}
-.est .refresh svg{animation:spin 1.2s linear infinite}
-.est .adv{margin-left:auto;display:flex;align-items:center;gap:6px;margin-right:0}
+.amount-card .amt .caret{height:32px;vertical-align:-5px}
+.amount-card .fiat{min-height:16.8px;margin:4px 0;font-size:12px;line-height:16.8px;color:var(--deep60)}
+.amount-card .divider{margin:0 16px;height:.5px;background:var(--deep08)}
+.amount-card .memo{padding:16px;font-size:14px;line-height:17px;color:var(--deep40)}
+.fee-title{margin-top:24px;padding-left:16px;font-size:14px;font-weight:500;line-height:19.6px;color:var(--deep60)}   /* v3.4 FeePreview：ml 16 · mb 8 */
+.fee-card{margin-top:8px;display:flex;align-items:center;padding:16px;border-radius:16px;background:#fff}
+.fee-card .fee-lines{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.fee-card .usd{font-size:14px;font-weight:500;line-height:17px;color:var(--deep)}
+.fee-card .range{font-size:12px;font-weight:500;line-height:14.5px;color:var(--deep60)}
+.fee-card .std{display:flex;align-items:center;font-size:12px;font-weight:500;line-height:16.8px;color:var(--deep60)}
+.fee-card .std svg{flex:0 0 16px;width:16px;height:16px}
+.est{margin:12px 16px 0;display:flex;align-items:center;justify-content:space-between}   /* v3.4 EIP1559.tsx：mh 32（相对屏幕）· mt 12 */
+.est .est-left{display:flex;align-items:center}
+.est .est-l{margin-right:4px;font-size:12px;line-height:16.8px;color:var(--deep60)}
+.est .refresh{display:flex;align-items:center;gap:4px;font-size:12px;line-height:16.8px;color:var(--blue)}
+.est .refresh svg{flex:0 0 12px;width:12px;height:12px}
+.est .adv{display:flex;align-items:center;gap:4px;font-size:14px;line-height:19.6px;color:var(--deep60)}
+.est .adv svg{flex:0 0 16px;width:16px;height:16px}
 
 /* bottom (0,693) 375×119 */
-.bottom{position:absolute;left:0;top:693px;width:375px;height:119px;background:rgba(240,241,243,.96);backdrop-filter:blur(4px)}
-.next{position:absolute;left:16px;top:14px;width:340px;height:54px;border-radius:12px;background:var(--blue20);color:#fff;font-size:16px;font-weight:500;transition:background 160ms var(--ease)}
+.bottom{position:absolute;left:0;top:724px;width:375px;height:88px}   /* v3.4 无底板：按钮贴底部安全区（812 − 34 − 54） */
+.next{position:absolute;left:16px;top:0;width:343px;height:54px;border-radius:12px;background:var(--blue20);color:#fff;font-size:16px;font-weight:500;line-height:22.4px;transition:background 160ms var(--ease)}
 .next.on{background:var(--blue)}
 .home-ind{position:absolute;left:134px;bottom:8px;width:107px;height:5px;border-radius:3px;background:var(--deep)}
 
 /* alert (S3) */
-.alert-overlay{position:absolute;inset:0;background:rgba(0,0,0,.45);z-index:20;opacity:1;transition:opacity 160ms var(--ease)}
+.alert-overlay{position:absolute;inset:0;background:rgba(0,0,0,.2);z-index:20;opacity:1;transition:opacity 160ms var(--ease)}   /* v3.4 系统原生 Alert（iOS UIAlertController 样式） */
 .alert-overlay[hidden]{display:none}
-.alert{position:absolute;left:38px;top:302px;width:300px;border-radius:24px;background:#fff;padding:22px 22px 12px}
-.alert h2{font-size:17px;font-weight:600;line-height:22px;color:#000}
-.alert p{margin-top:10px;font-size:14px;line-height:18px;color:#475569}
-.alert .ok{margin-top:18px;width:100%;height:50px;border-radius:25px;background:var(--blue);color:#fff;font-size:16px;font-weight:500}
+.alert{position:absolute;left:52.5px;top:50%;width:270px;transform:translateY(-50%);border-radius:14px;background:rgba(242,242,247,.94);-webkit-backdrop-filter:blur(30px);backdrop-filter:blur(30px);overflow:hidden;text-align:center}
+.alert h2{padding:19px 16px 0;font-size:17px;font-weight:600;line-height:22px;color:#000}
+.alert p{padding:2px 16px 19px;font-size:13px;line-height:16px;color:#000}
+.alert .ok{display:block;width:100%;height:44px;border-top:.5px solid rgba(60,60,67,.29);border-radius:0;background:none;color:#007AFF;font-size:17px;font-weight:400;line-height:22px}
 
 /* v3.2 toast = token-v2 packages/ui/src/components/Toast（Content.tsx + style.ts）+ App/AppContainer.tsx <Toasts defaultStyle>：
    Row customToast：backgroundColor neutralBg(#FFF) · paddingHorizontal 16 · paddingVertical 12 · borderRadius 100（外层 pressable 300）· alignItems center · gap 8
@@ -231,8 +251,8 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
 .field-err[hidden]{display:none}
 .addr.tall ~ .field-err{top:226px}
 .field-err .ic{flex:0 0 12px;width:12px;height:12px;display:block}
-.addr.invalid ~ .below{top:234px}
-.addr.tall.invalid ~ .below{top:255px}
+.addr.invalid ~ .below{top:233px}
+.addr.tall.invalid ~ .below{top:254px}
 
 /* ============================================================
    2. Tooltip — wrapper geometry (shared)
@@ -594,7 +614,7 @@ html,body{background:var(--hub-ground)}
 </style>
 </head>
 <body class="skin-s1">
-<div class="ver" id="ver">v3.3</div>
+<div class="ver" id="ver">v3.4</div>
 <!-- ===================== INTRO · 解析对象与信息架构（2026-10-08 团队讨论口径） ===================== -->
 
 <div class="ambient" aria-hidden="true"><i class="b1"></i><i class="b2"></i><i class="b3"></i></div>
@@ -645,10 +665,10 @@ html,body{background:var(--hub-ground)}
       </div>
 
       <div class="nav">
-        <svg class="back" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M12.5 4.5 7 10l5.5 5.5" stroke="#111D4A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <svg class="back" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M11.6667 16.6668L5 10.0002L11.6667 3.3335" stroke="#111D4A" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/></svg>
         <div class="title" data-ref="navTitle">ETH Transfer</div>
         <div class="subtitle" data-ref="navSub">Ethereum</div>
-        <svg class="scan" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M2.5 7V4.5a2 2 0 0 1 2-2H7M13 2.5h2.5a2 2 0 0 1 2 2V7M17.5 13v2.5a2 2 0 0 1-2 2H13M7 17.5H4.5a2 2 0 0 1-2-2V13M2.5 10h15" stroke="#111D4A" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <svg class="scan" viewBox="0 0 21 20" fill="none" aria-hidden="true"><path d="M17.6693 14.1665V15.4998C17.6693 16.0303 17.4591 16.539 17.0849 16.9141C16.7108 17.2891 16.2034 17.4998 15.6743 17.4998H14.3359" stroke="#111D4A" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/><path d="M14.3359 2.5H15.6693C16.7738 2.5 17.6693 3.39767 17.6693 4.50501V5.83333" stroke="#111D4A" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/><path d="M2.66797 14.1665V15.5098C2.66797 16.6126 3.10239 17.4998 4.20514 17.4998H6.0013" stroke="#111D4A" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/><path d="M2.66797 5.83333V4.50501C2.66797 3.39767 3.57017 2.5 4.68308 2.5H6.0013" stroke="#111D4A" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/><path d="M3.5 10H16.8333" stroke="#111D4A" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </div>
 
       <div class="to-label" data-i18n="to">To</div>
@@ -657,10 +677,10 @@ html,body{background:var(--hub-ground)}
       <div class="addr" data-ref="addr">
         <div class="addr-text" data-ref="addrText"><span class="ph" data-ref="addrPh">Ethereum Address</span><span data-ref="addrVal"></span><span class="caret" data-ref="caret" hidden></span></div>
         <div class="tagslot" data-ref="tagSlot">
-          <span class="spinner" data-ref="spinner" hidden aria-label="Resolving"></span>
+          <span class="spinner" data-ref="spinner" hidden aria-label="Resolving"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 18.333A8.333 8.333 0 1 1 17.78 12.986" stroke="#007FFF" stroke-width="1.667" stroke-linecap="round"/></svg></span>
           <button class="tag" data-ref="tag" hidden aria-expanded="false" type="button"></button>
         </div>
-        <svg class="addrbook" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="9.25" stroke="#111D4A" stroke-width="1.5"/><circle cx="10" cy="8" r="3" stroke="#111D4A" stroke-width="1.5"/><path d="M4.2 16.2c1.2-2.4 3.3-3.7 5.8-3.7s4.6 1.3 5.8 3.7" stroke="#111D4A" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <svg class="addrbook" viewBox="0 0 21 20" fill="none" aria-hidden="true"><path d="M15.832 16.2497V15.5552C15.832 14.9659 15.5511 14.4006 15.051 13.9839C14.5509 13.5671 13.8726 13.333 13.1654 13.333H8.4987C7.79145 13.333 7.11318 13.5671 6.61308 13.9839C6.13586 14.3816 5.85819 14.9145 5.83379 15.4745C5.83262 15.5014 5.83203 16.2497 5.83203 16.2766" stroke="#111D4A" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/><path d="M10.832 10.833C12.2127 10.833 13.332 9.71372 13.332 8.33301C13.332 6.9523 12.2127 5.83301 10.832 5.83301C9.45132 5.83301 8.33203 6.9523 8.33203 8.33301C8.33203 9.71372 9.45132 10.833 10.832 10.833Z" stroke="#111D4A" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/><circle cx="10.8333" cy="9.99935" r="8.33333" stroke="#111D4A" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </div>
 
       <!-- v2.9 S5 · 无效地址：输入框下方 8px 报错行（12px #F3636F + 12px 同色感叹号） -->
@@ -680,29 +700,26 @@ html,body{background:var(--hub-ground)}
       <!-- everything below the input -->
       <div class="below" data-ref="below">
         <div class="addbar" data-ref="addbar">
-          <svg class="ic" viewBox="0 0 18 18" fill="none" aria-hidden="true"><circle cx="7" cy="5.5" r="3" stroke="#007FFF" stroke-width="1.5"/><path d="M1.5 15.5c.6-3 2.9-4.7 5.5-4.7 1 0 1.9.2 2.7.6M13.5 9.5v6M10.5 12.5h6" stroke="#007FFF" stroke-width="1.5" stroke-linecap="round"/></svg>
+          <svg class="ic" viewBox="0 0 21 20" fill="none" aria-hidden="true"><path d="M10.168 11.667C11.2729 11.6671 12.3329 12.1054 13.1143 12.8867C13.8956 13.668 14.3339 14.7281 14.334 15.833C14.334 17.2137 13.2147 18.333 11.834 18.333H2.66797C1.28726 18.333 0.167969 17.2137 0.167969 15.833C0.168055 14.7281 0.606371 13.668 1.3877 12.8867C2.16902 12.1054 3.22903 11.6671 4.33398 11.667H10.168ZM4.33398 13.333C3.67106 13.3331 3.03517 13.5967 2.56641 14.0654C2.09764 14.5342 1.83407 15.1701 1.83398 15.833C1.83398 16.2932 2.20773 16.667 2.66797 16.667H11.834C12.2942 16.667 12.668 16.2932 12.668 15.833C12.6679 15.1701 12.4043 14.5342 11.9355 14.0654C11.4668 13.5967 10.8309 13.3331 10.168 13.333H4.33398ZM16.8369 5.83398C17.2972 5.83398 17.6699 6.20675 17.6699 6.66699V8.33398H19.3369C19.7972 8.33398 20.1699 8.70675 20.1699 9.16699C20.1697 9.627 19.797 10 19.3369 10H17.6699V11.667C17.6697 12.127 17.297 12.5 16.8369 12.5C16.3768 12.5 16.0042 12.127 16.0039 11.667V10H14.3369C13.8768 10 13.5042 9.627 13.5039 9.16699C13.5039 8.70675 13.8767 8.33398 14.3369 8.33398H16.0039V6.66699C16.0039 6.20675 16.3767 5.83398 16.8369 5.83398ZM7.25195 1.66699C9.55303 1.66699 11.4188 3.53197 11.4189 5.83301C11.4189 8.13419 9.55314 10 7.25195 10C4.95092 9.99982 3.08594 8.13409 3.08594 5.83301C3.08611 3.53208 4.95103 1.66717 7.25195 1.66699ZM7.25195 3.33301C5.8715 3.33318 4.75213 4.45255 4.75195 5.83301C4.75195 7.21361 5.87139 8.33283 7.25195 8.33301C8.63266 8.33301 9.75195 7.21372 9.75195 5.83301C9.75178 4.45245 8.63256 3.33301 7.25195 3.33301Z" fill="#007FFF"/></svg>
           <span class="txt" data-i18n="addbar">Add to address book</span>
-          <svg class="chev" viewBox="0 0 17 18" fill="none" aria-hidden="true"><path d="m6.5 4.5 4.5 4.5-4.5 4.5" stroke="#007FFF" stroke-width="1.125" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <svg class="chev" viewBox="0 0 20 20" width="20" height="20" fill="none" aria-hidden="true"><path d="M6.66406 16.6668L13.3307 10.0002L6.66406 3.3335" stroke="#007FFF" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </div>
 
         <div class="amount-group" data-ref="amountGroup">
-          <div class="amount-title" data-i18n="amount">Amount</div>
-          <div class="balance" data-ref="balance">0.2005 ETH</div>
+          <div class="amount-head"><div class="amount-title" data-i18n="amount">Amount</div><div class="balance" data-ref="balance">0.2005 ETH</div></div>
           <div class="amount-card">
-            <div class="amt filled" data-ref="amount">0.01</div>
+            <div class="amt-box"><div class="amt filled" data-ref="amount">0.01</div><div class="fiat" data-ref="amountFiat">$26.00</div></div>
             <div class="divider"></div>
             <div class="memo" data-i18n="memo">Memo</div>
           </div>
           <div class="fee-title" data-i18n="fee">Miner Fee</div>
           <div class="fee-card">
-            <div class="usd" data-ref="feeUsd">$0.01</div>
-            <div class="range" data-ref="feeRange">0.000001523 ETH- 0.000002356 ETH</div>
-            <div class="std"><span data-i18n="std">Standard</span> <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="m6 3.5 4.5 4.5L6 12.5" stroke="#111D4A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+            <div class="fee-lines"><div class="usd" data-ref="feeUsd">$0.01</div><div class="range" data-ref="feeRange">0.000001523 ETH ~ 0.000002356 ETH</div></div>
+            <div class="std"><span data-i18n="std">Standard</span><svg viewBox="0 0 20 20" width="16" height="16" fill="none" aria-hidden="true"><path d="M6.66406 16.6668L13.3307 10.0002L6.66406 3.3335" stroke="#111D4A" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
           </div>
           <div class="est">
-            <span data-i18n="est">Estimated fee</span>
-            <span class="refresh"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M13.5 8a5.5 5.5 0 1 1-1.6-3.9" stroke="#007FFF" stroke-width="1.5" stroke-linecap="round"/></svg><span data-i18n="refresh">Refresh in 2</span></span>
-            <span class="adv"><span data-i18n="adv">Advanced</span> <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="2" stroke="#111D4A" stroke-opacity=".6" stroke-width="1.4"/><path d="M8 1.8v1.6M8 12.6v1.6M1.8 8h1.6m9.2 0h1.6M3.6 3.6l1.1 1.1m6.6 6.6 1.1 1.1M3.6 12.4l1.1-1.1m6.6-6.6 1.1-1.1" stroke="#111D4A" stroke-opacity=".6" stroke-width="1.4" stroke-linecap="round"/></svg></span>
+            <div class="est-left"><span class="est-l" data-i18n="est">Estimated range</span><span class="refresh"><svg viewBox="0 0 12 12" fill="none" aria-hidden="true"><circle cx="6" cy="6" r="5" stroke="rgba(17,29,74,.08)" stroke-width="2"/><circle cx="6" cy="6" r="5" stroke="#007FFF" stroke-width="2"/></svg><span data-i18n="refresh">Refresh in 7</span></span></div>
+            <span class="adv"><span data-i18n="adv">Advanced</span><svg viewBox="0 0 21 20" fill="none" aria-hidden="true"><path d="M10.6641 12.5C12.0448 12.5 13.1641 11.3807 13.1641 10C13.1641 8.61929 12.0448 7.5 10.6641 7.5C9.28335 7.5 8.16406 8.61929 8.16406 10C8.16406 11.3807 9.28335 12.5 10.6641 12.5Z" stroke="rgba(17,29,74,.6)" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/><path d="M10.666 1.6665C11.0283 1.6665 11.3734 1.89933 11.5303 2.30225C11.8071 3.01346 12.2026 3.67964 13.125 4.06201C14.0486 4.44481 14.8036 4.25171 15.5 3.9458C15.8961 3.77198 16.3038 3.85216 16.5596 4.10791C16.8154 4.36391 16.8952 4.77136 16.7217 5.1665C16.4336 5.82181 16.2456 6.52478 16.5391 7.37158L16.6045 7.54248C16.9869 8.46526 17.6524 8.85912 18.3652 9.13623C18.7676 9.29261 19 9.63797 19 10.0005C18.9999 10.3624 18.7679 10.7069 18.3652 10.8638C17.6559 11.14 16.9863 11.5364 16.6035 12.4595H16.6025C16.2203 13.3827 16.4135 14.1367 16.7197 14.8335C16.8938 15.2296 16.8141 15.6372 16.5586 15.8931C16.3024 16.1494 15.8943 16.2291 15.5 16.0552C14.845 15.7664 14.1433 15.5774 13.2969 15.8726H13.2832L13.1289 15.936C12.2058 16.3206 11.8088 16.9866 11.5312 17.6978C11.3739 18.101 11.0287 18.3334 10.667 18.3335C10.3049 18.3335 9.95952 18.1015 9.80273 17.6987C9.54347 17.0325 9.17992 16.4041 8.375 16.0132L8.20801 15.938C7.28493 15.5553 6.5306 15.7482 5.83398 16.0542C5.43755 16.2283 5.02916 16.1479 4.77344 15.8921C4.51853 15.6367 4.43904 15.2293 4.61328 14.8325C4.91732 14.1401 5.11149 13.3826 4.72949 12.4585L4.72852 12.4575L4.65332 12.2905C4.2621 11.4868 3.63301 11.1225 2.96875 10.8638C2.56547 10.7067 2.33301 10.3615 2.33301 9.99951C2.33314 9.63762 2.56533 9.29287 2.96777 9.13623C3.67734 8.86007 4.34581 8.46451 4.72852 7.5415C5.11175 6.61728 4.91914 5.86424 4.6123 5.1665C4.4385 4.77129 4.51781 4.36382 4.77344 4.10791C5.02944 3.85191 5.4376 3.772 5.83301 3.9458C6.53267 4.25356 7.28562 4.446 8.20996 4.06201L8.20898 4.06104C9.13142 3.67822 9.52674 3.01057 9.80273 2.30127C9.95931 1.89887 10.3041 1.66665 10.666 1.6665Z" stroke="rgba(17,29,74,.6)" stroke-width="1.66667"/></svg></span>
           </div>
         </div>
       </div>
@@ -1039,8 +1056,8 @@ var STR = {
   'memo':      { grp:'框架', name:'备注', design:REPO('memo', 'Memo', '备注'), online:'same' },
   'fee':       { grp:'框架', name:'矿工费标题', design:REPO('miner_fee', 'Miner Fee', '矿工费'), online:'same' },
   'std':       { grp:'框架', name:'矿工费档位', design:REPO('average', 'Standard', '标准'), online:'same' },
-  'est':       { grp:'框架', name:'预估费用', design:{ en:'Estimated fee', zh:'预估矿工费', enSrc:'design', zhSrc:'draft' }, online:'same', note:'仓库里没有找到完全对应的 key，保留原型原文' },
-  'refresh':   { grp:'框架', name:'刷新倒计时', design:REPO('update_after_$seconds', 'Refresh in {{seconds}} ', '{{seconds}} 秒后更新'), online:'same', note:'仓库英文没有时间单位，App 实际显示「Refresh in 2」' },
+  'est':       { grp:'框架', name:'预估范围', design:REPO('estimated_range', 'Estimated range', '预估范围'), online:'same' },
+  'refresh':   { grp:'框架', name:'刷新倒计时', design:REPO('update_after_$seconds', 'Refresh in {{seconds}} ', '{{seconds}} 秒后更新'), online:'same', note:'仓库英文没有时间单位，App 实际显示「Refresh in 7」（7 秒倒计时）' },
   'adv':       { grp:'框架', name:'高级设置', design:REPO('advanced_mode', 'Advanced', '高级模式'), online:'same' },
   'next':      { grp:'框架', name:'下一步按钮', design:REPO('next', 'Next', '下一步'), online:'same' },
   // ---- Tag ----
@@ -1119,15 +1136,15 @@ function localizeEntry(e){
   return o;
 }
 
-var TAG_W    = { info:38, warning:63, high:72 };   // fallback widths when layout is unavailable (jsdom)
+var TAG_W    = { info:34, warning:59, high:68 };   // v3.4 Label ph 6   // fallback widths when layout is unavailable (jsdom)
 var MAX_ENTRIES = 4;                                // D7
 
 /* ---------- chains ---------- */
 var CHAINS = {
-  eth:    { symbol:'ETH',  title:'ETH Transfer',  sub:'Ethereum', ph:'Ethereum address', balance:'0.2005 ETH', amount:'0.01', feeUsd:'$0.01', feeRange:'0.000001523 ETH- 0.000002356 ETH' },
-  cosmos: { symbol:'ATOM', title:'ATOM Transfer', sub:'Cosmos',   ph:'Cosmos address',   balance:'12.5 ATOM',  amount:'1',    feeUsd:'$0.003', feeRange:'0.0025 ATOM' },
-  tron:   { symbol:'TRX',  title:'TRX Transfer',  sub:'Tron',     ph:'Tron address',     balance:'1,250 TRX',  amount:'100',  feeUsd:'$0.27', feeRange:'1.1 TRX · Bandwidth' },
-  ton:    { symbol:'TON',  title:'TON Transfer',  sub:'TON',      ph:'TON address',      balance:'32.8 TON',   amount:'1',    feeUsd:'$0.02', feeRange:'0.0055 TON' }
+  eth:    { symbol:'ETH',  title:'ETH Transfer',  sub:'Ethereum', ph:'Ethereum address', balance:'0.2005 ETH', amount:'0.01', feeUsd:'$0.01', feeRange:'0.000001523 ETH ~ 0.000002356 ETH', fiat:'$26.00' },
+  cosmos: { symbol:'ATOM', title:'ATOM Transfer', sub:'Cosmos',   ph:'Cosmos address',   balance:'12.5 ATOM',  amount:'1',    feeUsd:'$0.003', feeRange:'0.0025 ATOM', fiat:'$4.52' },
+  tron:   { symbol:'TRX',  title:'TRX Transfer',  sub:'Tron',     ph:'Tron address',     balance:'1,250 TRX',  amount:'100',  feeUsd:'$0.27', feeRange:'1.1 TRX · Bandwidth', fiat:'$27.30' },
+  ton:    { symbol:'TON',  title:'TON Transfer',  sub:'TON',      ph:'TON address',      balance:'32.8 TON',   amount:'1',    feeUsd:'$0.02', feeRange:'0.0055 TON', fiat:'$2.15' }
 };
 
 /* ---------- addresses ---------- */
@@ -1605,12 +1622,13 @@ function createProto(container, cfg){
     var c = CHAINS[k];
     el.navSub.textContent = c.sub;
     el.balance.textContent = c.balance; el.amount.textContent = c.amount; el.feeUsd.textContent = c.feeUsd; el.feeRange.textContent = c.feeRange;
+    el.amountFiat.textContent = c.fiat;   // v3.4 NewFormAmount 法币行
     applyCopy();
   }
   // v3.0: 手机上所有固定文字按当前语言 / 文案重写（框架 + Alert + 正在显示的 Tag / Toast / 报错行）
   function applyCopy(){
     var c = CHAINS[state.scene ? state.scene.chain : 'eth'];
-    var params = { symbol:c.symbol, chain:c.sub, network:c.sub, seconds:2 };
+    var params = { symbol:c.symbol, chain:c.sub, network:c.sub, seconds:7 };   // v3.4 FeeCountdown seconds={7}
     el.navTitle.textContent = txt('nav.title', params);
     el.addrPh.textContent = txt('ph', params);
     Array.prototype.forEach.call(el.screen.querySelectorAll('[data-i18n]'), function(node){ node.innerHTML = copyHTML(node.getAttribute('data-i18n'), params); });
