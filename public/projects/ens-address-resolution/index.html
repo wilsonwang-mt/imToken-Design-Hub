@@ -3,8 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Prototype — 转账地址解析 Tooltip v3.0 · imToken UXD</title>
+<title>Prototype — 转账地址解析 Tooltip v3.1 · imToken UXD</title>
 <style>
+/* v3.1 变更（Wilson 2026-10-14）：线上模式「设计不变，只换文案」——
+   切到线上时不删、不加任何元素：名称、钱包名 · 账户名、域名、地址等数据一律保留，只有设计里有文案、线上也有同一位置文案时才替换。
+   - 地址本：label 换成线上 address_exists_in_address_book，备注名保留（v3.0 去掉了 label、用整句替换了备注名，已修正）；
+   - 当前设备：label 换成线上 address_exists_in_imported，钱包名 · 账户名保留（同上）；
+   - ENS 反向解析：线上没有可放进 label 的文案，保留设计 label「ENS name」并以灰色虚线标出，域名保留（v3.0 用整句替换了域名，已修正）；
+   - IBC / Tron / TON 的 label 换成线上多条信息时左侧标签列的文字（结构不变）。
+   STR 新增 data:true 标出「数据，不替换」的条目；文案来源对照表同步。新增测试：18 个场景在设计 / 线上两种模式下 Tooltip 结构完全一致。 */
 /* v3.0 变更（Wilson 2026-10-13）：手机原型新增两组页面级切换，放在 Part 1 标题下方：
    ① 语言 EN / 简中；② 文案 设计 / 线上。文案全部集中到脚本里的 STR 字典，每条都标明来源：
    - 转账页框架（导航标题、To、placeholder、Amount、Memo、Miner Fee、Standard、Refresh、Advanced、Next、Add to address book）
@@ -565,7 +572,7 @@ html,body{background:var(--hub-ground)}
 </style>
 </head>
 <body class="skin-s1">
-<div class="ver" id="ver">v3.0</div>
+<div class="ver" id="ver">v3.1</div>
 <!-- ===================== INTRO · 解析对象与信息架构（2026-10-08 团队讨论口径） ===================== -->
 
 <div class="ambient" aria-hidden="true"><i class="b1"></i><i class="b2"></i><i class="b3"></i></div>
@@ -720,7 +727,7 @@ html,body{background:var(--hub-ground)}
       <!-- v3.0: 文案来源对照（由脚本 STR 生成） -->
       <details class="copy-src" id="copySrc">
         <summary>文案来源对照<span class="cnt" id="copySrcCnt"></span></summary>
-        <p class="cs-desc">手机原型上的每一条文字都来自下表。<b>Repo</b> = consenlabs/token-v2 的 i18n 原文（未注明分支的都取自 master）；<b>设计稿</b> = 设计新写的英文；<b>上下文文档</b> = 《Claude Code 上下文》文案表里的简中；<b>待定草稿</b> = 文案表里没有、先起草的中文，需要 PM 确认。线上模式只替换文字，排版仍是设计稿；线上没有对应文案的位置会继续显示设计文案，并在手机上用灰色虚线下划线标出。当前模式对应的列以浅蓝底标出。</p>
+        <p class="cs-desc">手机原型上的每一条文字都来自下表。<b>Repo</b> = consenlabs/token-v2 的 i18n 原文（未注明分支的都取自 master）；<b>设计稿</b> = 设计新写的英文；<b>上下文文档</b> = 《Claude Code 上下文》文案表里的简中；<b>待定草稿</b> = 文案表里没有、先起草的中文，需要 PM 确认。线上模式设计不变：不删、不加任何元素，名称、地址等数据也不替换，只把有线上对应文案的文字换成仓库原文；线上没有对应文案的位置继续显示设计文案，并在手机上用灰色虚线下划线标出。当前模式对应的列以浅蓝底标出。</p>
         <div class="cs-wrap"><table>
           <thead><tr><th>区域</th><th>条目</th><th data-col="design-en">设计 · EN</th><th data-col="design-zh">设计 · 简中</th><th data-col="online-en">线上 · EN</th><th data-col="online-zh">线上 · 简中</th><th>说明</th></tr></thead>
           <tbody id="copySrcBody"></tbody>
@@ -970,7 +977,8 @@ var CTX = {
 };
 var TAG_TEXT = { info:'Info', warning:'Warning', high:'High risk' };   // 日志用（固定英文）；显示走 STR['tag.*']
 /* ---------- v3.0 copy (STR) · 语言 EN / 简中 × 文案 设计 / 线上 ----------
-   每条：grp 区域 · name 条目 · design { en, zh, enSrc, zhSrc } · online（R(...) = master 上的对应文案；null = 线上没有对应文案；'same' = 与设计相同）
+   每条：grp 区域 · name 条目 · design { en, zh, enSrc, zhSrc } · online（R(...) = master 上同一位置的文案；null = 线上没有对应文案；'same' = 与设计相同）
+   v3.1：data:true = 数据（备注名 / 钱包名 / 域名），线上模式也不替换。线上模式只换文字、不改结构——不删、不加任何元素
    enSrc / zhSrc：'design' 设计稿 · 'doc' 上下文文档文案表 · 'draft' 待定草稿 · 'repo:<key>' / 'repo#6330:<key>' 仓库原文
    占位符：{{x}} 与 {x} 都可用（fmt 统一替换） */
 function R(key, en, zh, branch){ return { key:key, en:en, zh:zh, branch:branch || 'master' }; }
@@ -1001,26 +1009,26 @@ var STR = {
   'C07.body': { grp:'Tooltip', name:'零宽字符', design:{ en:'This domain contains hidden characters and may be impersonating another name.', zh:'该域名包含隐藏字符，可能在仿冒其他域名。', enSrc:'design', zhSrc:'draft' },
                 online:R('zwsp_text', 'The ENS address has detected mixed characters. Please check whether the wallet address is correct.', 'ENS 地址已检测到混淆字符，请检查钱包地址是否正确。'), note:'线上只在多条信息同时出现时显示这句；单独命中时只有 ⚠ 图标' },
   // ---- Tooltip 区域二 · 专项信息 ----
-  'C02.label': { grp:'Tooltip', name:'IBC · label', design:{ en:'{{chain}} address', zh:'{{chain}} 地址', enSrc:'design', zhSrc:'repo:$chain_address' }, online:R('transfer_ibc_tag', 'IBC', '跨链转账'), note:'线上这里是 Tag 文字' },
+  'C02.label': { grp:'Tooltip', name:'IBC · label', design:{ en:'{{chain}} address', zh:'{{chain}} 地址', enSrc:'design', zhSrc:'repo:$chain_address' }, online:R('transfer_ibc_tag', 'IBC', '跨链转账'), note:'线上多条信息时左侧标签列的文字' },
   'C02.body':  { grp:'Tooltip', name:'IBC · 正文', design:{ en:'Funds will be sent via IBC cross-chain transfer.', zh:'将以 IBC 跨链方式转账', enSrc:'design', zhSrc:'doc' },
                  online:R('transfer_ibc_to_$chainName', 'The receive address is in {{chainName}} address format, and the transfer will be executed as an IBC cross-chain transfer', '收款地址采用 {{chainName}} 地址格式，转账将以 IBC 跨链执行') },
-  'C03.label': { grp:'Tooltip', name:'Tron 未激活 · label', design:{ en:'Tron address', zh:'Tron 地址', enSrc:'design', zhSrc:'repo:$chain_address' }, online:R('receiver_inactivated', 'inactive', '未激活'), note:'线上这里是 Tag 文字' },
+  'C03.label': { grp:'Tooltip', name:'Tron 未激活 · label', design:{ en:'Tron address', zh:'Tron 地址', enSrc:'design', zhSrc:'repo:$chain_address' }, online:R('receiver_inactivated', 'inactive', '未激活'), note:'线上多条信息时左侧标签列的文字' },
   'C03.body':  { grp:'Tooltip', name:'Tron 未激活 · 正文', design:{ en:'Not activated yet. An extra {{num}} TRX will be spent to activate it.', zh:'尚未激活，本次转账将额外消耗 {{num}} TRX 用于激活', enSrc:'design', zhSrc:'doc' },
                  online:R('inactive_tron_address_need_$num_trx_to_activate', 'This address is not activated. It will cost {{num}} TRX to activate the address', '该地址未激活，将会消耗 {{num}} TRX 激活该地址'), note:'线上这句话还会在输入框下方再显示一次' },
-  'C04.label': { grp:'Tooltip', name:'TON · label', design:{ en:'TON bounceable address', zh:'TON 反弹地址', enSrc:'design', zhSrc:'draft' }, online:R('ton_transfer_bounceable_tag', 'Bounceable address', '反弹地址'), note:'线上这里是 Tag 文字（英文会被截断成 8 个字符）' },
+  'C04.label': { grp:'Tooltip', name:'TON · label', design:{ en:'TON bounceable address', zh:'TON 反弹地址', enSrc:'design', zhSrc:'draft' }, online:R('ton_transfer_bounceable_tag', 'Bounceable address', '反弹地址'), note:'线上多条信息时左侧标签列的文字（英文会被截断成 8 个字符）' },
   'C04.body':  { grp:'Tooltip', name:'TON · 正文', design:{ en:'Transfers work as usual. If the transfer fails, funds are returned to you automatically.', zh:'可正常转账；若转账失败，资金会自动退回', enSrc:'design', zhSrc:'doc' },
                  online:R('ton_transfer_bounceable_msg', 'This is a bounceable address and supports normal transfers. If an error occurs, the funds will be automatically returned to you', '这是反弹地址，可正常转账。若转账发生错误，资金将自动退回给你') },
   // ---- Tooltip 区域二 · 地址标记 ----
-  'C09.label': { grp:'Tooltip', name:'地址本 · label', design:{ en:'Saved in address book', zh:'已存入地址本', enSrc:'design', zhSrc:'doc' }, online:R('', '', ''), note:'线上用地址本图标，没有文字 label' },
-  'C09.body':  { grp:'Tooltip', name:'地址本 · 正文', design:{ en:'{{nickname}}', zh:'{{nickname}}', enSrc:'design', zhSrc:'design' },
-                 online:R('address_exists_in_address_book', 'This address exists in your address book', '地址本中的地址'), note:'线上不显示备注名' },
-  'C01.label': { grp:'Tooltip', name:'当前设备 · label', design:{ en:'This device', zh:'当前设备', enSrc:'design', zhSrc:'doc' }, online:R('', '', ''), note:'线上用认证图标，没有文字 label' },
-  'C01.body':  { grp:'Tooltip', name:'当前设备 · 正文', design:{ en:'{{wallet}} · {{account}}', zh:'{{wallet}} · {{account}}', enSrc:'design', zhSrc:'design' },
-                 online:R('address_exists_in_imported', 'This address is your wallet address in imToken', 'imToken 钱包中的地址'), note:'线上不显示钱包名和账户名' },
+  'C09.label': { grp:'Tooltip', name:'地址本 · label', design:{ en:'Saved in address book', zh:'已存入地址本', enSrc:'design', zhSrc:'doc' },
+                 online:R('address_exists_in_address_book', 'This address exists in your address book', '地址本中的地址'), note:'线上地址本命中时唯一的文案（线上本身用图标 + 这句话，不显示备注名）' },
+  'C09.body':  { grp:'Tooltip', name:'地址本 · 备注名', data:true, design:{ en:'{{nickname}}', zh:'{{nickname}}', enSrc:'design', zhSrc:'design' }, online:'same', note:'数据，不是文案' },
+  'C01.label': { grp:'Tooltip', name:'当前设备 · label', design:{ en:'This device', zh:'当前设备', enSrc:'design', zhSrc:'doc' },
+                 online:R('address_exists_in_imported', 'This address is your wallet address in imToken', 'imToken 钱包中的地址'), note:'线上命中本机钱包时唯一的文案（线上本身用图标 + 这句话，不显示钱包名和账户名）' },
+  'C01.body':  { grp:'Tooltip', name:'当前设备 · 钱包名 · 账户名', data:true, design:{ en:'{{wallet}} · {{account}}', zh:'{{wallet}} · {{account}}', enSrc:'design', zhSrc:'design' }, online:'same', note:'数据，不是文案' },
   // ---- Tooltip 区域二 · ENS ----
-  'C11.label': { grp:'Tooltip', name:'ENS 反向解析 · label', design:{ en:'ENS name', zh:'ENS 名称', enSrc:'design', zhSrc:'doc' }, online:R('', '', ''), note:'线上没有 label' },
-  'C11.body':  { grp:'Tooltip', name:'ENS 反向解析 · 正文', design:{ en:'{{name}}', zh:'{{name}}', enSrc:'design', zhSrc:'design' },
-                 online:R('transfer_tips_detected_$domain', 'Detected ENS domain is ‘{{domain}}’.', '检测到ENS 域名为 “{{domain}}”。') },
+  'C11.label': { grp:'Tooltip', name:'ENS 反向解析 · label', design:{ en:'ENS name', zh:'ENS 名称', enSrc:'design', zhSrc:'doc' }, online:null,
+                 note:'线上没有可放进 label 的文案：反向解析是一整句 transfer_tips_detected_$domain「Detected ENS domain is ‘{{domain}}’.」/「检测到ENS 域名为 “{{domain}}”。」，句中带域名，拆不开' },
+  'C11.body':  { grp:'Tooltip', name:'ENS 反向解析 · 域名', data:true, design:{ en:'{{name}}', zh:'{{name}}', enSrc:'design', zhSrc:'design' }, online:'same', note:'数据，不是文案' },
   'more':  { grp:'Tooltip', name:'折叠入口', design:{ en:'More address info ({{n}})', zh:'更多地址信息 ({{n}})', enSrc:'design', zhSrc:'doc' }, online:null, note:'线上没有折叠' },
   'trunc': { grp:'Tooltip', name:'超出 4 条', design:{ en:'+{{n}} more details', zh:'另有 {{n}} 条信息', enSrc:'design', zhSrc:'draft' }, online:null, note:'线上没有条数上限' },
   // ---- 异常 ----
@@ -1860,7 +1868,7 @@ G.compareBtn.addEventListener('click', function(){ setCompare(!COMPARE); });
 function copyHashSuffix(){ return (LANG !== 'en' ? '&lang=' + LANG : '') + (COPY !== 'design' ? '&copy=' + COPY : ''); }
 var COPY_NOTE = {
   design: '<b>设计文案</b>：转账页框架用 token-v2 仓库原文；Tooltip / Tag / 异常提示用设计稿英文与上下文文档简中。简中模式下橙色虚线 = 待定草稿。',
-  online: '<b>线上文案</b>：每条文字换成 token-v2 master 上的对应文案，排版仍是设计稿。灰色虚线 = 线上没有对应文案，显示的是设计文案。'
+  online: '<b>线上文案</b>：设计不变，只把有线上对应文案的文字换成 token-v2 master 原文；名称、地址等数据不替换。灰色虚线 = 线上没有对应文案，显示的是设计文案。'
 };
 function syncSeg(attr, value){
   Array.prototype.forEach.call(document.querySelectorAll('.seg [data-' + attr + ']'), function(b){
@@ -1903,7 +1911,8 @@ function renderCopySrc(){
     var s = STR[id], d = s.design, o = s.online;
     function cell(col, inner){ return '<td' + (cur[col] ? ' class="cur"' : '') + '>' + inner + '</td>'; }
     var onEn, onZh;
-    if (o === 'same'){ onEn = onZh = '<span class="na">同设计（仓库原文）</span>'; }
+    if (s.data){ onEn = onZh = '<span class="na">数据，不替换</span>'; }
+    else if (o === 'same'){ onEn = onZh = '<span class="na">同设计（仓库原文）</span>'; }
     else if (o === null){ onEn = onZh = '<span class="na">线上没有对应文案</span>'; }
     else if (!o.key){ onEn = onZh = '<span class="na">（无文字）</span>'; }
     else {
