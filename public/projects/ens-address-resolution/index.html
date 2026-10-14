@@ -3,8 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Prototype — 转账地址解析 Tooltip v3.1 · imToken UXD</title>
+<title>Prototype — 转账地址解析 Tooltip v3.2 · imToken UXD</title>
 <style>
+/* v3.2 变更（Wilson 2026-10-14）：① 新增场景 19「风控查询失败 → 顶部 Toast」：hex 地址解析正常、风控接口失败（线上会完全静默），
+   用 Toast.warning 提醒「无法完成安全风险评估」（英文为待定草稿）；无 Tag、无 Tooltip，Next 可用；排在 Prototype 2 场景 17 之后。
+   ② 顶部 Toast 按 token-v2 的 ui/Toast 前端代码 1:1 还原，不再是自绘控件：白底（neutralBg）胶囊（圆角 300）、padding 12 / 16、gap 8、
+   图标 20 × 20 按类型取 toastIconMap（info st-info-tipblue / warning st-info-warningorange / error st-info-riskred / success st-success）、
+   文字 xs 12 · 行高 1.4 · 最宽 260 · 最多 2 行、iOS 阴影 0 4 20 rgba(0,0,0,.5)、进出 200ms；停留时长按 DEFAULT_CONFIG（info 5s / warning 7s / error 7s / success 2s），
+   显式传入 duration 时以传入为准。场景 17 改用 Toast.info（蓝色信息图标；原灰色 16px 图标在仓库里不存在），停留时间仍按评审定的 3 秒（显式 duration）。 */
 /* v3.1 变更（Wilson 2026-10-14）：线上模式「设计不变，只换文案」——
    切到线上时不删、不加任何元素：名称、钱包名 · 账户名、域名、地址等数据一律保留，只有设计里有文案、线上也有同一位置文案时才替换。
    - 地址本：label 换成线上 address_exists_in_address_book，备注名保留（v3.0 去掉了 label、用整句替换了备注名，已修正）；
@@ -196,13 +202,17 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
 .alert p{margin-top:10px;font-size:14px;line-height:18px;color:#475569}
 .alert .ok{margin-top:18px;width:100%;height:50px;border-radius:25px;background:var(--blue);color:#fff;font-size:16px;font-weight:500}
 
-/* v2.9 toast (S4 · 场景 17)：沿用 App 现有 Toast（Figma「Address saved」）——白底胶囊 + 阴影，12px #111D4A，16px 单色信息图标 60%；
-   位置 = 状态栏下方、盖在导航栏区域上，水平居中；单行不折行（max-width 359 = 屏宽 − 2×8）；滑入 200ms，停留 3s 后淡出 200ms */
-.toast{position:absolute;left:50%;top:56px;z-index:15;display:flex;align-items:center;gap:5px;width:max-content;max-width:359px;padding:8px 12px 8px 10px;border-radius:20px;white-space:nowrap;background:#fff;box-shadow:0 4px 16px rgba(17,29,74,.12),0 1px 3px rgba(17,29,74,.08);font-size:12px;font-weight:400;letter-spacing:-.1px;line-height:16px;color:var(--deep);opacity:0;transform:translate(-50%,-8px);transition:opacity 200ms var(--ease),transform 200ms var(--ease);pointer-events:none}
+/* v3.2 toast = token-v2 packages/ui/src/components/Toast（Content.tsx + style.ts）+ App/AppContainer.tsx <Toasts defaultStyle>：
+   Row customToast：backgroundColor neutralBg(#FFF) · paddingHorizontal 16 · paddingVertical 12 · borderRadius 100（外层 pressable 300）· alignItems center · gap 8
+   图标 IconSVG 默认 20 × 20（toastIconMap 按 type）· 文字 Text fs xs(12) · lineHeight 12 × 1.4 · maw 260 · numberOfLines 2 · color textPrimary
+   iOS 阴影 shadowColor rgba(0,0,0,.5) · offset (0,4) · radius 20 · opacity 1 · 动画 globalAnimationConfig 200ms；位置 = 状态栏下方，水平居中 */
+.toast{position:absolute;left:50%;top:56px;z-index:15;display:flex;align-items:center;gap:8px;width:max-content;padding:12px 16px;border-radius:300px;background:#fff;box-shadow:0 4px 20px rgba(0,0,0,.5);color:var(--deep);opacity:0;transform:translate(-50%,-8px);transition:opacity 200ms var(--ease),transform 200ms var(--ease);pointer-events:none}
 .toast[hidden]{display:none}
 .toast.in{opacity:1;transform:translate(-50%,0)}
 .toast.out{opacity:0;transform:translate(-50%,0)}
-.toast .ic{flex:0 0 16px;width:16px;height:16px;display:block}
+.toast .ic{flex:0 0 20px;width:20px;height:20px;display:block}
+.toast .ic svg{display:block;width:20px;height:20px}
+.toast .msg{max-width:260px;font-size:12px;font-weight:400;line-height:16.8px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;white-space:normal}
 /* v2.9 field error (S5 · 场景 18)：输入框下方 8px 一行 12px #F3636F + 12px 同色感叹号；输入框 1px #F3636F 描边；下方区域随报错行下移 24px */
 .addr.invalid{box-shadow:inset 0 0 0 1px var(--risk)}
 .field-err{position:absolute;left:32px;top:205px;width:311px;display:flex;align-items:center;gap:4px;font-size:12px;line-height:16px;color:var(--risk)}
@@ -572,7 +582,7 @@ html,body{background:var(--hub-ground)}
 </style>
 </head>
 <body class="skin-s1">
-<div class="ver" id="ver">v3.1</div>
+<div class="ver" id="ver">v3.2</div>
 <!-- ===================== INTRO · 解析对象与信息架构（2026-10-08 团队讨论口径） ===================== -->
 
 <div class="ambient" aria-hidden="true"><i class="b1"></i><i class="b2"></i><i class="b3"></i></div>
@@ -589,7 +599,7 @@ html,body{background:var(--hub-ground)}
       <div class="part-head">
         <p class="eyebrow">Part 1 · Prototype</p>
         <h2 id="part1-title">Prototype 与场景切换</h2>
-        <p class="sub">两组可操作的 imToken 转账页原型：输入地址 → 解析 → Tag 出现 → Tooltip 自动唤起。每组一台手机 + 一个场景面板，点卡片即可切换场景。Prototype 1 收录最常见的地址解析，按「粘贴哈希地址 / 输入 ENS 域名」分两组；Prototype 2 收录特定网络的专项信息、多信息同现，以及无法解析、解析中断、无效地址三种异常。</p>
+        <p class="sub">两组可操作的 imToken 转账页原型：输入地址 → 解析 → Tag 出现 → Tooltip 自动唤起。每组一台手机 + 一个场景面板，点卡片即可切换场景。Prototype 1 收录最常见的地址解析，按「粘贴哈希地址 / 输入 ENS 域名」分两组；Prototype 2 收录特定网络的专项信息、多信息同现，以及无法解析、解析中断、无效地址三种异常，和风控查询失败时的提示。</p>
       </div>
 
       <!-- v3.0: 语言 / 文案切换（页面级，对两台手机都生效） -->
@@ -690,10 +700,10 @@ html,body{background:var(--hub-ground)}
         <div class="home-ind"></div>
       </div>
 
-      <!-- v2.9 S4 · 解析中断：顶部 Toast（App 现有样式；状态栏下方、盖在导航栏区域上，水平居中；停留 3s 后淡出） -->
+      <!-- v3.2 顶部 Toast = token-v2 ui/Toast 还原（图标与停留时长按类型）；场景 17 Toast.info（3s）/ 场景 19 Toast.warning（7s） -->
       <div class="toast" data-ref="toast" role="status" aria-live="polite" hidden>
-        <svg class="ic" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="6.25" stroke="#111D4A" stroke-opacity=".6" stroke-width="1.5"/><path d="M8 7.25v4" stroke="#111D4A" stroke-opacity=".6" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="4.9" r=".9" fill="#111D4A" fill-opacity=".6"/></svg>
-        <span data-ref="toastText"></span>
+        <span class="ic" data-ref="toastIc" aria-hidden="true"></span>
+        <span class="msg" data-ref="toastText"></span>
       </div>
 
       <!-- S3 Alert -->
@@ -722,7 +732,7 @@ html,body{background:var(--hub-ground)}
       <!-- v2.0: 两个 Prototype 区由 PROTOS 渲染（各自一台手机 + 一个场景面板） -->
       <div class="protos" id="protos"></div>
 
-      <p class="hint">直达：<code>#scene=10&amp;step=expanded</code>（scene = 1…18 · step = typed / resolving / shown / expanded / dismissed · 场景属于哪个 Prototype 就在哪台手机上播放并选中对应 Tab / 卡片；场景 17 step=resolving 看 spinner、step=shown 冻结顶部 Toast；场景 18 step=shown 看输入框下方报错）· 点手机空白处只关闭该台的 tooltip · 点 Tag 再次唤起（回到默认收起态） · Esc 关闭 · Tooltip 出现后 8 秒自动收起（Info / Warning / High risk 一致；点 Tag 再次唤起重新计 8 秒；展开时重新计 8 秒（10-12 评审确认）；step 直达为冻结态，不自动收起） · 折叠入口点击展开、展开后不可收起 · C08「Transaction Record」只在 Tag = Info 时出现在区域一（分割线以上，纯正文，不带标题、不带色条——色条只用于 Warning / High risk）；Warning / High risk 时不显示、不进折叠区 · ENS 正向解析条目的 label = 用户输入的域名（含零宽字符时在其位置插入橙色三角感叹号，输入框里不加），地址全文与其他内容同字体字号，可换行 · 反向解析 label「ENS name」 · 场景 17 解析中断：spinner 约 2.5 秒后顶部 Toast，停留 3 秒淡出，点输入框（重新编辑）重新触发解析 · 场景 18 无效地址：不解析、不出 spinner，输入框下方报错 + 红描边</p>
+      <p class="hint">直达：<code>#scene=10&amp;step=expanded</code>（scene = 1…19 · step = typed / resolving / shown / expanded / dismissed · 场景属于哪个 Prototype 就在哪台手机上播放并选中对应 Tab / 卡片；场景 17 step=resolving 看 spinner、step=shown 冻结顶部 Toast；场景 18 step=shown 看输入框下方报错；场景 19 step=shown 冻结风控查询失败的 Toast）· 点手机空白处只关闭该台的 tooltip · 点 Tag 再次唤起（回到默认收起态） · Esc 关闭 · Tooltip 出现后 8 秒自动收起（Info / Warning / High risk 一致；点 Tag 再次唤起重新计 8 秒；展开时重新计 8 秒（10-12 评审确认）；step 直达为冻结态，不自动收起） · 折叠入口点击展开、展开后不可收起 · C08「Transaction Record」只在 Tag = Info 时出现在区域一（分割线以上，纯正文，不带标题、不带色条——色条只用于 Warning / High risk）；Warning / High risk 时不显示、不进折叠区 · ENS 正向解析条目的 label = 用户输入的域名（含零宽字符时在其位置插入橙色三角感叹号，输入框里不加），地址全文与其他内容同字体字号，可换行 · 反向解析 label「ENS name」 · 场景 17 解析中断：spinner 约 2.5 秒后顶部 Toast，停留 3 秒淡出，点输入框（重新编辑）重新触发解析 · 场景 18 无效地址：不解析、不出 spinner，输入框下方报错 + 红描边</p>
 
       <!-- v3.0: 文案来源对照（由脚本 STR 生成） -->
       <details class="copy-src" id="copySrc">
@@ -1038,6 +1048,8 @@ var STR = {
   'alert.ok':    { grp:'异常', name:'无法解析 Alert · 按钮', design:REPO('domain_no_address_confirm', 'Understand', '好的', '6330'), online:null, note:'#6330 分支（未合并）新增的 key' },
   'toast':   { grp:'异常', name:'解析中断 Toast', design:{ en:"Couldn't finish checking this address. Please try again.", zh:'地址识别未完成，请重试', enSrc:'design', zhSrc:'doc' },
                online:R('cant_resolve_address', 'The wallet address for the domain could not be found', '找不到该域名的钱包地址'), note:'master 把网络中断也报成「找不到」；ensv2 分支改为 Alert · network_error「Network error, please try again later」' },
+  'riskFail': { grp:'异常', name:'风控查询失败 Toast', design:{ en:"Couldn't complete the security risk check.", zh:'无法完成安全风险评估', enSrc:'draft', zhSrc:'design' }, online:null,
+                note:'线上风控接口失败时完全静默（useTips 只 console.warn），没有任何提示；中文由设计给定，英文为待定草稿' },
   'invalid': { grp:'异常', name:'无效地址报错', design:{ en:'Not a valid {{chainName}} address or ENS name.', zh:'无法识别：不是有效的 {{chainName}} 地址或 ENS 域名', enSrc:'design', zhSrc:'doc' },
                online:R('invalid_address', 'Incorrect Wallet Address', '不正确的钱包地址'), note:'线上用 Toast 显示' }
 };
@@ -1055,7 +1067,7 @@ function pick(id){
   if (s.online === null) return { t: designPick.t, mark: 'online' };
   return { t: s.online[LANG], mark: '' };
 }
-var MARK_TITLE = { online:'线上没有对应文案，这里显示的是设计文案', draft:'中文为待定草稿，需要 PM 确认' };
+var MARK_TITLE = { online:'线上没有对应文案，这里显示的是设计文案', draft:'文案为待定草稿，需要 PM 确认' };
 function wrapMark(h, mark){ return mark ? '<span class="mk-' + mark + '" title="' + MARK_TITLE[mark] + '">' + h + '</span>' : h; }
 function txt(id, params){ return fmt(pick(id).t, params); }
 function copyHTML(id, params){ var p = pick(id); return wrapMark(escapeHTML(fmt(p.t, params)), p.mark); }
@@ -1092,7 +1104,8 @@ var HEX = {
   s10:'0x8aF3c1E7b2D5e4A6c0B5d8F1a3E7c9B2d6A4f0E1',
   s11:'0x5C1e8A3f9B2d7E4c6A0f3D8b1E9c5A7d2F4b6C8e',
   s12:'0xE9b2D4f7A1c6E3d8B5a0F2c9D7e1A4b6C8f3D5a2',
-  s14:'0x3D7a9C2e5F1b8E4d6A0c2B9f7E3a1D5c8B6e4F2a'
+  s14:'0x3D7a9C2e5F1b8E4d6A0c2B9f7E3a1D5c8B6e4F2a',
+  s19:'0x6C2e9A4f1D7b3E8c5A0d2F9b6E1a4C7d3B8e5F06'
 };
 var OSMO = 'osmo1qy352eufqy352eufqy352eufqy35v9aj2kglhs';
 var TRON = 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t';
@@ -1123,8 +1136,24 @@ var SCENES = [
   // v2.9 Wilson（2026-10-12）：两个异常场景，都不出 Tooltip。17 = 解析中断 → 顶部 Toast（输入与场景 5 相同，故意复用：同一个域名，这次解析没跑完）；
   //      18 = 无效地址（HEX_ALICE 少最后一位，41 字符）→ 不进入解析，输入框下方报错
   { n:17, title:'解析未完成 → 顶部 Toast',     meta:'S4 · 顶部 Toast，无 Tooltip',     chain:'eth', input:'alice.eth', interrupted:true, ctx:[] },
-  { n:18, title:'无效地址 → 输入框下方报错',   meta:'S5 · 输入框下方报错，无 Tooltip', chain:'eth', input:HEX_ALICE.slice(0, -1), invalid:true, ctx:[] }
+  { n:18, title:'无效地址 → 输入框下方报错',   meta:'S5 · 输入框下方报错，无 Tooltip', chain:'eth', input:HEX_ALICE.slice(0, -1), invalid:true, ctx:[] },
+  // v3.2 Wilson（2026-10-14）：风控接口失败——地址本身解析正常，但拿不到风险结果；线上完全静默，改为 Toast.warning 提醒
+  { n:19, title:'hex · 风控查询失败 → 顶部 Toast', meta:'S6 · Toast.warning，无 Tag 无 Tooltip', chain:'eth', input:HEX.s19, riskFailed:true, ctx:[] }
 ];
+/* v3.2 Toast 类型 = token-v2 ui/Toast：toastIconMap（IconSVG assets 原样 SVG）+ DEFAULT_CONFIG 停留时长 */
+var TOAST_ICON = {
+  info:    '<svg viewBox="0 0 20 20" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M9.0026 0.833496C14.0652 0.833496 18.1693 4.93755 18.1693 10.0002C18.1693 15.0628 14.0652 19.1668 9.0026 19.1668C3.93999 19.1668 -0.164062 15.0628 -0.164062 10.0002C-0.164062 4.93755 3.93999 0.833496 9.0026 0.833496ZM9.0026 9.16683C8.54237 9.16683 8.16927 9.53993 8.16927 10.0002V13.3335C8.16927 13.7937 8.54237 14.1668 9.0026 14.1668C9.46284 14.1668 9.83594 13.7937 9.83594 13.3335V10.0002C9.83594 9.53993 9.46284 9.16683 9.0026 9.16683ZM9.0026 5.8335C8.54237 5.8335 8.16927 6.20659 8.16927 6.66683C8.16927 7.12707 8.54237 7.50016 9.0026 7.50016H9.01074C9.47098 7.50016 9.84408 7.12707 9.84408 6.66683C9.84408 6.20659 9.47098 5.8335 9.01074 5.8335H9.0026Z" fill="#007FFF"/></svg>',
+  warning: '<svg viewBox="0 0 21 20" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M10.6667 1.6665C10.9683 1.6665 11.2649 1.74403 11.5277 1.89152C11.7904 2.03898 12.0105 2.25144 12.1669 2.50838L19.5982 14.8757C19.7514 15.1402 19.8325 15.4403 19.8333 15.7457C19.8342 16.0511 19.7548 16.3515 19.603 16.6169C19.4513 16.8822 19.2327 17.1032 18.9687 17.2581C18.7046 17.413 18.4043 17.4965 18.0979 17.4998H3.23544C2.92907 17.4965 2.62874 17.413 2.36467 17.2581C2.10069 17.1032 1.882 16.8822 1.73031 16.6169C1.57859 16.3515 1.49915 16.0511 1.50001 15.7457C1.50088 15.4403 1.58199 15.1402 1.7352 14.8757L9.16643 2.50838C9.32281 2.25144 9.54298 2.03899 9.80567 1.89152C10.0685 1.74403 10.3651 1.6665 10.6667 1.6665ZM10.6667 13.3332C10.2064 13.3332 9.83334 13.7063 9.83334 14.1665C9.83334 14.6267 10.2064 14.9998 10.6667 14.9998H10.6748C11.135 14.9998 11.5081 14.6267 11.5081 14.1665C11.5081 13.7063 11.135 13.3332 10.6748 13.3332H10.6667ZM10.6667 6.6665C10.2064 6.6665 9.83334 7.0396 9.83334 7.49984V10.8332C9.83334 11.2934 10.2064 11.6665 10.6667 11.6665C11.1269 11.6665 11.5 11.2934 11.5 10.8332V7.49984C11.5 7.0396 11.1269 6.6665 10.6667 6.6665Z" fill="#FC8C4D"/></svg>',
+  error:   '<svg viewBox="0 0 21 20" fill="none"><path d="M18.832 6.37793V13.6221L13.7041 18.75H6.45996L1.33203 13.6221V6.37793L6.45996 1.25H13.7041L18.832 6.37793ZM10.083 12.5C9.62308 12.5002 9.25026 12.8731 9.25 13.333C9.25 13.7931 9.62292 14.1668 10.083 14.167H10.0918C10.5519 14.1668 10.9248 13.7931 10.9248 13.333C10.9245 12.8731 10.5517 12.5002 10.0918 12.5H10.083ZM10.083 5.83398C9.62292 5.83416 9.25 6.20686 9.25 6.66699V10C9.25 10.4601 9.62292 10.8328 10.083 10.833C10.5432 10.833 10.917 10.4602 10.917 10V6.66699C10.917 6.20675 10.5432 5.83398 10.083 5.83398Z" fill="#F3636F"/></svg>',
+  success: '<svg viewBox="0 0 21 20" fill="none"><path d="M17.3294 5L8.16276 14.1667L3.99609 10" stroke="#4BCE71" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+};
+var TOAST_DEFAULT_MS = { info:5000, warning:7000, error:7000, success:2000 };   // DEFAULT_CONFIG（DURATION.NORMAL / LONG / LONG / SHORT）
+// 原型里用到的两种 Toast：kind → { type, STR id, duration（显式传入时覆盖 DEFAULT_CONFIG） }
+var TOAST_KIND = {
+  interrupt: { type:'info',    copy:'toast',    ms:3000 },   // 场景 17 · Toast.info(…, undefined, 3000)：3 秒为 10-12 评审确定
+  riskFail:  { type:'warning', copy:'riskFail', ms:null }    // 场景 19 · Toast.warning(…)：用 DEFAULT_CONFIG 的 7 秒
+};
+function toastMs(kind){ var k = TOAST_KIND[kind]; return k.ms != null ? k.ms : TOAST_DEFAULT_MS[k.type]; }
 var TOAST_TEXT = "Couldn't finish checking this address. Please try again.";   // v3.0: 显示走 STR.toast（默认 EN + 设计 = 本句）   // v2.9 S4 · 场景 17（地址识别未完成，请重试）
 function invalidText(chainKey){ return txt('invalid', { chainName: CHAINS[chainKey].sub }); }   // v3.0: STR.invalid   // v2.9 S5 · 场景 18（{chain} = 当前链名）
 
@@ -1348,8 +1377,8 @@ var PROTOS = [
       { key:'hash', label:'粘贴哈希地址', scenes:[1, 2, 3, 4, 14, 6, 12] },
       { key:'ens',  label:'输入 ENS 域名', scenes:[5, 10, 11, 16] }
     ] },
-  { key:'p2', eyebrow:'Prototype 2 · 专项信息、边界与异常', title:'专项信息识别 · 边界 · 异常', sub:'特定网络的地址解析、多信息同现、无法解析、解析中断、无效地址',
-    scenes:[7, 8, 9, 15, 13, 17, 18] }   // v2.9: 17 / 18 排在场景 13 之后
+  { key:'p2', eyebrow:'Prototype 2 · 专项信息、边界与异常', title:'专项信息识别 · 边界 · 异常', sub:'特定网络的地址解析、多信息同现、无法解析、解析中断、风控查询失败、无效地址',
+    scenes:[7, 8, 9, 15, 13, 17, 19, 18] }   // v2.9: 17 / 18 排在场景 13 之后；v3.2: 19 排在 17 之后（同为顶部 Toast）
 ];
 
 /* 每个场景的解释卡（口径来自 01 section + 场景数据）：dim 解析维度 / type 解析类型 / rule 展示规则 / why 为什么左侧这样显示 */
@@ -1426,11 +1455,16 @@ var EXPLAIN = {
   18: { dim:'Unhappy Path · 不进 Tooltip（输入本身无效，不进入解析）。',
         type:'0x9b57…71f7 少了一位（41 字符），既不是有效的 Ethereum 地址，也不是 ENS 域名。',
         rule:'停顿 1 秒后立即判定无效（不出 spinner）：无 Tag、无 Tooltip，输入框加 1px 红色描边，下方 8px 一行红色报错「Not a valid Ethereum address or ENS name.」（无法识别：不是有效的 Ethereum 地址或 ENS 域名）；隐藏「Add to address book」，Amount 区随报错行下移，Next 不可用。',
-        why:'格式错误是用户当场就能改的输入问题，报错贴在输入框下方就近提示；没有解析结果，也就没有 Tooltip 可显示。' }
+        why:'格式错误是用户当场就能改的输入问题，报错贴在输入框下方就近提示；没有解析结果，也就没有 Tooltip 可显示。' },
+  // v3.2 Wilson（2026-10-14）
+  19: { dim:'Unhappy Path · 区域一无法判断（风控没有返回结果）· 区域二无命中。',
+        type:'0x6C2e…5F06 是有效的 Ethereum 地址，解析正常，但风控接口失败或超时，拿不到这个地址的风险等级。线上此时完全静默，用户会误以为「没有风险」。',
+        rule:'解析完成后无 Tag、无 Tooltip；屏幕顶部滑入 App 现有的 Toast.warning（橙色三角图标）「Couldn\'t complete the security risk check.」（无法完成安全风险评估），按组件默认停留 7 秒后淡出；Next 可用；保留「Add to address book」。若同时命中地址本、ENS 等地址信息，Tag 与 Tooltip 照常出现，Toast 同时出现在顶部。',
+        why:'风险结果缺失不等于没有风险，必须让用户知道这次没有完成安全检查；但它不是地址事实，也不需要阻断转账，所以用 Toast 轻提示，并沿用 App 里网络失败类提示的 warning 样式。' }
 };
 var EX_KEYS = [['dim','解析维度'], ['type','解析类型'], ['rule','展示规则'], ['why','为什么左侧这样显示']];
 
-function levelOf(scene){ return scene.unresolved ? 'error' : scene.interrupted ? 'toast' : scene.invalid ? 'invalid' : buildModel(scene).level; }   // v2.9: toast / invalid
+function levelOf(scene){ return scene.unresolved ? 'error' : (scene.interrupted || scene.riskFailed) ? 'toast' : scene.invalid ? 'invalid' : buildModel(scene).level; }   // v2.9: toast / invalid
 function protoScenes(cfg){ return cfg.tabs ? cfg.tabs.reduce(function(a, t){ return a.concat(t.scenes); }, []) : cfg.scenes.slice(); }
 var PILL_TEXT = { info:'Info', warning:'Warning', high:'High risk', none:'无 Tag', error:'Alert', toast:'Toast', invalid:'Error' };
 var CARD_CHEV = '<svg class="chev" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="m6 3.5 4.5 4.5L6 12.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
@@ -1459,7 +1493,7 @@ function createProto(container, cfg){
   var state = {
     key:key, sceneIndex:-1, scene:null, phase:'idle', level:'none',
     tooltipVisible:false, expanded:false, frozen:false, sceneStart:0, log:[], model:null,
-    toastVisible:false, fieldError:false,   // v2.9: 场景 17 顶部 Toast / 场景 18 输入框下方报错
+    toastVisible:false, toastKind:null, fieldError:false,   // v2.9: 场景 17 顶部 Toast / 场景 18 输入框下方报错；v3.2: toastKind = interrupt / riskFail
     tab: cfg.tabs ? cfg.tabs[0].key : null, started:false
   };
   var inst = { key:key, config:cfg, state:state, el:el, scenes:protoScenes(cfg) };
@@ -1546,7 +1580,7 @@ function createProto(container, cfg){
     Array.prototype.forEach.call(el.screen.querySelectorAll('[data-i18n]'), function(node){ node.innerHTML = copyHTML(node.getAttribute('data-i18n'), params); });
     el.screen.setAttribute('lang', LANG === 'zh' ? 'zh-CN' : 'en');
     if (!el.tag.hidden && state.level !== 'none') el.tag.innerHTML = copyHTML('tag.' + state.level);
-    if (state.toastVisible) el.toastText.innerHTML = copyHTML('toast');
+    if (state.toastVisible && state.toastKind) el.toastText.innerHTML = copyHTML(TOAST_KIND[state.toastKind].copy);
     if (state.fieldError && state.scene) el.fieldErrText.innerHTML = copyHTML('invalid', { chainName: c.sub });
   }
   function setInput(text){
@@ -1574,15 +1608,20 @@ function createProto(container, cfg){
   function setNext(on){ el.nextBtn.classList.toggle('on', !!on); }
 
   /* ---- v2.9 S4 · 顶部 Toast（场景 17 解析中断）：滑入 → 停留 TIMING.toast（3s）→ 淡出 TIMING.toastOut 后 display:none；冻结态（hash 直达）保持显示 ---- */
-  function showToast(){
-    el.toastText.innerHTML = copyHTML('toast');   // v3.0: STR.toast
+  function showToast(kind){
+    kind = kind || 'interrupt';
+    var k = TOAST_KIND[kind], ms = toastMs(kind);
+    state.toastKind = kind;
+    el.toastIc.innerHTML = TOAST_ICON[k.type];   // v3.2: 图标按 Toast 类型（toastIconMap）
+    el.toast.dataset.type = k.type;
+    el.toastText.innerHTML = copyHTML(k.copy);   // v3.0: STR
     el.toast.classList.remove('out');
     el.toast.hidden = false;
     void el.toast.offsetWidth;   // reflow so the slide-in runs
     el.toast.classList.add('in');
     state.toastVisible = true;
-    log('toast shown (top)');
-    if (!state.frozen) T.set(function(){ hideToast((TIMING.toast / 1000) + 's'); }, TIMING.toast);
+    log('toast shown (top)' + (kind === 'interrupt' ? '' : ' · ' + k.type + ' · ' + kind));
+    if (!state.frozen) T.set(function(){ hideToast((ms / 1000) + 's'); }, ms);
   }
   function hideToast(reason){
     if (!state.toastVisible) return;
@@ -1686,7 +1725,7 @@ function createProto(container, cfg){
     el.ttContent.innerHTML = '';
     el.spinner.hidden = true; setTag('none'); el.caret.hidden = true;
     el.alert.hidden = true;
-    state.toastVisible = false; el.toast.hidden = true; el.toast.classList.remove('in', 'out');   // v2.9
+    state.toastVisible = false; state.toastKind = null; el.toast.hidden = true; el.toast.classList.remove('in', 'out');   // v2.9
     clearFieldError();                                                                           // v2.9
     setInput(''); setNext(false);
   }
@@ -1723,6 +1762,7 @@ function createProto(container, cfg){
       state.phase = 'invalid'; setNext(false); showFieldError(scene); log('invalid → inline error under the input (S5, no resolve)'); return;
     }
     var m = state.model; state.level = m.level; setNext(true);
+    if (scene.riskFailed) log('risk check failed → no risk info (address resolved)');   // v3.2 场景 19
     if (m.level === 'none'){ state.phase = 'resolved'; log('resolved(none) → S2 no tag'); return; }
     setTag(m.level); renderTooltip(m);
     state.phase = 'resolved'; log('resolved(' + m.level + ') → tag "' + TAG_TEXT[m.level] + '"');
@@ -1749,7 +1789,8 @@ function createProto(container, cfg){
     el.spinner.hidden = false;
     T.set(function(){
       resolveNow(scene);
-      if (state.phase === 'interrupted'){ showToast(); return; }
+      if (state.phase === 'interrupted'){ showToast('interrupt'); return; }
+      if (scene.riskFailed) showToast('riskFail');   // v3.2 场景 19：风控查询失败 → Toast.warning（地址解析照常）
       if (state.phase === 'resolved' && state.level !== 'none'){
         T.set(function(){ showTooltip('auto'); }, TIMING.tagToTip);
       }
@@ -1775,7 +1816,8 @@ function createProto(container, cfg){
       el.spinner.hidden = false; state.phase = 'resolving'; log('resolving'); return;
     }
     if (k >= 3){ resolveNow(scene); }
-    if (k >= 4 && state.phase === 'interrupted'){ showToast(); }   // v2.9 场景 17：冻结的顶部 Toast（保持显示）
+    if (k >= 4 && state.phase === 'interrupted'){ showToast('interrupt'); }   // v2.9 场景 17：冻结的顶部 Toast（保持显示）
+    if (k >= 4 && scene.riskFailed){ showToast('riskFail'); }                 // v3.2 场景 19
     if (k >= 4 && state.level !== 'none'){ showTooltip('instant'); }
     if (k >= 5) expand(true);   // v1.12: instant — entry row removed without the 160ms transition
     if (k === 3 && state.level !== 'none') log('(tooltip not shown — jump to dismissed)');
@@ -1837,7 +1879,7 @@ function createProto(container, cfg){
   inst.getState = function(){
     return { key:key, phase:state.phase, level:state.level, tooltipVisible:state.tooltipVisible, expanded:state.expanded, sceneIndex:state.sceneIndex,
              log:state.log.slice(), skin:SKIN, compare:COMPARE, tab:state.tab, started:state.started,
-             toastVisible:state.toastVisible, fieldError:state.fieldError, lang:LANG, copy:COPY };
+             toastVisible:state.toastVisible, toastKind:state.toastKind, fieldError:state.fieldError, lang:LANG, copy:COPY };
   };
   return inst;
 }
