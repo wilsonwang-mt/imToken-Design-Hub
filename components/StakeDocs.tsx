@@ -7,9 +7,10 @@ const docs = [
   { key: 'overview', href: '/projects/stake-video/', step: '01', label: '项目概览', desc: '故事 · 视觉语法 · 进度 · 链接' },
   { key: 'taglines', href: '/projects/stake-video/taglines/', step: '02', label: '宣传语提案', desc: '中文修订版 · 竞品对照 · 中英双语' },
   { key: 'pr', href: '/projects/stake-video/pr/', step: '03', label: '媒体 PR 稿方案', desc: 'PR 标题 · 写作原则 · 数据核查', static: true },
+  { key: 'guide', href: '/projects/stake-video/guide/', step: '04', label: '视频制作技巧及规范', desc: '角色 · ETH 与容器 · 合成 · 画布 · 配音' },
 ] as const
 
-export default function StakeDocs({ active }: { active: 'overview' | 'taglines' }) {
+export default function StakeDocs({ active }: { active: 'overview' | 'taglines' | 'guide' }) {
   return (
     <nav className="aw-docs sv-docs" aria-label="Stake 视频制作文档">
       {docs.map((d) =>
