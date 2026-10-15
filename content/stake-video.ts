@@ -104,6 +104,13 @@ export const links: StakeLink[] = [
     hosted: true,
   },
   {
+    title: '视频制作技巧及规范',
+    desc: '做下一支视频用：Bulu 形象、ETH 与质押容器、Remotion 合成、LibTV 画布、配音发音五份规范，每份都能下载成 md。',
+    href: '/projects/stake-video/guide/',
+    note: '本站',
+    internal: true,
+  },
+  {
     title: '成片 · 中文正式版',
     desc: '10/8 发布的中文正式版，1080p，约 59 秒。',
     href: 'https://drive.google.com/file/d/1tTakuu2XnSJFPUPlFeQEEH6gzKzbEuLT/view?usp=drive_link',
