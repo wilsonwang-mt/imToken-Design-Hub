@@ -47,7 +47,7 @@
 
 ## 3. 最有用的十条经验
 
-1. **AI 视频一律固定机位**。推拉、转场、跳跃路径都在后期做，叠加的图层才对得准。
+1. **AI 视频一律固定机位**。推拉、转场都在后期做，叠加的图层才对得准；ETH 跳进容器这类需要精确落位的动作，用首尾帧模式直接生成。
 2. **AI 画面里不出现任何文字或数字**。所有文案、数字、界面都在后期叠加；prompt 里不写「象征」「表达」这类意图词，会被画成字。
 3. **首帧决定一切**。视频模型会照着首帧演，prompt 和首帧冲突时往往 prompt 赢、画面走样。所以先把静帧修对（造型、道具、ETH 数量），prompt 只写首帧里有的东西。
 4. **先复用，再生成**。重定时、定格、裁切、局部修补、后期图层能解决的，不重新生成。迭代时 720p、一次 1 条。
@@ -56,7 +56,7 @@
 7. **Bulu 是光滑锐利的搪胶玩具，没有腿、没有手臂、没有眉毛**。生图时一律带 Bulu 标准参考图。
 8. **动作对界面时，对的是接触帧**（鳍碰到手机的那一帧），不是抬手悬停的那一帧。
 9. **每条新视频都和前后镜头并排核对道具**：手机（单摄深色背壳）、容器（盾牌锁孔和光环）、杯子、书、毯子。没有首帧锁定时，模型会自己发明道具。
-10. **品牌名只有一种读法**：/ɛm/ + token 连读，TTS 写 MToken，字幕写 imToken。
+10. **品牌名只有一种读法**：/ɛm/ + token 连读，字幕写 imToken；英文 TTS 写 MToken，中文配音先各出 MToken 和 Am-Token 两种写法对比后再定。
 
 ## 4. 硬规则速查
 
@@ -66,13 +66,13 @@
 | ETH 大小和表情 | 只在牛熊段落随价格变化，结尾回到原样，不代表收益。 |
 | 奖励小 ETH | 形状颜色和主 ETH 相同、明显更小、不带表情；只在容器上方或容器和 Bulu 之间；出现得要慢。 |
 | 容器和光带 | 容器始终在 Bulu 身边的小边几上；光带连着容器和手机，任何时候都不断开。 |
-| 计数器 | 只显示增量，带「示意数值」；全片不出现持仓总数。 |
+| 计数器 | 只显示增量，带「示意数值」；计数器和文案都不出现持仓总数（成片开场手机界面里的 ETH 余额是特意保留的界面内容）。 |
 | 画面文字 | AI 画面里没有任何文字、数字、logo、zZ；唯一例外是容器底座的盾牌锁孔形状。 |
 | Bulu | 光滑锐利的搪胶质感；没有腿、脚、手臂、眉毛；一只蓝底绿尖的角；颜色饱和鲜亮。 |
 | 道具 | 手机是无品牌通用机型、单摄、深色背壳，永远不悬空。 |
 | 机位 | AI 视频固定机位，不写运镜。 |
 | 文案口径 | 说「imToken 质押」「掌控权始终在你手上」；不说原生质押、32 ETH、锁定，不说「ETH 不离开你的钱包」。 |
-| 品牌名 | /ɛm/ + token；TTS 写 MToken，字幕写 imToken；英文产品名 imToken Stake。 |
+| 品牌名 | /ɛm/ + token；字幕写 imToken；英文 TTS 写 MToken（中文先对比 MToken 和 Am-Token）；英文产品名 imToken Stake。 |
 
 ## 5. 开始之前要和 Wilson 确认的事
 
@@ -163,7 +163,7 @@ Bulu 是一只圆滚滚的蓝色小鲸鱼，**像高级搪胶玩具一样光滑�
 | A 主机位 | 开场、焦虑、ETH 醒来、惊喜、结尾 | 沙发左前方的低角度 3/4 正面，40 mm，略低于 Bulu 眼高。Bulu 居中，约占画高 42%（含角约 56%），头顶留约 30% 空间；尾巴和容器在画左，ETH 毯窝在画右。 |
 | A-CU 面部特写 | 发现 App | 与 A 同一位置，100 mm，脸约占画高 2/3，手机在画面右下缘，画面里没有暖光。 |
 | B 过肩 | 看行情 | 在 Bulu 肩旁、角根高度，沿沙发往远端俯看：画左是 Bulu 的脸颊和角，手机在画面中央对焦。 |
-| F 正面 | 幻想气泡 | 正面平视，50 mm。Bulu 在下半画面居中，头顶留出气泡空间（气泡占画面上方约 45%，角尖离气泡下沿至少 20 px）。 |
+| F 正面 | 幻想气泡 | 正面、水平，36 mm，机位略高于 Bulu 眼高（最初关键帧 prompt 写的 50 mm 已被取代）。Bulu 在下半画面、略偏左，头顶留出气泡空间（气泡占画面上方约 45%，角尖离气泡下沿至少 20 px）。 |
 | W 窗景 | 四季、牛熊 | 正对落地窗；Bulu 在画面一侧。 |
 
 **视线**：每条视频 prompt 都要写明视线落点（容器、毯窝里的 ETH，或者手机）。除了片尾，Bulu 一般不看镜头，看镜头会打断「看着身边的 ETH」这层关系。
@@ -357,7 +357,7 @@ Edit the input image. Change only one thing: Bulu, the blue whale mascot sitting
 Keep everything else exactly unchanged, pixel for pixel where possible: the composition, camera angle and framing, Bulu's size, position, head, horn, face, eyes, blush, colour and smooth vinyl surface, the phone, the sofa, the fine-knit blanket and the sleeping ETH crystal in it, the floor lamp, the plant, the side tables, the mug and books, the blank desk calendar, the marble table, the windows and the night skyline, the lighting and exposure. Native 4K, crisp and clean, no noise, no grain, no blur.
 ```
 
-视频里保持无腿（Bulu 坐着、有手部动作时，写进镜头描述）：
+视频里保持无腿（Bulu 坐着、有手部动作时，写进镜头描述）。这句据去腿重生成那条视频的 prompt 改写：原文结尾是 `also while Bulu scrolls`，为了避开「鳍在屏幕上滑」的写法改成了 `moves its fins`，改写版还没有单独测试过：
 
 ```text
 Bulu has no legs and no feet: the bottom of its round body is a smooth cream-white belly resting directly on the sofa cushion, exactly as in the first frame, and it stays that way the whole time, also while Bulu moves its fins.
@@ -459,7 +459,7 @@ Bulu has no legs and no feet: the bottom of its round body is a smooth cream-whi
 | **奖励小 ETH** | 数量在慢慢累积 | 形状、颜色和主 ETH 相同，明显更小，**不带表情**。出现得要慢。只能待在**容器上方，或容器和 Bulu 之间**。 |
 | **质押容器** | 自己的验证器，安全地在工作 | 始终放在 **Bulu 身边**的小边几上；质押时才出现。 |
 | **光带** | 所有权：非托管，掌控权始终在你手上 | 一条细的冰蓝光带连着容器和 Bulu 的手机，**任何时候都不能断开**。 |
-| **增量计数器** | 核心信息：多出来的 ETH | **只显示增量**（+x.xx ETH），全片不出现持仓总数。 |
+| **增量计数器** | 核心信息：多出来的 ETH | **只显示增量**（+x.xx ETH），计数器和文案都不出现持仓总数。（成片开场手机界面里显示的 ETH 余额是特意保留的界面内容，不算计数器。） |
 | 画面里的文字 | — | AI 生成的画面里**不出现任何文字或数字**。计数器、价格卡、界面、zzz 都在后期叠加。唯一例外是容器底座上浮雕的盾牌锁孔形状。 |
 
 和光带含义相关的文案口径：说「非托管，质押后掌控权始终在你手上」。**不要说「ETH 不离开你的钱包」**：质押时 ETH 确实会离开钱包（2026-10-08 起停用这句）。也不要用任何会让人以为 ETH 被「锁住」的说法。
@@ -496,7 +496,7 @@ Bulu has no legs and no feet: the bottom of its round body is a smooth cream-whi
 
 ### 2.5 牛熊段落
 
-- ETH 的大小跟着价格曲线变（成片实现：波峰放大到约 1.54 倍，绕腰部附近缩放；波谷缩小到约 0.80 倍，绕底部缩放，像往毯子里沉；比价格曲线滞后约 3 帧）。
+- ETH 的大小跟着价格曲线变。规范是以底部为锚点缩放 0.8–1.2 倍，结尾回到 1.0 倍；成片实际用的是牛熊合成帧的实测值：波峰约 1.54 倍、绕腰部附近缩放，波谷约 0.80 倍、绕底部缩放（像往毯子里沉），比价格曲线滞后约 3 帧。波峰倍数还没有最终确认。
 - 表情顺序：沉睡 → 醒来变开心 → 开心 → 转失落 → 失落 → 睡回去。整段只有 1 颗 ETH。
 - 季节调色、补光时，ETH 所在区域一律不提亮：亮度只代表休眠和工作，不能被别的东西带亮。
 - 大小和表情的变化**用代码做**，不让 AI 视频去演（见 [Remotion 动画与合成规范](03-remotion.md)）。
@@ -566,7 +566,7 @@ Bulu has no legs and no feet: the bottom of its round body is a smooth cream-whi
 
 - **形状、颜色**和主 ETH 完全相同，**明显小于主 ETH**，大小以已审批关键帧为准（不设比例上限；早期「主 ETH 的 1/10」「1/4」这两条上限已在 2026-10-04 取消）。
 - **不带表情**：没有眼睛，没有嘴。
-- **只增不减**，跨镜头也一样。成片里从惊喜到结尾都保持 11 颗。
+- **只增不减**，跨镜头也一样。成片里惊喜那一镜从 6 颗逐渐升到 11 颗，幻想气泡结尾 11 颗，结尾一镜 13 颗（后两镜各有 3 颗小的汇聚成 1 颗稍大的）。
 - **位置**：只在容器上方，或容器和 Bulu 之间。不飞走，任何一帧都不出画，不飞进别的物体（另一张小几、窗、毯窝、Bulu 的身体）。
 - **要慢**：从一粒光点慢慢长成晶体；几颗小的慢慢聚拢、合成一颗稍大的（仍明显小于主 ETH）。
 - **不能多到像夸大收益**：成片曾因为一堆静止的大晶体被认为「像夸大宣传」，改成了环绕容器的少量小 ETH，加上从容器顶不断升起、轻轻上下浮动的几颗（表示还在持续产生）。奖励云要有大有小、分布均匀，中间不留大块空白。
@@ -677,10 +677,16 @@ A 机位必加：
 The ETH crystal is about one third of Bulu's seated height; the vault is about half of Bulu's height.
 ```
 
-布局描述（第三句质押后才加）：
+布局描述，质押前：
 
 ```text
-On the other seat, the ETH crystal sleeps in a soft hollow of the blanket. Right beside Bulu's armrest stands a small round dark-wood side table. The glass vault stands on it.
+On the other seat, the ETH crystal sleeps in a soft hollow of the blanket. Right beside Bulu's armrest stands a small round dark-wood side table.
+```
+
+质押后（毯窝已空，ETH 在容器里，不能再写毯窝里有 ETH，否则画面会多出一颗）：
+
+```text
+Right beside Bulu's armrest stands a small round dark-wood side table. The glass vault stands on it. The blanket nest on the far seat at the right is now empty.
 ```
 
 ### 8.6 相关机位
@@ -743,8 +749,8 @@ ETH crystal halves stay aligned; exactly one ETH crystal, inside the vault; no c
 
 | 素材 | 看什么 | 在哪 |
 |---|---|---|
-| 标准 ETH 几何（多角度） | Three.js 按标志比例渲染的主 ETH：正面、转 30°、俯 35°、醒来态。看得出方形腰的四棱体和中间的细缝。 | 画布「02_LAYOUT_REF」分组（`REF_geom_eth_yaw30_elev8`、`REF_geom_eth_yaw30_elev35` 等） |
-| 标准容器几何 | 容器 3/4 俯视和正面：两层底座、玻璃圆柱、盖和凸台、内部底座、倾斜光环、底座正面的盾牌。 | 画布「02_LAYOUT_REF」（`REF_geom_vault_yaw35_elev20`） |
+| 标准 ETH 几何 | Three.js 按标志比例渲染的主 ETH，看得出方形腰的四棱体和中间的细缝。画布上有转 30° 平视、转 30° 俯 35° 两张；正面、醒来态等其他角度只在 Wilson 的项目本地，需要时向他要。 | 画布「02_LAYOUT_REF」分组（`REF_geom_eth_yaw30_elev8`、`REF_geom_eth_yaw30_elev35`） |
+| 标准容器几何 | 容器 3/4 俯视：两层底座、玻璃圆柱、盖和凸台、内部底座、倾斜光环、底座正面的盾牌。正面图只在项目本地。 | 画布「02_LAYOUT_REF」（`REF_geom_vault_yaw35_elev20`） |
 | 主视觉「Stake, under your control」 | 容器造型的来源。四周漂浮的小 ETH 不要照抄。 | 画布「00_REF」（`REF_kv-container_src`） |
 | 客厅白模摆位图 | 各机位质押前后的摆位：小边几、Bulu、毯窝、另一张小几的位置；质押后的容器、光带。画面上标了各物件的横向位置和 16:9、9:16 的取景框。 | 画布「02_LAYOUT_REF」（`REF_layout_A_pre`、`REF_layout_A_post`、`REF_layout_V_post`、`REF_layout_F_post` 等） |
 | 已审批关键帧 | 容器特写（早期、后期两张，小 ETH 大小以它为准）、A 机位质押后母图（放大后的容器）、惊喜、幻想、结尾。 | LibTV「画布 1」 |
@@ -758,6 +764,7 @@ ETH crystal halves stay aligned; exactly one ETH crystal, inside the vault; no c
 - 奖励小 ETH 默认用 AI 画还是脚本叠加；脚本精灵目前是单个菱形，要不要改成和主 ETH 一样的两段式标志形。
 - 光带的起点（顶盖还是右壁）和光粒的流向（双向，还是从容器流向手机）。
 - 沉睡呼吸的周期：规范写约 4 秒一次，牛熊段落的实现是 2.5 秒一次。
+- 牛熊段落 ETH 的波峰倍数：用规范的 1.2 倍，还是成片的约 1.54 倍。
 - 竖版：容器特写、惊喜两个镜头的小 ETH 在 9:16 里放不下，需要从生图阶段就按竖版构图。
 
 ---
@@ -811,13 +818,13 @@ ETH crystal halves stay aligned; exactly one ETH crystal, inside the vault; no c
 - 类别：`KF`（关键帧）、`VID`（视频）。
 - 版本：`src`（上传的原图）、`v01`、`v02`……（派生版本）；视频用 `t01`、`t02`……
 - 常见的扩展写法：`_final_v07`（定稿首帧）、`_gpt-1` / `_gpt-2`（外部 GPT Image 生成后上传的图）、`_regen_vNN`、`_redraw_vNN`、`_cover_vNN`、`_jump_vNN`、`_vedit_nolegs_vNN`（视频编辑）、`_fix-…`（修图）。
-- 一个节点出了多张时，用的是第几张（`-1` 到 `-4`）不写进节点名，只写在下载的文件名里。
+- 一个节点出了多张时，用的是第几张不写进节点名，只写在下载的文件名里：图片用 `-1` 到 `-4`，视频用 `_1`、`_2`。
 - 弃用的节点加 `ARC_` 前缀，节点和连线都保留。
 - 上传的图片节点改不了名（CLI 报错，网页也没有入口），有些还保留着原始文件名，只能靠分组识别。所以**上传时一开始就起好规范的名字**。
 
 ### 3.3 每个镜头的终版
 
-成片里每个镜头最终用的是下面这些节点。可以直接复用的素材，优先从这里找。
+成片里每个镜头最终用的是下面这些节点（括号里是这个节点出的第几条）。注意：S06、S07、S09、S10、S11a、S11b 的节点是 10-05 前后按旧质感出的原始结果，Bulu 偏软、偏绒；成片用的是本地后期处理（去毛绒、修补）过的底片，需要时向 Wilson 要。
 
 | 镜头 | 内容 | 终版节点 | 说明 |
 |---|---|---|---|
@@ -825,16 +832,20 @@ ETH crystal halves stay aligned; exactly one ETH crystal, inside the vault; no c
 | S02 | 过肩看行情 | `S02_VID_regen_v05` | 首帧 `S02_KF_regen_v05_gpt-2`（手机屏幕是深色，界面后期合成）；6 秒，重定时到 5 秒 |
 | S03 + S04 | ETH 沉睡、四季和牛熊 | `S03S04_VID_regen_v04` | 首帧 `S04_KF_nolegs_v03_gpt-1`（已去腿的底图）；一条 15 秒底片拆成两个镜头，牛熊段落在后期合成 |
 | S05 | （已并入 S04） | — | 不单独生成 |
-| S06 | 焦虑 | `S06_VID_t03_2` | 首帧 `S06_KF_final_v07`；4 秒 |
-| S07 | 发现 App | `S07_VID_t02_2` | 本地修补过（擦掉了眼睛上方的鼓棱）；剪辑段从 0.83 秒开始 |
+| S06 | 焦虑 | `S06_VID_t03`（第 2 条） | 首帧 `S06_KF_final_v07`；4 秒 |
+| S07 | 发现 App | `S07_VID_t02`（第 2 条） | 本地修补过（擦掉了眼睛上方的鼓棱）；剪辑段从 0.83 秒开始 |
 | S08 | 在 App 里操作 | `S08_VID_redraw_v04` | 首帧 `S08_KF_redraw_v04_gpt-1`（A 机位正面中景）；6 秒，三次点击重定时到 1、2、3 秒 |
-| S09 | ETH 醒来跳进容器 | `S09_VID_t03_1` | **首尾帧模式**：首帧 `S09_KF_A_master_pre_v01`，尾帧 `S09_KF_A_master_post_v02`；5 秒 |
-| S10 | 收益增长（容器特写） | `S10a_VID_t02_2` + `S10b_VID_t03_2` | 两条硬切接在一起，都本地修补过；状态仍是临时版 |
-| S11a | 惊喜 | `S11a_VID_t04_2` | 先用修图把画面里的晶体去掉，奖励小 ETH 由脚本叠加 |
-| S11b | 幻想气泡 | 后期合成 | 底片是 F 机位无气泡的版本；两段梦境是 `S11-firstclass_VID_t01`、`S11-beach_VID_t01` |
+| S09 | ETH 醒来跳进容器 | `S09_VID_t03`（第 1 条） | **首尾帧模式**：首帧 `S09_KF_A_master_pre_v01`，尾帧 `S09_KF_A_master_post_v02`；5 秒 |
+| S10 | 收益增长（容器特写） | `S10a_VID_t02`（第 2 条）+ `S10b_VID_t03`（第 2 条） | 两条硬切接在一起，都本地修补过；状态仍是临时版 |
+| S11a | 惊喜 | `S11a_VID_t04`（第 2 条） | 先用修图把画面里的晶体去掉，奖励小 ETH 由脚本叠加 |
+| S11b | 幻想气泡 | 底片 `S11b_VID_t02`（第 2 条）+ 后期合成 | 底片是 F 机位无气泡的版本；两段梦境是 `S11-firstclass_VID_t01`、`S11-beach_VID_t01` |
 | S12 | 开心跳起 | `S12_VID_jump_v02` | 首帧 `S12_KF_jump_v03_gpt-2`（4K）；5 秒，奖励小 ETH 由脚本叠加 |
 
-**可以直接复用的母图**：A 机位的质押前、质押后母图（`S09_KF_A_master_pre_v01`、`S09_KF_A_master_post_v02`），容器放大后的 A 机位构图就以后者为准；`S04_KF_nolegs_v03_gpt-1` 是已经去腿的沙发全景。
+**可以复用的母图**：
+
+- A 机位的质押前、质押后母图（`S09_KF_A_master_pre_v01`、`S09_KF_A_master_post_v02`）：构图和环境可以直接用，容器放大后的 A 机位构图以后者为准。但它们是 10-05 按旧写法出的，Bulu 还是软触感质感，**不能直接当首帧**；拿来做 edit 底图时，带上 Bulu 标准图把 Bulu 重绘成光滑搪胶（见 Bulu 规范第 9.10 节）。`S06_KF_final_v07` 同理。
+- `S04_KF_nolegs_v03_gpt-1`：已经去腿、按当前标准出的沙发全景，可以直接用。
+- 按当前标准出的其他关键帧见 Bulu 规范第 13 节。
 
 ## 4. 模型和参数
 
@@ -1028,7 +1039,7 @@ rmdir "$STAGE" 2>/dev/null || ls "$STAGE"
 | 帧率 | **24 fps**，全片统一 |
 | 主交付 | 1920×1080，H.264，yuv420p，约 14 Mbps，AAC 320 kbps / 48 kHz |
 | 4K 版 | 只在投 YouTube 或官网大屏时出：底片先用 Lanczos 放大到 4K 再渲，`--scale=2`，码率 45 Mbps |
-| AI 底片 | Seedance 2.5 最高 1080p；交付时 24 fps、1920×1080、无水印，前后各留约 0.5 秒余量 |
+| AI 底片 | Seedance 2.5 最高 1080p。纯 AI 底片交付时 24 fps、1920×1080、无水印，前后各留约 0.5 秒余量；在本地叠了界面、台历等高清图层的底片（成片里的 S02、S03、S04）按 3840×2160 交付，并在底片清单里注明分辨率，不要再用 1080p 的交付流程重交 |
 | 底片编码 | libx264 crf 12、yuv420p、tv range，标注 BT.709 |
 | 中间文件 | ProRes 422 HQ（10-bit），往返误差约 0.2 级 |
 | 色彩 | **全链路 BT.709**（见第 8 节的坑） |
@@ -1060,7 +1071,7 @@ video/
   public/
     plates/               S01.mp4 … S12.mp4 + manifest.json
     audio/                music/、sfx/（+ meta.json）、vo/<语言>/
-    fonts/                打包的字体（不依赖本机字体）
+    fonts/                打包的字体：英文 Inter、封面用的思源黑体 Heavy 和 Inter Black
   scripts/
     render-master.sh      成片渲染
     master_static.py      响度母带
@@ -1120,7 +1131,7 @@ box-shadow: 0 18px 48px rgba(4,10,25,0.35), inset 0 1px 0 rgba(255,255,255,0.22)
 
 | 叠加层 | 做法 |
 |---|---|
-| **片头标题** | 社交平台的第一帧就是封面，所以第 0 帧完整显示标题，停 1.2 秒后用 0.6 秒淡出（略上浮、虚化），视频本身从第 0 帧就在播。标题一部分**藏在 Bulu 身后**：逐帧生成 Bulu 的遮罩，整层标题用 mask-image 套上当前帧的遮罩；左侧加一层轻压暗保证可读。标题不能碰到 Bulu。另导出封面图：1920×1080 JPG 和 3840×2160 PNG。 |
+| **片头标题** | 社交平台的第一帧就是封面，所以第 0 帧完整显示标题，停 1.2 秒后用 0.6 秒淡出（略上浮、虚化），视频本身从第 0 帧就在播。标题放在 Bulu 左侧，和 Bulu 至少保持约 26 px 间距，**不靠抠像遮挡**（第一版曾让文字一角藏在 Bulu 身后，抠像边缘不干净，定稿改为完全不碰）；代码里仍保留逐帧的 Bulu 遮罩作保险。左侧加一层轻压暗保证可读。另导出封面图：1920×1080 JPG 和 3840×2160 PNG。 |
 | **推送卡片** | 放在左上角（居中会挡住 Bulu 的角）：方形 imToken 应用图标 + 标题 + 副标题。0.1 秒起弹簧滑入，结束前 0.3 秒收起。 |
 | **手机窗口（App 界面）** | 画面右侧的磨砂玻璃悬浮手机窗口，高约 0.68 倍画高。Bulu 手里的手机屏幕和右侧窗口**渲染同一个界面组件、用同一个时间**，两边状态始终同步。界面组件按 393×852 pt 的手机画布写。窗口出现时从右侧划入，可以带一点回弹，对上角色动作（例如最后一跳落地）。 |
 | **增量计数器** | 只在收益增长那一镜出现：先停在 +0.00 约 1 秒，再用缓入缓出（cubic）数到 +0.72，结束前 0.6 秒数完；0.3 秒淡入。数字 Inter 52 / 600、等宽数字，单位 28 / 500，旁注「示意数值」18 号、60% 不透明度；正在数时卡片带一点冰蓝外发光。位置在右上角（距右 120、距上 96）。旁注缺失时程序要报警。 |
@@ -1182,7 +1193,7 @@ box-shadow: 0 18px 48px rgba(4,10,25,0.35), inset 0 1px 0 rgba(255,255,255,0.22)
   3. 逐句生成配音（品牌名的写法见配音规范），归一化并补头尾静音，检查开头结尾有没有被截。
   4. 按实际配音时长微调开始时间，不压下一句、不压切点。
   5. 界面图、封面按语言各出一版，检查文字长度不溢出、不碰角色。
-  6. 字体打包进工程（英文 Inter，中文 PingFang SC 加系统兜底；封面用思源黑体 Heavy 和 Inter Black，都可免费商用），不依赖本机安装的字体，否则换一台机器渲染时字体和换行都会变。
+  6. 字体：英文 Inter（英文模式下注册）和封面用的思源黑体 Heavy、Inter Black 已打包进工程，都可免费商用，不依赖本机。中文正文（字幕、卡片、片尾）用的是 macOS 系统字体 PingFang SC / SF Pro，没有打包，所以中文版要在 Mac 上渲染；想在任何机器上渲染结果都一致，就打包一款可商用的开源中文字体（如思源黑体 Regular / Medium），写进中文字体栈。
 
 ## 8. 色彩和编码的坑
 
@@ -1205,6 +1216,11 @@ ffmpeg -i in.mp4 -vf "scale=in_color_matrix=bt709:in_range=tv:out_range=pc:flags
 ffmpeg -framerate 24 -i f%03d.png \
   -vf "scale=out_color_matrix=bt709:out_range=tv:flags=accurate_rnd+full_chroma_int+full_chroma_inp,format=yuv420p" \
   -c:v libx264 -crf 12 -colorspace bt709 -color_primaries bt709 -color_trc bt709 -color_range tv out.mp4
+
+# 补色彩标注（像素不变）：scale 滤镜会让 H.264 丢掉 primaries / trc 标注
+ffmpeg -i out.mp4 -c:v copy \
+  -bsf:v h264_metadata=colour_primaries=1:transfer_characteristics=1:matrix_coefficients=1:video_full_range_flag=0 \
+  -colorspace bt709 -color_primaries bt709 -color_trc bt709 -color_range tv out_tagged.mp4
 ```
 
 ## 9. 渲染和交付
@@ -1395,7 +1411,7 @@ Eleven V3 返回的文件常常没有开头和结尾的静音，第一批 14 句
 ## 9. 文件和命名
 
 - 配音放在 `public/audio/vo/<语言>/`（`zh-CN`、`en`），每种语言的旁白稿里写明每句用哪个文件；文件不在时自动跳过，字幕按字数估算时长（中文每字 0.24 秒，英文每词 0.4 秒）。
-- 句子编号中英文共用一套（成片 14 句：V01–V09、V10a、V10b、V11、V11b、V12），开始时间相对镜头起点，中英文一致。
+- 句子编号中英文共用一套（成片 14 句：V01–V09、V10a、V10b、V11、V11b、V12），开始时间相对镜头起点，以中文版为基准，可以按各语言配音的实际时长在镜头内微调（成片里只有英文 V05 从 6.4 秒挪到 6.8 秒，让翻台历落在逗号停顿里）。
 - 生成文件的命名：`<句子编号>[_<拼写标记>][_r<第几次重出>]_<序号>.mp3`；归一化后的文件加 `_n`。下载时同名已存在就加时间后缀，从不覆盖。
 
 ## 10. 检查清单
