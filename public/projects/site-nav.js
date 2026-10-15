@@ -3,10 +3,11 @@
    full-page HTML, so this is the only way back up to 项目追踪 without the browser back button).
    Rendered in a Shadow DOM so prototype styles and site styles never touch each other. */
 (function () {
-  if (window.__imtDesignNav) return
+  // 原型里用 iframe 嵌的子页面不再显示一层导航
+  if (window.__imtDesignNav || window.self !== window.top) return
   window.__imtDesignNav = true
 
-  var title = document.title.replace(/\s*·\s*imToken UXD\s*$/, '')
+  var title = document.title.replace(/\s*·\s*imToken (UXD|Design)\s*$/, '')
 
   var host = document.createElement('div')
   host.id = 'imt-design-nav'

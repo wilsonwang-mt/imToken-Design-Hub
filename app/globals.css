@@ -1150,3 +1150,78 @@ a.sv-bm:hover { transform: translateY(-2px); box-shadow: 0 0 0 1px rgba(0, 127, 
   .sv-group-h h3 { font-size: 22px; }
   .sv-layers { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+/* ── Project template（pj-）· components/project/ 的共享骨架，由 Wilson 维护 ──
+   新项目的概览页和材料切换都用这一段；项目自己的样式写在 app/projects/<slug>/<slug>.css，以项目前缀开头。
+   颜色只用 token：:root 里的全站 token，加上下面 .pj 根规则里声明的几个半透明值。 */
+.pj { --pj-fill: rgba(255, 255, 255, 0.55); --pj-surface: #fff; --pj-line: rgba(17, 29, 74, 0.06); --pj-line-hover: rgba(0, 127, 255, 0.3); --pj-drop: rgba(17, 29, 74, 0.3); --pj-glow: rgba(0, 127, 255, 0.5); --pj-num: rgba(17, 29, 74, 0.25); }
+.pj-h1-sub { display: block; font-size: 22px; font-weight: 500; color: var(--text-2); letter-spacing: 0; margin-top: 10px; }
+.pj-lead { max-width: 760px; font-size: 18px; }
+.pj-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin-top: 24px; font-size: 14px; color: var(--text-2); }
+.pj-stage { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; padding: 4px 10px; border-radius: 999px; background: var(--blue-50); color: var(--blue-deep); }
+.pj-stage i { width: 8px; height: 8px; border-radius: 50%; background: var(--blue); }
+.pj-stage.s-shipped i { background: var(--success); }
+.pj-stage.s-paused, .pj-stage.s-archived { background: var(--border); color: var(--text-2); }
+.pj-stage.s-paused i, .pj-stage.s-archived i { background: var(--secondary); }
+.pj-switcher { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; max-width: 1100px; margin-top: 28px; }
+.pj-switch { display: flex; align-items: center; gap: 14px; padding: 14px 18px; border-radius: 18px; background: var(--pj-fill); box-shadow: 0 0 0 1px var(--pj-line); transition: transform 0.2s var(--ease), box-shadow 0.2s var(--ease); }
+a.pj-switch:hover { transform: translateY(-1px); box-shadow: 0 0 0 1px var(--pj-line-hover), 0 12px 28px -16px var(--pj-drop); }
+.pj-switch em { font-style: normal; font-family: var(--serif); font-weight: 900; font-size: 26px; line-height: 1; color: var(--pj-num); }
+.pj-switch > span { flex: 1; min-width: 0; }
+.pj-switch b { display: block; font-size: 16px; color: var(--navy); }
+.pj-switch small { display: block; font-size: 12px; color: var(--text-2); margin-top: 2px; }
+.pj-switch svg { color: var(--blue); flex-shrink: 0; }
+.pj-switch.on { background: var(--pj-surface); box-shadow: 0 0 0 2px var(--blue), 0 12px 28px -18px var(--pj-glow); }
+.pj-switch.on em { color: var(--blue); }
+.pj-two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: start; }
+.pj-box { padding: 24px 28px; }
+.pj-box h3 { font-size: 17px; margin-bottom: 8px; }
+.pj-box > .pj-empty { margin-top: 4px; }
+.pj-box p { font-size: 16px; line-height: 1.8; color: var(--text); }
+.pj-list { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; font-size: 15px; line-height: 1.7; color: var(--text); }
+.pj-timeline { list-style: none; margin: 0; padding: 10px 28px; }
+.pj-timeline li { display: grid; grid-template-columns: 96px 12px minmax(0, 1fr); gap: 14px; padding: 14px 0; }
+.pj-timeline li + li { border-top: 1px dashed var(--border); }
+.pj-tl-date { font-family: var(--serif); font-weight: 900; font-size: 17px; line-height: 1.45; color: var(--navy); white-space: nowrap; }
+.pj-tl-dot { width: 12px; height: 12px; border-radius: 50%; margin-top: 6px; background: var(--ground); box-shadow: inset 0 0 0 2px var(--secondary); }
+.pj-timeline .t-done .pj-tl-dot { background: var(--success); box-shadow: none; }
+.pj-timeline .t-now .pj-tl-dot { background: var(--blue); box-shadow: 0 0 0 4px var(--blue-100); }
+.pj-timeline .t-next .pj-tl-date { color: var(--secondary); }
+.pj-timeline b { font-size: 16px; color: var(--navy); }
+.pj-timeline p { font-size: 14px; line-height: 1.6; color: var(--text-2); margin-top: 2px; }
+.pj-three { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; align-items: start; }
+.pj-rows { list-style: none; margin: 0; padding: 0; }
+.pj-rows li { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 12px; padding: 12px 0; align-items: start; }
+.pj-rows li + li { border-top: 1px dashed var(--border); }
+.pj-rows.pj-q li { grid-template-columns: 16px minmax(0, 1fr); }
+.pj-rows li > svg { color: var(--blue); margin-top: 5px; }
+.pj-rows p { font-size: 15px; line-height: 1.7; color: var(--navy); }
+.pj-date { font-size: 13px; font-weight: 700; color: var(--text-2); font-variant-numeric: tabular-nums; padding-top: 2px; }
+.pj-owner { display: block; font-size: 13px; color: var(--text-2); margin-top: 2px; }
+.pj-empty { font-size: 15px; color: var(--text-2); }
+.pj-docs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+.pj-doc { position: relative; display: flex; flex-direction: column; gap: 6px; padding: 20px 22px; border-radius: 20px; transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease); }
+a.pj-doc:hover { transform: translateY(-2px); }
+.pj-doc-meta { font-size: 12px; font-weight: 500; color: var(--text-2); }
+.pj-doc b { font-size: 18px; color: var(--navy); }
+.pj-doc p { font-size: 14px; line-height: 1.65; color: var(--text-2); }
+.pj-doc-by { font-size: 12px; color: var(--secondary); margin-top: auto; }
+.pj-people, .pj-links { list-style: none; margin: 0; padding: 0; }
+.pj-people li, .pj-links li { display: grid; gap: 2px; padding: 12px 0; }
+.pj-people li + li, .pj-links li + li { border-top: 1px dashed var(--border); }
+.pj-people b { font-size: 16px; color: var(--navy); }
+.pj-people span, .pj-links span { font-size: 13px; color: var(--text-2); }
+.pj-links a { display: inline-flex; align-items: center; gap: 6px; font-size: 15px; font-weight: 500; color: var(--blue); }
+.pj-links a:hover { text-decoration: underline; }
+@media (max-width: 1023px) {
+  .pj-two, .pj-three { grid-template-columns: 1fr; }
+  .pj-switcher { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  .pj-h1-sub { font-size: 17px; }
+  .pj-lead { font-size: 16px; }
+  .pj-box, .pj-timeline { padding-left: 20px; padding-right: 20px; }
+  .pj-timeline li { grid-template-columns: 72px 12px minmax(0, 1fr); gap: 10px; }
+  .pj-rows li { grid-template-columns: 1fr; gap: 4px; }
+  .pj-rows.pj-q li { grid-template-columns: 16px minmax(0, 1fr); gap: 10px; }
+}

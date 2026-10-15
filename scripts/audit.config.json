@@ -1,0 +1,44 @@
+{
+  "$comment": "scripts/audit.mjs 的配置，改这里需要 CODEOWNERS 审批。legacySlugs 只放规范建立前的旧项目；largeFileAllowlist 每一项都要有理由。保留前缀会自动加上 app/globals.css 里所有 class 的第一段。",
+  "legacySlugs": [
+    "agentic-wallet",
+    "stake-video",
+    "ens-address-resolution"
+  ],
+  "maxFileMB": 10,
+  "largeFileAllowlist": [
+    "public/confu/ep02/EP02-design-kit.zip"
+  ],
+  "forbiddenFiles": [
+    "(^|/)\\.DS_Store$",
+    "(^|/)Thumbs\\.db$",
+    "(^|/)\\.env(\\.(?!example$)[^/]+)?$",
+    "\\.(pem|key|p12|pfx|keystore)$",
+    "(^|/)credentials\\.json$",
+    "\\.(fig|sketch|psd|ai|xd|aep)$"
+  ],
+  "hrWords": [
+    "职级",
+    "薪酬",
+    "薪资",
+    "月薪",
+    "年薪",
+    "绩效考核",
+    "绩效评级",
+    "年终奖",
+    "调薪"
+  ],
+  "reservedPrefixes": [
+    "pj",
+    "aw",
+    "sv",
+    "proj",
+    "app",
+    "site",
+    "main",
+    "page",
+    "root",
+    "hub",
+    "imt"
+  ]
+}

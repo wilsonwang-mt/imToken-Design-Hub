@@ -2,9 +2,10 @@
 // Run after replacing a deck file:  node scripts/add-deck-nav.mjs
 import { readFileSync, writeFileSync, readdirSync, statSync } from 'node:fs'
 import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 const TAG = '<script src="/confu/site-nav.js" defer></script>'
-const root = new URL('../public/confu/', import.meta.url).pathname
+const root = fileURLToPath(new URL('../public/confu/', import.meta.url))
 for (const ep of readdirSync(root)) {
   const dir = join(root, ep)
   if (!statSync(dir).isDirectory()) continue
