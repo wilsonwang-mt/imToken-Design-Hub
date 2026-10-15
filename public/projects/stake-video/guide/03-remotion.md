@@ -23,7 +23,7 @@
 | 帧率 | **24 fps**，全片统一 |
 | 主交付 | 1920×1080，H.264，yuv420p，约 14 Mbps，AAC 320 kbps / 48 kHz |
 | 4K 版 | 只在投 YouTube 或官网大屏时出：底片先用 Lanczos 放大到 4K 再渲，`--scale=2`，码率 45 Mbps |
-| AI 底片 | Seedance 2.5 最高 1080p；交付时 24 fps、1920×1080、无水印，前后各留约 0.5 秒余量 |
+| AI 底片 | Seedance 2.5 最高 1080p。纯 AI 底片交付时 24 fps、1920×1080、无水印，前后各留约 0.5 秒余量；在本地叠了界面、台历等高清图层的底片（成片里的 S02、S03、S04）按 3840×2160 交付，并在底片清单里注明分辨率，不要再用 1080p 的交付流程重交 |
 | 底片编码 | libx264 crf 12、yuv420p、tv range，标注 BT.709 |
 | 中间文件 | ProRes 422 HQ（10-bit），往返误差约 0.2 级 |
 | 色彩 | **全链路 BT.709**（见第 8 节的坑） |
@@ -55,7 +55,7 @@ video/
   public/
     plates/               S01.mp4 … S12.mp4 + manifest.json
     audio/                music/、sfx/（+ meta.json）、vo/<语言>/
-    fonts/                打包的字体（不依赖本机字体）
+    fonts/                打包的字体：英文 Inter、封面用的思源黑体 Heavy 和 Inter Black
   scripts/
     render-master.sh      成片渲染
     master_static.py      响度母带
@@ -115,7 +115,7 @@ box-shadow: 0 18px 48px rgba(4,10,25,0.35), inset 0 1px 0 rgba(255,255,255,0.22)
 
 | 叠加层 | 做法 |
 |---|---|
-| **片头标题** | 社交平台的第一帧就是封面，所以第 0 帧完整显示标题，停 1.2 秒后用 0.6 秒淡出（略上浮、虚化），视频本身从第 0 帧就在播。标题一部分**藏在 Bulu 身后**：逐帧生成 Bulu 的遮罩，整层标题用 mask-image 套上当前帧的遮罩；左侧加一层轻压暗保证可读。标题不能碰到 Bulu。另导出封面图：1920×1080 JPG 和 3840×2160 PNG。 |
+| **片头标题** | 社交平台的第一帧就是封面，所以第 0 帧完整显示标题，停 1.2 秒后用 0.6 秒淡出（略上浮、虚化），视频本身从第 0 帧就在播。标题放在 Bulu 左侧，和 Bulu 至少保持约 26 px 间距，**不靠抠像遮挡**（第一版曾让文字一角藏在 Bulu 身后，抠像边缘不干净，定稿改为完全不碰）；代码里仍保留逐帧的 Bulu 遮罩作保险。左侧加一层轻压暗保证可读。另导出封面图：1920×1080 JPG 和 3840×2160 PNG。 |
 | **推送卡片** | 放在左上角（居中会挡住 Bulu 的角）：方形 imToken 应用图标 + 标题 + 副标题。0.1 秒起弹簧滑入，结束前 0.3 秒收起。 |
 | **手机窗口（App 界面）** | 画面右侧的磨砂玻璃悬浮手机窗口，高约 0.68 倍画高。Bulu 手里的手机屏幕和右侧窗口**渲染同一个界面组件、用同一个时间**，两边状态始终同步。界面组件按 393×852 pt 的手机画布写。窗口出现时从右侧划入，可以带一点回弹，对上角色动作（例如最后一跳落地）。 |
 | **增量计数器** | 只在收益增长那一镜出现：先停在 +0.00 约 1 秒，再用缓入缓出（cubic）数到 +0.72，结束前 0.6 秒数完；0.3 秒淡入。数字 Inter 52 / 600、等宽数字，单位 28 / 500，旁注「示意数值」18 号、60% 不透明度；正在数时卡片带一点冰蓝外发光。位置在右上角（距右 120、距上 96）。旁注缺失时程序要报警。 |
@@ -177,7 +177,7 @@ box-shadow: 0 18px 48px rgba(4,10,25,0.35), inset 0 1px 0 rgba(255,255,255,0.22)
   3. 逐句生成配音（品牌名的写法见配音规范），归一化并补头尾静音，检查开头结尾有没有被截。
   4. 按实际配音时长微调开始时间，不压下一句、不压切点。
   5. 界面图、封面按语言各出一版，检查文字长度不溢出、不碰角色。
-  6. 字体打包进工程（英文 Inter，中文 PingFang SC 加系统兜底；封面用思源黑体 Heavy 和 Inter Black，都可免费商用），不依赖本机安装的字体，否则换一台机器渲染时字体和换行都会变。
+  6. 字体：英文 Inter（英文模式下注册）和封面用的思源黑体 Heavy、Inter Black 已打包进工程，都可免费商用，不依赖本机。中文正文（字幕、卡片、片尾）用的是 macOS 系统字体 PingFang SC / SF Pro，没有打包，所以中文版要在 Mac 上渲染；想在任何机器上渲染结果都一致，就打包一款可商用的开源中文字体（如思源黑体 Regular / Medium），写进中文字体栈。
 
 ## 8. 色彩和编码的坑
 
@@ -200,6 +200,11 @@ ffmpeg -i in.mp4 -vf "scale=in_color_matrix=bt709:in_range=tv:out_range=pc:flags
 ffmpeg -framerate 24 -i f%03d.png \
   -vf "scale=out_color_matrix=bt709:out_range=tv:flags=accurate_rnd+full_chroma_int+full_chroma_inp,format=yuv420p" \
   -c:v libx264 -crf 12 -colorspace bt709 -color_primaries bt709 -color_trc bt709 -color_range tv out.mp4
+
+# 补色彩标注（像素不变）：scale 滤镜会让 H.264 丢掉 primaries / trc 标注
+ffmpeg -i out.mp4 -c:v copy \
+  -bsf:v h264_metadata=colour_primaries=1:transfer_characteristics=1:matrix_coefficients=1:video_full_range_flag=0 \
+  -colorspace bt709 -color_primaries bt709 -color_trc bt709 -color_range tv out_tagged.mp4
 ```
 
 ## 9. 渲染和交付

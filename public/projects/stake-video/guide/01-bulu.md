@@ -73,7 +73,7 @@ Bulu 是一只圆滚滚的蓝色小鲸鱼，**像高级搪胶玩具一样光滑�
 | A 主机位 | 开场、焦虑、ETH 醒来、惊喜、结尾 | 沙发左前方的低角度 3/4 正面，40 mm，略低于 Bulu 眼高。Bulu 居中，约占画高 42%（含角约 56%），头顶留约 30% 空间；尾巴和容器在画左，ETH 毯窝在画右。 |
 | A-CU 面部特写 | 发现 App | 与 A 同一位置，100 mm，脸约占画高 2/3，手机在画面右下缘，画面里没有暖光。 |
 | B 过肩 | 看行情 | 在 Bulu 肩旁、角根高度，沿沙发往远端俯看：画左是 Bulu 的脸颊和角，手机在画面中央对焦。 |
-| F 正面 | 幻想气泡 | 正面平视，50 mm。Bulu 在下半画面居中，头顶留出气泡空间（气泡占画面上方约 45%，角尖离气泡下沿至少 20 px）。 |
+| F 正面 | 幻想气泡 | 正面、水平，36 mm，机位略高于 Bulu 眼高（最初关键帧 prompt 写的 50 mm 已被取代）。Bulu 在下半画面、略偏左，头顶留出气泡空间（气泡占画面上方约 45%，角尖离气泡下沿至少 20 px）。 |
 | W 窗景 | 四季、牛熊 | 正对落地窗；Bulu 在画面一侧。 |
 
 **视线**：每条视频 prompt 都要写明视线落点（容器、毯窝里的 ETH，或者手机）。除了片尾，Bulu 一般不看镜头，看镜头会打断「看着身边的 ETH」这层关系。
@@ -267,7 +267,7 @@ Edit the input image. Change only one thing: Bulu, the blue whale mascot sitting
 Keep everything else exactly unchanged, pixel for pixel where possible: the composition, camera angle and framing, Bulu's size, position, head, horn, face, eyes, blush, colour and smooth vinyl surface, the phone, the sofa, the fine-knit blanket and the sleeping ETH crystal in it, the floor lamp, the plant, the side tables, the mug and books, the blank desk calendar, the marble table, the windows and the night skyline, the lighting and exposure. Native 4K, crisp and clean, no noise, no grain, no blur.
 ```
 
-视频里保持无腿（Bulu 坐着、有手部动作时，写进镜头描述）：
+视频里保持无腿（Bulu 坐着、有手部动作时，写进镜头描述）。这句据去腿重生成那条视频的 prompt 改写：原文结尾是 `also while Bulu scrolls`，为了避开「鳍在屏幕上滑」的写法改成了 `moves its fins`，改写版还没有单独测试过：
 
 ```text
 Bulu has no legs and no feet: the bottom of its round body is a smooth cream-white belly resting directly on the sofa cushion, exactly as in the first frame, and it stays that way the whole time, also while Bulu moves its fins.

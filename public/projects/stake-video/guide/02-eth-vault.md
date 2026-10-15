@@ -16,7 +16,7 @@
 | **奖励小 ETH** | 数量在慢慢累积 | 形状、颜色和主 ETH 相同，明显更小，**不带表情**。出现得要慢。只能待在**容器上方，或容器和 Bulu 之间**。 |
 | **质押容器** | 自己的验证器，安全地在工作 | 始终放在 **Bulu 身边**的小边几上；质押时才出现。 |
 | **光带** | 所有权：非托管，掌控权始终在你手上 | 一条细的冰蓝光带连着容器和 Bulu 的手机，**任何时候都不能断开**。 |
-| **增量计数器** | 核心信息：多出来的 ETH | **只显示增量**（+x.xx ETH），全片不出现持仓总数。 |
+| **增量计数器** | 核心信息：多出来的 ETH | **只显示增量**（+x.xx ETH），计数器和文案都不出现持仓总数。（成片开场手机界面里显示的 ETH 余额是特意保留的界面内容，不算计数器。） |
 | 画面里的文字 | — | AI 生成的画面里**不出现任何文字或数字**。计数器、价格卡、界面、zzz 都在后期叠加。唯一例外是容器底座上浮雕的盾牌锁孔形状。 |
 
 和光带含义相关的文案口径：说「非托管，质押后掌控权始终在你手上」。**不要说「ETH 不离开你的钱包」**：质押时 ETH 确实会离开钱包（2026-10-08 起停用这句）。也不要用任何会让人以为 ETH 被「锁住」的说法。
@@ -53,7 +53,7 @@
 
 ### 2.5 牛熊段落
 
-- ETH 的大小跟着价格曲线变（成片实现：波峰放大到约 1.54 倍，绕腰部附近缩放；波谷缩小到约 0.80 倍，绕底部缩放，像往毯子里沉；比价格曲线滞后约 3 帧）。
+- ETH 的大小跟着价格曲线变。规范是以底部为锚点缩放 0.8–1.2 倍，结尾回到 1.0 倍；成片实际用的是牛熊合成帧的实测值：波峰约 1.54 倍、绕腰部附近缩放，波谷约 0.80 倍、绕底部缩放（像往毯子里沉），比价格曲线滞后约 3 帧。波峰倍数还没有最终确认。
 - 表情顺序：沉睡 → 醒来变开心 → 开心 → 转失落 → 失落 → 睡回去。整段只有 1 颗 ETH。
 - 季节调色、补光时，ETH 所在区域一律不提亮：亮度只代表休眠和工作，不能被别的东西带亮。
 - 大小和表情的变化**用代码做**，不让 AI 视频去演（见 [Remotion 动画与合成规范](03-remotion.md)）。
@@ -123,7 +123,7 @@
 
 - **形状、颜色**和主 ETH 完全相同，**明显小于主 ETH**，大小以已审批关键帧为准（不设比例上限；早期「主 ETH 的 1/10」「1/4」这两条上限已在 2026-10-04 取消）。
 - **不带表情**：没有眼睛，没有嘴。
-- **只增不减**，跨镜头也一样。成片里从惊喜到结尾都保持 11 颗。
+- **只增不减**，跨镜头也一样。成片里惊喜那一镜从 6 颗逐渐升到 11 颗，幻想气泡结尾 11 颗，结尾一镜 13 颗（后两镜各有 3 颗小的汇聚成 1 颗稍大的）。
 - **位置**：只在容器上方，或容器和 Bulu 之间。不飞走，任何一帧都不出画，不飞进别的物体（另一张小几、窗、毯窝、Bulu 的身体）。
 - **要慢**：从一粒光点慢慢长成晶体；几颗小的慢慢聚拢、合成一颗稍大的（仍明显小于主 ETH）。
 - **不能多到像夸大收益**：成片曾因为一堆静止的大晶体被认为「像夸大宣传」，改成了环绕容器的少量小 ETH，加上从容器顶不断升起、轻轻上下浮动的几颗（表示还在持续产生）。奖励云要有大有小、分布均匀，中间不留大块空白。
@@ -234,10 +234,16 @@ A 机位必加：
 The ETH crystal is about one third of Bulu's seated height; the vault is about half of Bulu's height.
 ```
 
-布局描述（第三句质押后才加）：
+布局描述，质押前：
 
 ```text
-On the other seat, the ETH crystal sleeps in a soft hollow of the blanket. Right beside Bulu's armrest stands a small round dark-wood side table. The glass vault stands on it.
+On the other seat, the ETH crystal sleeps in a soft hollow of the blanket. Right beside Bulu's armrest stands a small round dark-wood side table.
+```
+
+质押后（毯窝已空，ETH 在容器里，不能再写毯窝里有 ETH，否则画面会多出一颗）：
+
+```text
+Right beside Bulu's armrest stands a small round dark-wood side table. The glass vault stands on it. The blanket nest on the far seat at the right is now empty.
 ```
 
 ### 8.6 相关机位
@@ -300,8 +306,8 @@ ETH crystal halves stay aligned; exactly one ETH crystal, inside the vault; no c
 
 | 素材 | 看什么 | 在哪 |
 |---|---|---|
-| 标准 ETH 几何（多角度） | Three.js 按标志比例渲染的主 ETH：正面、转 30°、俯 35°、醒来态。看得出方形腰的四棱体和中间的细缝。 | 画布「02_LAYOUT_REF」分组（`REF_geom_eth_yaw30_elev8`、`REF_geom_eth_yaw30_elev35` 等） |
-| 标准容器几何 | 容器 3/4 俯视和正面：两层底座、玻璃圆柱、盖和凸台、内部底座、倾斜光环、底座正面的盾牌。 | 画布「02_LAYOUT_REF」（`REF_geom_vault_yaw35_elev20`） |
+| 标准 ETH 几何 | Three.js 按标志比例渲染的主 ETH，看得出方形腰的四棱体和中间的细缝。画布上有转 30° 平视、转 30° 俯 35° 两张；正面、醒来态等其他角度只在 Wilson 的项目本地，需要时向他要。 | 画布「02_LAYOUT_REF」分组（`REF_geom_eth_yaw30_elev8`、`REF_geom_eth_yaw30_elev35`） |
+| 标准容器几何 | 容器 3/4 俯视：两层底座、玻璃圆柱、盖和凸台、内部底座、倾斜光环、底座正面的盾牌。正面图只在项目本地。 | 画布「02_LAYOUT_REF」（`REF_geom_vault_yaw35_elev20`） |
 | 主视觉「Stake, under your control」 | 容器造型的来源。四周漂浮的小 ETH 不要照抄。 | 画布「00_REF」（`REF_kv-container_src`） |
 | 客厅白模摆位图 | 各机位质押前后的摆位：小边几、Bulu、毯窝、另一张小几的位置；质押后的容器、光带。画面上标了各物件的横向位置和 16:9、9:16 的取景框。 | 画布「02_LAYOUT_REF」（`REF_layout_A_pre`、`REF_layout_A_post`、`REF_layout_V_post`、`REF_layout_F_post` 等） |
 | 已审批关键帧 | 容器特写（早期、后期两张，小 ETH 大小以它为准）、A 机位质押后母图（放大后的容器）、惊喜、幻想、结尾。 | LibTV「画布 1」 |
@@ -315,6 +321,7 @@ ETH crystal halves stay aligned; exactly one ETH crystal, inside the vault; no c
 - 奖励小 ETH 默认用 AI 画还是脚本叠加；脚本精灵目前是单个菱形，要不要改成和主 ETH 一样的两段式标志形。
 - 光带的起点（顶盖还是右壁）和光粒的流向（双向，还是从容器流向手机）。
 - 沉睡呼吸的周期：规范写约 4 秒一次，牛熊段落的实现是 2.5 秒一次。
+- 牛熊段落 ETH 的波峰倍数：用规范的 1.2 倍，还是成片的约 1.54 倍。
 - 竖版：容器特写、惊喜两个镜头的小 ETH 在 9:16 里放不下，需要从生图阶段就按竖版构图。
 
 ---
